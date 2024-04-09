@@ -33,57 +33,6 @@ RECORD * search_findbylead(INDEX * FF, char *string)
 		curptr = search_treelookup(FF,string);	/* find in full tree */
 	return (curptr);
 }
-#if 0
-/*****************************************************************************/
-RECORD * search_treelookup(INDEX * FF, char *string)	/* finds record in full tree */
-
-{
-	register short m;
-	RECORD *curptr;
-	RECN matchnum;
-	short pageflag;
-	char * pptr, *rptr;
-
-	pageflag = FF->head.sortpars.fieldorder[0] == PAGEINDEX;	/* TRUE if page sort */
-	for (matchnum = 0, curptr = rec_getrec(FF, FF->head.root); curptr;) {       /* while more records to check */
-		if (pageflag)	{	/* if in page order */
-			pptr = str_xlast(curptr->rtext);
-			if (str_crosscheck(FF,pptr))	/* if a cross ref in page field */
-				m =  -1;		/* cross ref comes after */
-			else {
-				rptr = ref_sortfirst(FF,pptr);		/* get ref ptr */
-				if (!(m = ref_match(FF, string, rptr, FF->head.sortpars.partorder, PMSENSE)))
-					matchnum = curptr->num;
-			}
-		}
-		else if (!(m = sort_textmatch(FF,&FF->head.sortpars, string, curptr->rtext, MATCH_TRUNCATED|MATCH_IGNORECODES|MATCH_IGNORECASE)))		/* if new string == old */
-			matchnum = curptr->num;	/* save its number */
-		curptr = rec_getrec(FF, m <= 0 ? curptr->lchild : curptr->rchild);	   /* move up tree until empty slot */
-	}
-	if ((curptr = rec_getrec(FF,matchnum)) && !pageflag)	/* if found a match to first field, set up for checks */
-		curptr = search_linsearch(FF,curptr,string);
-	return (curptr);
-}
-/*****************************************************************************/
-RECORD * search_findbynumber(INDEX * FF, RECN num)	/* finds record by number */
-
-{
-	RECORD * curptr;
-
-	if (num <= FF->head.rtot)	{	/* if record is in index */
-		if (FF->curfile)	{	/* if using subset of index, do linear search */
-			for (curptr = sort_top(FF); curptr; curptr = sort_skip(FF, curptr,1))	{
-				if (curptr->num == num)		/* if right match */
-					break;
-			}
-			return (curptr);
-		}
-		else if (FF->viewtype != VIEW_NEW || num > FF->startnum)	/* full index or is new */
-			return (rec_getrec(FF, num));
-	}
-	return (NULL);
-}
-#else
 /*****************************************************************************/
 RECORD * search_treelookup(INDEX * FF, char *string)	/* finds record in full tree */
 
@@ -138,7 +87,6 @@ RECORD * search_findbynumber(INDEX * FF, RECN num)	/* finds record by number */
 	}
 	return (NULL);
 }
-#endif
 /*****************************************************************************/
 RECORD * search_lastmatch(INDEX * FF, RECORD * recptr, char * searchspec, short matchtype)	/* finds last rec that matches spec */
 
@@ -693,7 +641,7 @@ short search_verify(INDEX * FF, char * rtext, VERIFYGROUP * vp) /* checks valdit
 		vp->eoffset = tptr-vp->t1;		/* length of main text of rec making ref (for summary view) */
 		*tptr++ = '\0';
 		*tptr = EOCS;
-		crosslevel = str_xcount(vp->t1);
+		crosslevel = str_xindexcontaining(rtext, str1);	// find field containing xref
 		ftot = str_xparse(rtext,flist);		/* parse record */
 		if (crosslevel == ftot-1 || !vp->locatoronly)	{	// if in page field or don't care
 			for (dupcount = matchcount = 0, recptr = search_findbylead(FF, vp->t1); recptr; recptr = sort_skip(FF, recptr,1))	{	// while records match source spec
@@ -743,23 +691,6 @@ short search_verify(INDEX * FF, char * rtext, VERIFYGROUP * vp) /* checks valdit
 					vp->cr[refcount].matchlevel = 1;	/* match (if any) must be at subhead of target */
 				}
 				for (crosscount = matchcount = casecount = 0; recptr; recptr = sort_skip(FF, recptr,1))		{		/* if have a candidate */
-#if 0
-					if (!col_match(FF, &FF->head.sortpars, vp->t1, recptr->rtext, vp->fullflag ? MATCH_IGNOREACCENTS|MATCH_IGNORECODES : MATCH_LOOKUP|MATCH_IGNOREACCENTS|MATCH_IGNORECODES))	{	/* if a match */
-						rftot = str_xparse(recptr->rtext, rlist);
-						if (vp->cr[refcount].matchlevel && col_match(FF, &FF->head.sortpars, mptr, rlist[1].str, MATCH_LOOKUP|MATCH_IGNOREACCENTS|MATCH_IGNORECODES))	/* if need sub and bad match */
-							break;
-						if (*rlist[rftot-1].str)	{		/* if not empty page field */
-							if (str_crosscheck(FF, rlist[rftot-1].str))
-								crosscount++;
-							else {
-								if (++matchcount == 1)		/* if first match */
-									vp->cr[refcount].num = recptr->num;		/* save # of target */
-								if (matchcount == vp->lowlim)
-									break;
-							}
-						}
-					}
-#else
 					if (!col_match(FF, &FF->head.sortpars, vp->t1, recptr->rtext, vp->fullflag ? MATCH_IGNOREACCENTS|MATCH_IGNORECODES : MATCH_LOOKUP|MATCH_IGNOREACCENTS|MATCH_IGNORECODES))	{	/* if a match */
 						if (!vp->fullflag || !col_match(FF, &FF->head.sortpars, vp->t1, recptr->rtext, MATCH_IGNORECODES))	{	// if strict, then test again for case/accent
 							rftot = str_xparse(recptr->rtext, rlist);
@@ -781,7 +712,6 @@ short search_verify(INDEX * FF, char * rtext, VERIFYGROUP * vp) /* checks valdit
 							break;
 						}
 					}
-#endif
 					else
 						break;
 				}

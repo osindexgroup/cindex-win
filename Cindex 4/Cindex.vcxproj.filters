@@ -543,15 +543,6 @@
     </None>
     <None Include="2.0 fixes.txt" />
     <None Include="ClassDiagram1.cd" />
-    <None Include="index_old.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="style_old.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="tpl_old.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="icon1.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -697,6 +688,15 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="32propagate_on_off.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="index_old.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="style_old.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="tpl_old.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

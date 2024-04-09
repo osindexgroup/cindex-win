@@ -790,118 +790,6 @@ static BOOL nativeexport(INDEX * FF, struct expfile * ef)	/* duplicates index */
 	}
 	return (ok);
 }
-#if 0
-/******************************************************************************/
-static short writearchiverecords(INDEX * FF, TCHAR * path, EXPORTPARAMS * exp, short *fontids)	/* opens & writes export file */
-
-{
-	FILE *wfptr;
-	RECORD * curptr;
-	char outbuff[MAXREC];
-	CSTR fields[FIELDLIM];
-	RECN rcount;
-	short fieldcnt, ftot, efield;
-	int curmax, newlen, deepest, count, writeindex;
-	short err;
-
-	if (wfptr = nfopen(path,exp->appendflag ? TEXT("ab") : TEXT("wb")))   {	/* open file */
-		if (exp->type == E_ARCHIVE)	
-			fprintf(wfptr,"xxxxxxxxxxxxxxxx");	/* reserve space for id stuff */
-		else if (exp->type == E_TAB && exp->encoding == 0)	
-			fprintf(wfptr,utf8BOM);	// write utf-8 BOM
-		curptr = rec_getrec(FF,exp->first);	/* get start record */
-		for (rcount = curmax = deepest = 0; !ferror(wfptr) && curptr && curptr->num != exp->last && !iscancelled(NULL); curptr = sort_skip(FF,curptr,1)) {	  /* for all records */
-			if (!*curptr->rtext)	 /* if not wanted or empty */
-				continue;			/* don't write */
-			if (exp->type == E_TAB && exp->encoding == 0)		// if want tabbed text
-				str_xcpy(outbuff, curptr->rtext);		// just copy utf-8 to output buffer
-			else
-				exp->errorcount += convertrecordtext(outbuff, curptr->rtext);	// convert to code page
-			showprogress(PRG_SAVING,FF->head.rtot,rcount++);	  /* send message */
-			if ((ftot = str_xparse(outbuff, fields)) > deepest)		/* parse */
-				deepest = ftot;
-			if ((newlen = str_xlen(outbuff)) > curmax)     /* if this is longest field */
-				curmax = newlen;
-			for (newlen = fieldcnt = 0; fieldcnt < ftot-1; fieldcnt++)   { /* for all regular fields */
-				if (exp->type == E_ARCHIVE)
-					fprintf(wfptr, "%s\t", fields[fieldcnt].str);  /* tab delimited */
-				else if (exp->type == E_TAB)	{
-					writetext(wfptr,fields[fieldcnt].str);		/* write as plain text */
-					fputc('\t',wfptr);
-				}
-				else	{
-					writefordos(wfptr,fields[fieldcnt].str);	/* write string, translating & stripping */
-					fputc('\t',wfptr);
-				}
-			}
-			for (efield = fieldcnt; efield < exp->minfields-1; efield++)     /* while not enough fields */
-				fprintf(wfptr, "\t");     /* pad with empty fields */
-			if (exp->type == E_ARCHIVE)
-				fprintf(wfptr,"%s",fields[fieldcnt].str);	/* locator field */
-			else if (exp->type == E_TAB)
-				writetext(wfptr,fields[fieldcnt].str);		/* write as plain text */
-			else 
-				writefordos(wfptr,fields[fieldcnt].str);	/* write string, translating & stripping */
-			if (exp->extendflag)	{
-				char recflags;
-
-				recflags = 0;
-				if (exp->type == E_ARCHIVE)	{	/* if archive, save extra flags */
-					if (curptr->label)	{	// build label value in compatible way
-						// low order bit shifted 1 to left two high order bits shifted 2 to left
-						recflags = ((curptr->label&1) << 1) + ((curptr->label&6) << 2);
-					}
-					if (curptr->isgen)
-						recflags |= W_GENFLAG;
-					if (FF->head.indexpars.required && fields[ftot-2].ln)	// if required field populated
-						recflags |= W_PUSHLAST;
-				}
-				if (curptr->isdel)
-					recflags |= W_DELFLAG;
-				// DOS legacy: either flag is 64 (deleted) or space (not deleted)
-				if (recflags)
-					recflags |= 64;			/* allows DOS value to be 'A' */
-				else
-					recflags = SPACE;
-				fprintf(wfptr, "\023%c%lu %.4s", recflags, curptr->time, curptr->user);				
-			}
-			fputc('\r', wfptr);		/* cr */
-			fputc('\n', wfptr);		/* line feed */
-		}
-		if (exp->type == E_ARCHIVE)	{	/* if archive, add fixups */
-			long curpos;
-
-			curpos = ftell(wfptr);
-#if 0
-			for (count = 0; count < FONTLIMIT; count++)	{
-				if (farray[count] || count < VOLATILEFONTS)		/* if this font was used or is protected */
-					fprintf(wfptr,"%d@@%s@@%s\r\n",count,FF->head.fm[count].pname,FF->head.fm[count].name);	/* add its name */
-			}
-#else
-		for (writeindex = count = 0; count < FONTLIMIT; count++, writeindex++)	{
-			if (fontids[count] || count < VOLATILEFONTS)	{	/* if this font was used or is protected */
-				fprintf(wfptr,"%d@@%s@@%s\r\n",writeindex,FF->head.fm[count].pname,FF->head.fm[count].name);	/* add its name */
-				if (!writeindex)	{	// if have written first font, insert line for symbol
-					fprintf(wfptr,"%d@@%s@@%s\r\n",1,"Symbol","Symbol");
-					writeindex++;	// increment id index
-				}
-			}
-		}
-#endif
-			fseek(wfptr,0,SEEK_SET);	/* to beginning */
-			fprintf(wfptr,"\1\1\1\1%10ld\r\n",curpos);	/* write version and info offset as header */
-			/* !!NB size of lead must be set in ARCHIVEOFFSET; must match dummy string length written at start */
-		}
-		err = ferror(wfptr);
-		fclose(wfptr);
-		showprogress(0,0,0);	  /* kill message */
-		exp->records = rcount;
-		exp->longest = curmax+1;
-		return (err ? FALSE : TRUE);
-	}
-	return (FALSE);
-}
-#else
 /******************************************************************************/
 static char * writearchiverecords(char * wfbase, INDEX * FF, EXPORTPARAMS * exp, short *fontids)	/* opens & writes export file */
 
@@ -999,7 +887,6 @@ static char * writearchiverecords(char * wfbase, INDEX * FF, EXPORTPARAMS * exp,
 	exp->longest = curmax+1;
 	return wfptr;
 }
-#endif
 /******************************************************************************/
 static BOOL convertrecordtext(char * outbuff, char * text)	// converts record to V2 form
 
@@ -1261,55 +1148,6 @@ static char * writerawtext(char * fptr, char *sptr)	/* write field as plain text
 	}
 	return fptr;
 }
-#if 0
-/******************************************************************************/
-static void writefordos(FILE * fptr, char *sptr)	/* write field for DOS */
-
-{
-	int index, codeindex, transsymbol;
-	unsigned char obuff[6];
-	char *xptr;
-	
-	transsymbol = FALSE;
-	// text is already converted to v2 form
-	while (*sptr)	{	/* for all chars */
-		if (*sptr == FONTCHR)	{
-			if (*++sptr && ((*sptr++)&FX_FONTMASK) == 1)	/* if symbol font */
-				transsymbol = TRUE;
-			else
-				transsymbol = FALSE;
-		}
-		else if (*sptr == CODECHR)	{
-			if (*++sptr)	{		/* if a style code follows */
-				for (index = 0, codeindex = 1; codeindex < FX_FONT; codeindex <<= 1, index++)	{
-					if (*sptr&codeindex)	{	/* if this code is active */
-						fputc('\\',fptr);	/* send code(s) */
-						fputc(tr_escname[(index<<1) + (*sptr&FX_OFF ? 1 : 0)],fptr);	/* set code */
-					}
-				}
-				sptr++;
-			}
-		}
-		else {
-			if (*sptr < 0)	{	/* extended char */
-				obuff[0] = *sptr++;
-				obuff[1] = '\0';
-				CharToOemA(obuff,obuff);
-				if (obuff[0] < SPACE)	/* if control character */
-					sprintf(obuff,"\\%03.3d",(int)obuff[0]);	/* generate escape sequence */
-				fputs(obuff,fptr);
-			}
-			else	{	/* ordinary character */
-				if (transsymbol && (xptr = strchr(dos_greek,*sptr)))	/* if in symbol font and char for translation */
-					fputc(dos_fromsymbol[xptr-dos_greek],fptr);
-				else
-					fputc(*sptr,fptr);
-				sptr++;
-			}
-		}
-	}
-}
-#else
 /******************************************************************************/
 static char * writefordos(char * fptr, char *sptr)	/* write field for DOS */
 
@@ -1360,22 +1198,6 @@ static char * writefordos(char * fptr, char *sptr)	/* write field for DOS */
 	}
 	return fptr;
 }
-#endif
-#if 0
-/******************************************************************************/
-static void writetext(FILE * fptr, char *sptr)	/* write field as plain text */
-
-{	
-	while (*sptr)	{			/* for all chars */
-		if (iscodechar(*sptr))	{	/* if codechar */
-			if (*++sptr)
-				sptr++;			/* discard code */
-		}
-		else
-			fputc(*sptr++,fptr);
-	}
-}
-#else
 /******************************************************************************/
 static void writetext(FILE * fptr, char *sptr)	/* write field as plain text */
 
@@ -1399,7 +1221,6 @@ static void writetext(FILE * fptr, char *sptr)	/* write field as plain text */
 			fputc(*sptr++,fptr);
 	}
 }
-#endif
 /******************************************************************************/
 static char * timestring(time_c time)	// returns time string
 

@@ -27,6 +27,7 @@ char * str_xstr(char * list, char * string);	/* finds string in array */
 int str_xcount(char * list);		/* # strings in list */
 int str_xparse(char * list, CSTR * array);		/* puts string pointers in array */
 int str_xindex(char * list, char * string);	/* finds index of string in array */
+int str_xindexcontaining(char* list, char* substring);	/* finds index of string that contains substring */
 char * str_xatindex(char * list, int index);	/* finds string at indexed position */
 TCHAR * str_uxatindex(TCHAR * list, int index);	/* finds string at indexed position */
 char * str_extend(char * string);		/* converts string to extended string */

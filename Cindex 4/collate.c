@@ -69,58 +69,6 @@ static void capturesecondarystring(COLLATORTEXT * as, char * string, int *indexp
 static int lcompare(const void * s1, const void * s2);	// compare for qsort
 static char * prepstring(char * dest, char * source, char * slist);	// makes dest from source, with substitutions from list
 
-#if 0
-/***************************************************************************/
-void col_findlocales(void)		// finds list of locales with collators
-
-{
-	char codeName[100];
-	char fullocaleID[100];
-	char * localeID;
-	int length;
-	UEnumeration * ee;
-    UErrorCode error = U_ZERO_ERROR;
-	
-	cl_languagecount = 0;
-	cl_languages = malloc(ucol_countAvailable()*sizeof(LANGDESCRIPTOR));
-	ee = ucol_openAvailableLocales(&error);
-	while ((localeID = uenum_next(ee,&length, &error)))	{
-		error = U_ZERO_ERROR;
-		uloc_addLikelySubtags(localeID,fullocaleID,sizeof(fullocaleID),&error);
-//		if (U_FAILURE(error))
-//			NSLog(@"%s",u_errorName(error));
-		error = U_ZERO_ERROR;
-		uloc_getScript(fullocaleID,codeName,sizeof(codeName),&error);
-//		if (U_FAILURE(error))
-//			NSLog(@"Bad Script: %s",u_errorName(error));
-		if (!strcmp(codeName,"Latn") || !strcmp(codeName,"Cyrl") || !strcmp(codeName,"Arab") || !strcmp(codeName,"Hebr") || !strcmp(codeName,"Kore") )	{	// if valid script
-			int lcount;
-			
-			error = U_ZERO_ERROR;
-			uloc_getLanguage(localeID,codeName,sizeof(codeName),&error);
-			for (lcount = 0; lcount < cl_languagecount; lcount++)	{
-				if (!strcmp(cl_languages[lcount].id,codeName))
-					break;
-			}
-			if (lcount == cl_languagecount)	{	// if need to add language
-				unichar buffer[100];
-				int namesize;
-				
-				strcpy(cl_languages[lcount].id,codeName);
-				error = U_ZERO_ERROR;
-				namesize = uloc_getDisplayName(localeID,"en_US",buffer,sizeof(buffer),&error);
-				cl_languages[lcount].name = malloc(namesize+1);
-				error = U_ZERO_ERROR;
-				u_strToUTF8(cl_languages[lcount].name,100,&namesize,buffer,-1,&error);	// set name in UTF-8
-//				NSLog(@"Language: %s, name: %s",codeName,cl_languages[lcount].name);
-				cl_languagecount++;
-			}
-		}
-	}
-	qsort(cl_languages, cl_languagecount, sizeof(LANGDESCRIPTOR), lcompare);  /* sort substrings */
-	uenum_close(ee);
-}
-#else
 /***************************************************************************/
 void col_findlocales(void)		// finds list of locales with collators
 
@@ -177,7 +125,6 @@ void col_findlocales(void)		// finds list of locales with collators
 	qsort(cl_languages, cl_languagecount, sizeof(LANGDESCRIPTOR), lcompare);  /* sort substrings */
 	uenum_close(ee);
 }
-#endif
 /***************************************************************************/
 static int lcompare(const void * s1, const void * s2)	// compare for qsort
 
@@ -382,183 +329,6 @@ void col_init(SORTPARAMS * sgp, INDEX * FF)		// initializes collator
 		}
 	}
 }
-#if 0
-/***************************************************************************/
-void col_loadUTF8string(COLLATORTEXT * as,INDEX * FF, SORTPARAMS * sgp, char *string, int flags)	// loads COLLATORTEXT from xstring
-
-{
-	BOOL wordsort = iswordsort(sgp->type);
-	BOOL cmssort = sgp->type == WORDSORT_CMS || sgp->type == LETTERSORT_CMS;
-	BOOL sblsort = sgp->type == WORDSORT_SBL || sgp->type == LETTERSORT_SBL;
-	int sbltype = SBL_CHAPTER;
-	int size = strlen(string);
-	int sindex = 0;
-	int spaceindex = 0;
-	unichar cc, lastcc;
-	
-	as->codecount = 0;
-	as->secondarycount = 0;
-	as->length = 0;
-	as->seclength = 0;
-	as->crossrefvalue = 0;
-	as->breakcount = 0;
-	as->hasdigits = 0;
-	
-	if (flags&MATCH_CHECKPREFIX)  {      /* if want prefix checks */
-		if (str_crosscheck(FF,string))		    /* if a cross reference */
-			as->crossrefvalue = FF->head.formpars.ef.cf.mainposition >= CP_LASTSUB ? 1 : -1;
-		else {
-			int length;
-			short tokens;
-			length = str_skiplist(string,sgp->ignore, &tokens) - string;     /* skip words to be ignored */
-			if (length)
-				capturesecondary(as,string,&sindex,length);
-		}
-	}
-	for (lastcc = cc = '\0'; sindex < size; lastcc = cc)	{	// build text string
-		if (!capturecodes(as,string,&sindex))	{	// if haven't captured any codes
-			char * s1;
-			
-			U8_NEXT_UNSAFE(string,sindex,cc);	// convert char, increment sindex
-			if (sgp->type != RAWSORT)	{
-				switch (cc)	{
-					case SPACE:
-						spaceindex = as->length;	// position of space if it were to be added
-						if (!wordsort || (as->length && as->string[as->length-1] == SPACE))	// ignore unless word sort & not redundant space
-							continue;
-						break;
-					case ESCCHR:		/* escape char */
-						if (sindex == size)	// if don't have following char
-							continue;
-						U8_NEXT_UNSAFE(string,sindex,cc);	// get protected char
-						break;
-					case KEEPCHR:		    /* char after this needs to be kept */
-						if (sindex == size)	// if don't have following char
-							continue;
-						U8_NEXT_UNSAFE(string,sindex,cc);	// get protected char
-#if !REORDER
-						// following needed while ICU doesn't allow setting character class precedence
-						if (!u_isalpha(cc) && !(sgp->evalnums && u_isdigit(cc)) && !(flags&MATCH_FIRSTCHAR))	// if not doing lead char && it wouldn't be evaluated
-							cc = capturechar(as,cc,sgp);	// save char as secondary and get token value
-#endif
-						break;
-					case OBRACKET:			 /* if start of string to be ignored */
-						s1 = str_skiptoclose(&string[sindex],CBRACKET)-1;	// skip bracket contents
-						capturesecondary(as,string,&sindex,s1-&string[sindex]);	// opening and closing <> discarded
-						sindex++;		// index now beyond closing bracket 
-						continue;
-					case OBRACE:			/* just ignore these altogether */
-//						if (flags&MATCH_FIRSTCHAR)	// if seeking lead char
-//							sindex = str_skiptoclose(string+sindex, CBRACE)-string;	// skip any leading braced text
-					case CBRACE:
-						continue;
-					case DASH:
-					case SLASH:
-						if (wordsort && !sgp->ignoreslash)    {	/* if word sort and using -/ */
-							cc = SPACE; 			/* make a space */
-							break;
-						}
-						continue;
-						// following cases fall-through unless trapped
-					case '.':
-					case ':':
-					case ';':
-					case ',':
-						if (sgp->ignorepunct != TRUE && *str_skipcodes(string+sindex) == SPACE)  {	// if not ignoring && next is space
-							// cms && sbl break only on comma; ignore other punct
-							if (cc == ',' || (!cmssort && !sblsort))	{
-								as->breaks[as->breakcount].index = as->length; 	    // allow break
-								as->breaks[as->breakcount++].seccount = as->secondarycount; 	    // save secondary count
-								continue;
-							}
-						}
-						else if (sblsort && cc != ';' && u_isdigit(lastcc))	{	// keep special ',' ':' ',' for SBL
-							sbltype = SBL_VERSE;
-							break;
-						}
-						// fall through
-					default:
-						if (cc == OPAREN)	{	// handle parens per settings
-							BOOL parentype = spaceindex == as->length || as->string[as->length-1] == SPACE;
-							if (sgp->ignoreparenphrase && parentype || sgp->ignoreparen && !parentype)	{	// if ignoring all text in parens, or this can't be paren ending
-								int ocount = 0;
-								for (s1 = &string[sindex], ocount = 0; *s1; s1++) {		/* until end of string */
-									if (*s1 == CPAREN && --ocount < 0)	/* if got matching closing paren */
-										break;
-									else if (*s1 == OPAREN)	/* one more opening paren */
-										ocount++;
-								}
-#if 0
-								if (cmssort)	{	// if CMS sort
-									as->breaks[as->breakcount].index = spaceindex; 	    // force break at space preceding opener
-									as->breaks[as->breakcount++].seccount = as->secondarycount; 	    // save secondary count
-								}
-#endif
-								capturesecondary(as,string,&sindex,s1-&string[sindex]);	// opening and closing () discarded
-								sindex++;		// index now beyond closing paren
-								continue;
-							}
-						}
-						if (sgp->evalnums && u_isdigit(cc))	{	// if digit to use
-							if (!u_isdigit(lastcc))		{	// if last char wasn't digit
-								if (sblsort)	{	// if SBL
-									if (lastcc == ENDASH || lastcc == '-')	{	// if starting range
-										int numindex = sindex;
-										int xindex;
-										
-										U8_BACK_1_UNSAFE(string,numindex);	// get offset of first digit
-										xindex = strspn(string+numindex,"0123456789");											
-										if (xindex){	// if non-numeral follows
-											char next = string[numindex+xindex];
-											if (next == ':')	// if end of range is explicitly chapter
-												sbltype = SBL_CHAPTER;	// set it
-										}
-										as->string[as->length++] = sbltype == SBL_CHAPTER ? LOWCHR1 : LOWCHR0;	// lower vale connector for verse
-									}
-								}
-								if (lastcc && u_isdigit(as->string[as->length-1]))	// if preceding sortable character is digit
-									as->string[as->length++] = lastcc;	// preserve discarded character as separator
-							}
-						}
-						else if (!u_isalpha(cc))	{	// capture all chars in the ignored category
-							capturesecondarystring(as,string,&sindex,cc, sgp);
-							continue;	// must be at end of input
-						}
-						else if (sbltype == SBL_VERSE && cc == 'f' && u_isdigit(lastcc))	{	// if sbl sorting verse and open range char follows digit
-							int tindex = sindex-1;		// step back to capture char
-							capturesecondary(as,string,&tindex,1);	// capture terminating alpha
-							sbltype = SBL_CHAPTER;	// reset type
-							continue;
-						}
-				}
-			}
-			as->string[as->length++] = cc;
-			if (flags&MATCH_FIRSTCHAR)	{
-#if !REORDER
-				if (as->length == 2)	// if 2 chars (first can only be symcode or numcode)
-					as->string[0] = as->string[1];	// get actual lead char
-#endif
-				as->breakcount = 0;		// discard all special text/codes
-				as->secondarycount = 0;
-				break;
-			}
-		}
-	}
-	while (as->length && as->string[as->length-1] == SPACE)	// remove trailing spaces
-		as->length--;
-#if 1
-	for (sindex = 0; sindex < as->secondarycount; sindex++)	{	// for all secondaries
-		if (as->secondaries[sindex].offset >= as->length)	{	// if any beyond length
-			as->breaks[as->breakcount].index = as->length; 	    // add new break so that these secondaries are implicitly after it
-			as->breaks[as->breakcount++].seccount = sindex; 	// save secondary count at break
-			break;
-		}
-	}
-#endif
-	as->breaks[as->breakcount].index = as->length; 	    // mark end as break
-	as->breaks[as->breakcount++].seccount = as->secondarycount; 	    // save secondary count
-}
-#else
 /***************************************************************************/
 void col_loadUTF8string(COLLATORTEXT * as, INDEX * FF, SORTPARAMS * sgp, char *sstring, int flags)	// loads COLLATORTEXT from xstring
 
@@ -757,7 +527,6 @@ void col_loadUTF8string(COLLATORTEXT * as, INDEX * FF, SORTPARAMS * sgp, char *s
 	as->breaks[as->breakcount].index = as->length; 	    // mark end as break
 	as->breaks[as->breakcount++].seccount = as->secondarycount; 	    // save secondary count
 }
-#endif
 /***************************************************************************/
 COLLATORTEXT * col_createstringforsize(int length)
 
@@ -904,73 +673,6 @@ void col_describe(COLLATORTEXT * col,SORTPARAMS * sgp)	// describes content
 		NSLog("  S [%d, %d]%S",col->secondaries[sindex].offset, length,buffer);
 	}
 }
-#if 0
-/*****************************************************************************/
-static short lookup(COLLATOR * col, int flags, int mode)	// truncated text comparison
-
-{
-	UCollationResult result = UCOL_EQUAL;
-	UCollationStrength limitlevel;
-	
-	if (flags&MATCH_IGNOREACCENTS)	// ending strength
-		limitlevel = UCOL_PRIMARY;
-	else if (flags&MATCH_IGNORECASE)
-		limitlevel = UCOL_SECONDARY;
-	else
-		limitlevel = UCOL_TERTIARY;
-	if (!scol2->length && scol1->length)	// if testing against empty string
-		return UCOL_GREATER;
-	if (mode == RAWSORT)	{
-		ucol_setStrength(col->ucol, limitlevel);
-		result = ucol_strcoll(col->ucol,scol1->string,scol1->length,scol2->string,scol1->length < scol2->length ? scol1->length : scol2->length);
-	}
-	else {
-		int level = UCOL_PRIMARY;	// starting strength
-		
-		while (level <= limitlevel)	{
-			int breaks = 0;
-			int sindex = 0;
-			int breakCount;
-
-			ucol_setStrength(col->ucol, level);
-			for (breakCount = 0; scol1->breaks[breakCount].index < scol1->length; breakCount++)	// to ensure we ignore secondaries after end of scol1
-				;
-			breakCount++;
-			do {	// while breaks to do
-				// set break in string 2 at earlier of natural position or length of string 1
-				int s2breakindex;
-				if (breaks == breakCount - 1 && scol1->breaks[breaks].index < scol2->breaks[breaks].index)	// if end of s1 is before end of s2
-					s2breakindex = scol1->breaks[breaks].index;	// shorten s2
-				else
-					s2breakindex = scol2->breaks[breaks].index;
-				result = ucol_strcoll(col->ucol, scol1->string, scol1->breaks[breaks].index, scol2->string, s2breakindex);
-				if (result != UCOL_EQUAL)	// if different 
-					return result;
-				while (sindex < scol1->breaks[breaks].seccount && sindex < scol2->breaks[breaks].seccount) {	// while secondaries to do before break
-					SECONDARYSET * ss1ptr = &scol1->secondaries[sindex];
-					SECONDARYSET * ss2ptr = &scol2->secondaries[sindex];
-
-					if (ss1ptr->offset == ss2ptr->offset) {	// if secondary offsets are the same, compare
-						int length1 = (ss1ptr + 1)->base - ss1ptr->base;
-						result = ucol_strcoll(col->ucol, &scol1->sectext[ss1ptr->base], length1, &scol2->sectext[ss2ptr->base], length1);
-						if (result != UCOL_EQUAL)
-							return result;
-					}
-					else if (ss2ptr->offset < s2breakindex)		// if s2 secondary lies within span of s1; otherwise ignore
-						return ss2ptr->offset - ss1ptr->offset;	// return *inverted* difference between offsets
-					sindex++;
-				}
-			} while (++breaks < breakCount && breaks < scol2->breakcount);
-			if (breakCount > scol2->breakcount)	// if s1 has more text
-				return 1;
-			level++;
-		}
-	}
-	if (!(flags&MATCH_IGNORECODES))			// if not ignoring codes
-		return comparecodes();
-	return result;
-}
-#else
 /*****************************************************************************/
 static short lookup(COLLATOR * col, int flags, int mode)	// truncated text comparison
 
@@ -1039,7 +741,6 @@ static short lookup(COLLATOR * col, int flags, int mode)	// truncated text compa
 		return comparecodes();
 	return result;
 }
-#endif
 /*****************************************************************************/
 static short rawcomp(COLLATOR * col, short flags)		/* raw text comparison */
 

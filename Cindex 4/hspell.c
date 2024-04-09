@@ -67,24 +67,6 @@ static BOOL ismaindictionary(char * path)	// tests for genuine dic
 void hspell_init(void)
 
 {
-#if defined CIN_MAC_OS
-	NSArray * libpaths;
-	NSString * spelldir;
-	
-	spelldirectories = [[NSMutableArray alloc ] initWithCapacity:3];
-	libpaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
-	spelldir = [[libpaths objectAtIndex:0] stringByAppendingPathComponent:@"Spelling"];
-	if (spelldir)
-		[spelldirectories addObject:spelldir];
-	libpaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSLocalDomainMask, YES);
-	spelldir = [[libpaths objectAtIndex:0] stringByAppendingPathComponent:@"Spelling"];
-	if (spelldir)
-		[spelldirectories addObject:spelldir];
-	libpaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSSystemDomainMask, YES);
-	spelldir = [[libpaths objectAtIndex:0] stringByAppendingPathComponent:@"Spelling"];
-	if (spelldir)
-		[spelldirectories addObject:spelldir];
-#endif	
 	hspell_finddictionaries();
 }
 /******************************************************************************/
@@ -93,40 +75,6 @@ void hspell_finddictionaries(void)
 {
 	unsigned int index;
 	
-#if defined CIN_MAC_OS
-	hspell_releasedictionaries();
-	for (NSString * dirpath in spelldirectories)	{
-		NSArray * files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:dirpath error:NULL];
-//		NSLog([files description]);
-		for (NSString * dicname in files) {
-			NSRange rr = [dicname rangeOfString:@".dic" options:NSBackwardsSearch|NSAnchoredSearch];
-			if (rr.location != NSNotFound) {
-				if (ismaindictionary([[dirpath stringByAppendingPathComponent:dicname] UTF8String]))	{	// if legit dic
-					NSString * rootname = [dicname substringToIndex:rr.location];
-					char * root = (char *)[rootname UTF8String];
-					if (!hspell_dictionarysetforlocale(root) && hs_dictionaryCount < DICMAX)	{	// if don't already have this dictionary and have room
-						char * displayname = displayNameForLocale(root);
-						NSString * dicname = [rootname stringByAppendingString:@".aff"];
-						
-						hs_dictionaries[hs_dictionaryCount].root = malloc(strlen(root)+1);
-						strcpy(hs_dictionaries[hs_dictionaryCount].root,root);
-						hs_dictionaries[hs_dictionaryCount].displayname = malloc(strlen(displayname)+1);
-						strcpy(hs_dictionaries[hs_dictionaryCount].displayname,displayname);
-//						if (!hs_dictionaries[hs_dictionaryCount].displayname)	// if don't have display name
-//							hs_dictionaries[hs_dictionaryCount].displayname = hs_dictionaries[hs_dictionaryCount].root;	// show root
-						hs_dictionaries[hs_dictionaryCount].path = malloc([dirpath length]+1);
-						strcpy(hs_dictionaries[hs_dictionaryCount].path,[dirpath UTF8String]);
-						if (![files containsObject:dicname])	{	// if don't have both aff and dic
-							hs_dictionaries[hs_dictionaryCount].flags |= DIC_ISAUX;	// must be auxiliary dic
-			//				NSLog(root);
-						}
-						hs_dictionaryCount++;
-					}
-				}
-			}
-		}
-	}
-#else
 	WIN32_FIND_DATA data;
 	HANDLE handle;
 	TCHAR specpath[MAX_PATH];
@@ -176,7 +124,6 @@ void hspell_finddictionaries(void)
 			FindClose(handle);
 		}
 	}
-#endif
 	for (index = 0; index < hs_dictionaryCount; index++)	{	// find auxiliary sets for each language
 		DICTIONARYSET * currentset = &hs_dictionaries[index];
 		unsigned int sindex;

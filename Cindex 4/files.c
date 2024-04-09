@@ -71,13 +71,14 @@ TEXT("Macrex Backup\0*.mbk\0\0");
 
 static TCHAR ofilters[] =
 /* TEXT("All Readable\0*.ucdx;*.cdx;*.arc;*.ixml;*.utpl;*.tpl;*.ucbr;*.ustl;*.stl;*.ndx\0")\ */
-TEXT("All Readable\0*.ucdx;*.cdx;*.arc;*.ixml;*.utpl;*.tpl;*.ustl;*.stl;*.ndx\0")\
+TEXT("All Readable\0*.ucdx;*.cdx;*.arc;*.ixml;*.utpl;*.tpl;*.ustl;*.stl;*.ndx;*.sky7;*.txtsky7;*.txtsky8;*.mbk\0")\
 TEXT("Indexes (*.ucdx; *.cdx; *.ndx)\0*.ucdx; *.cdx; *.ndx\0")\
 TEXT("XML Records (*.ixml)\0*.ixml\0")\
 TEXT("Archives (*.arc)\0*.arc\0")\
 TEXT("Templates (*.utpl; *.tpl)\0*.utpl;*.tpl\0")\
-/* TEXT("Abbreviations (*.ucbr; *.cbr)\0*.ucbr;*.cbr\0")\	*/
-TEXT("Style Sheets (*.ustl; *.stl)\0*.ustl;*.stl\0");
+TEXT("Style Sheets (*.ustl; *.stl)\0*.ustl;*.stl\0")\
+TEXT("Macrex Backup (*.mbk)\0*.mbk\0")\
+TEXT("Sky Index (*.sky7; *.txtsky7; *.txtsky8)\0*.sky7;*.txtsky7;*.txtsky8\0");
 
 static TCHAR sfilters[] =		// stationery filters (Pub Ed)
 TEXT("Style Sheets (*.ustl; *.stl)\0*.ustl;*.stl\0")\
@@ -98,28 +99,28 @@ static TCHAR f_cpath[MAX_PATH];	/* initial output directory for save a copy */
 
 typedef struct {
 	int type;
+	int import;
 	TCHAR * extn;
 } FILETYPE;
 
 FILETYPE filetypes[] = {
-	{FTYPE_INDEX, TEXT(".ucdx")},
-	{FTYPE_INDEXV2, TEXT(".cdx")},
-	{FTYPE_INDEXDOS, TEXT(".ndx")},
-	{FTYPE_TEMPLATE, TEXT(".utpl")},
-	{FTYPE_TEMPLATEV2, TEXT(".tpl")},
-	{FTYPE_STYLESHEET, TEXT(".ustl")},
-	{FTYPE_STYLESHEETV2, TEXT(".stl")},
-	{FTYPE_ABBREV, TEXT(".ucbr")},
-	{FTYPE_ABBREVV2, TEXT(".cbr")},
-	{FTYPE_ARCHIVE, TEXT(".arc")},
-	{FTYPE_XMLRECORDS, TEXT(".ixml")},
-	{FTYPE_PLAINTEXT, TEXT(".txt")},
-//	{FTYPE_TABTEXT, TEXT(".tab")},
-	{FTYPE_MACREX, TEXT(".mbk")},
-	{FTYPE_DOSDATA, TEXT(".dat")},
-	{FTYPE_SKY, TEXT(".sky7")},
-	{FTYPE_SKY7, TEXT(".txtsky7")},
-	{FTYPE_SKY8, TEXT(".txtsky8")},
+	{FTYPE_INDEX, -1,TEXT(".ucdx")},
+	{FTYPE_INDEXV2, -1,TEXT(".cdx")},
+	{FTYPE_INDEXDOS, -1,TEXT(".ndx")},
+	{FTYPE_TEMPLATE, -1,TEXT(".utpl")},
+	{FTYPE_TEMPLATEV2, -1,TEXT(".tpl")},
+	{FTYPE_STYLESHEET, -1,TEXT(".ustl")},
+	{FTYPE_STYLESHEETV2, -1,TEXT(".stl")},
+	{FTYPE_ABBREV, -1,TEXT(".ucbr")},
+	{FTYPE_ABBREVV2, -1,TEXT(".cbr")},
+	{FTYPE_ARCHIVE, I_CINARCHIVE -1,TEXT(".arc")},
+	{FTYPE_XMLRECORDS, I_CINXML,TEXT(".ixml")},
+	{FTYPE_PLAINTEXT, I_PLAINTAB,TEXT(".txt")},
+	{FTYPE_MACREX, I_MACREX,TEXT(".mbk")},
+	{FTYPE_DOSDATA, I_DOSDATA,TEXT(".dat")},
+	{FTYPE_SKY, I_SKY,TEXT(".sky7")},
+	{FTYPE_SKY7, I_SKY,TEXT(".txtsky7")},
+	{FTYPE_SKY8, I_SKY,TEXT(".txtsky8")},
 };
 #define TYPECOUNT (sizeof(filetypes)/sizeof(FILETYPE))
 
@@ -135,7 +136,6 @@ static TCHAR * findfileatindex(OPENFILENAME * ofn, int index);	// find indexed f
 static BOOL styletype(TCHAR * path);	/* returns true if file is style file */
 static long abbrevtype(TCHAR * path);	/* returns true if file is abbrevs */
 static void setcurdir(TCHAR * path);	/* sets current directory */
-static INDEX * openindexfile(TCHAR * path, short openflags);	/* opens and sets up index */
 static BOOL installindex(INDEX * FF, short openflags);		// installs index
 static void checkfixes(INDEX * FF);	/* deals with minor version fixes */
 static INT_PTR getarchpars(void);	/* gets user id */
@@ -188,21 +188,8 @@ static INT_PTR CALLBACK ihook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			switch (((LPOFNOTIFY)lParam)->hdr.code)	{
 				case CDN_FILEOK:		/* about to close */
 					imp = (IMPORTPARAMS *)ofp->lCustData;
-					type = file_type(ofp->lpstrFile);
-					if (type == FTYPE_PLAINTEXT)
-						imp->type = I_PLAINTAB;
-					else if (type == FTYPE_MACREX)
-						imp->type = I_MACREX;
-					else if (type == FTYPE_SKY || type == FTYPE_SKY7 || type == FTYPE_SKY8)
-						imp->type = I_SKY;
-					else if (type == FTYPE_XMLRECORDS)
-						imp->type = I_CINXML;
-					else if (type == FTYPE_ARCHIVE)
-						imp->type = I_CINARCHIVE;
-					else if (type == FTYPE_DOSDATA)	{
-						imp->type = I_DOSDATA;	// will be reconfigured
-					}
-					else {
+					imp->type = file_importtype(ofp->lpstrFile);
+					if (imp->type < 0) {
 						if (!sendwarning(WARN_BADFILETYPE,file_getname(ofp->lpstrFile)))	{	/* if don't want to import */
 							SetWindowLongPtr(hwnd,DWLP_MSGRESULT,TRUE);		/* bad file */		
 							return (TRUE);
@@ -758,6 +745,19 @@ int file_type(TCHAR * path)	//	 identifies file type from path
 	return -1;
 }
 /*******************************************************************************/
+int file_importtype(TCHAR* path)	//	 identifies import type from path
+
+{
+	TCHAR* extn = PathFindExtension(path);
+	int index;
+
+	for (index = 0; index < TYPECOUNT; index++) {
+		if (!nstricmp(extn, filetypes[index].extn))
+			return filetypes[index].import;
+	}
+	return -1;
+}
+/*******************************************************************************/
 TCHAR * file_extensionfortype(int type)	//	 returns extension for type
 
 {
@@ -936,6 +936,10 @@ BOOL file_open(TCHAR * path, short flags)	// opens file of type
 				case FTYPE_INDEX:
 					return file_openindex(path,flags);
 				case FTYPE_ARCHIVE:
+				case FTYPE_MACREX:
+				case FTYPE_SKY:
+				case FTYPE_SKY7:
+				case FTYPE_SKY8:
 				case FTYPE_XMLRECORDS:
 					return file_openarchive(path);
 				case FTYPE_TEMPLATE:
@@ -1097,7 +1101,8 @@ BOOL file_openarchive(TCHAR * path)	/* opens file and loads records */
 	nstrcpy(indexpath,path);
 	PathRemoveExtension(indexpath);
 	nstrcat(indexpath,file_extensionfortype(FTYPE_INDEX));		// NB PathAddExtension doesn't add if name looks like it has extension
-	if (!PathFileExists(indexpath))	{	// if no index exists with name of archive
+	boolean exists = PathFileExists(indexpath);
+	if (!exists)	{	// if no index exists with name of archive
 		if (!file_createindex(indexpath,&g_prefs.indexpars,NULL))	// if can't create it
 			return FALSE;
 	}
@@ -1117,8 +1122,11 @@ BOOL file_openarchive(TCHAR * path)	/* opens file and loads records */
 	}
 	if (FF = index_front())	{	// front index is new or existing
 		memset(&imp,0,sizeof(imp));		/* clear imp struct */
-		imp.type = file_type(path) == FTYPE_XMLRECORDS ? I_CINXML : I_CINARCHIVE ;		/* set indicator */
-		return (imp_loaddata(FF,&imp,path));
+		imp.type = file_importtype(path);
+		if (imp_loaddata(FF, &imp, path)) {	// if loaded OK
+			if (!exists)	// if new index from imported records
+				sendinfo(INFO_NEWFROMIMPORT, FF->head.rtot, file_getname(path));
+		}
 	}
 	return FALSE;
 }

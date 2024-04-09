@@ -2,12 +2,12 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Cindex"
-#define MyAppVersion "4.0"
+#define MyAppVersion "4.3"
 #define MyAppEdition "Publishers' Edition"
 #define MyAppPublisher "CINDEX"
 #define MyAppURL "https://www.example.com"
 #define MyAppExeName "cindex.exe"
-#define FileVersion "4.2.4.0"
+#define FileVersion "4.3.0"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -28,25 +28,27 @@ AllowNoIcons=yes
 OutputBaseFilename=CindexPublisherSetup
 Compression=lzma
 SolidCompression=yes
-SignedUninstaller=yes
-LicenseFile=inno/license.rtf
-UserInfoPage=yes
+;SignedUninstaller=yes
+;LicenseFile=inno/license.rtf
+;UserInfoPage=yes
 UsePreviousUserInfo=no
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 MinVersion=6.1
-SignTool=cindexSignTool $f 
+;SignTool=cindexSignTool $f 
 VersionInfoVersion={#FileVersion}
 SetupIconFile=icon/cindex.ico
+DisableDirPage=no
+AlwaysShowDirOnReadyPage=yes
 
-[code]
-function CheckSerial(sernum: String): Boolean;
-begin
-  Result := False; {ensure failure until we test full length string}
-if Length(sernum) = 15 then begin
-    Result := True;
-  end
-end;
+;[code]
+;function CheckSerial(sernum: String): Boolean;
+;begin
+;  Result := False; {ensure failure until we test full length string}
+;if Length(sernum) = 15 then begin
+;    Result := True;
+;  end
+;end;
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -173,7 +175,7 @@ Root: HKLM; Subkey: "Software\Classes\CLSID\{{5C74DAC0-05CC-11d1-9141-0000000000
 Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0\Admin"; ValueType: none; Permissions: users-modify; Flags: uninsdeletekey
 Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0\Files"; ValueType: none; Permissions: users-modify; Flags: uninsdeletekey
 
-Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Owner"; ValueData: "{userinfoname}"; Flags: uninsdeletekey
-Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Company"; ValueData: "{userinfoorg}"; Flags: uninsdeletekey
-Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Sernum"; ValueData: "{userinfoserial}"; Flags: uninsdeletekey
+;Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Owner"; ValueData: "{userinfoname}"; Flags: uninsdeletekey
+;Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Company"; ValueData: "{userinfoorg}"; Flags: uninsdeletekey
+;Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Sernum"; ValueData: "{userinfoserial}"; Flags: uninsdeletekey
 

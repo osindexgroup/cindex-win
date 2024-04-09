@@ -109,9 +109,6 @@
 #define IDI_XMLRECORDS                  113
 #define IDI_ARCHIVE                     114
 #define IDI_ABBREV                      115
-#define IDI_STYLE                       116
-#define IDI_TPL                         117
-#define IDI_INDEX_OLD                   118
 #define IDI_STYLE_OLD                   119
 #define IDI_TPL_OLD                     120
 #define IDI_ABBREV_OLD                  121
@@ -293,10 +290,15 @@
 #define INFO_ALLFONTSUSED               360
 #define INFO_FILESTATS                  361
 #define INFO_IMPORTMARKED               362
+#define IDI_ICON2                       362
 #define INFO_SORTORDER                  363
+#define IDI_INDEX_OLD                   363
 #define INFO_FULLGROUP                  364
 #define INFO_CORRUPTINDEX               365
+#define IDI_STYLE                       365
 #define INFO_RECCONVERT                 366
+#define IDI_ICON3                       366
+#define IDI_TPL                         366
 #define INFO_NORECCONVERT               367
 #define INFO_INDEXNEEDSREPAIR           368
 #define INFO_REPAIRMARKED               369
@@ -304,6 +306,7 @@
 #define INFO_UPDATEAVAILABLE            371
 #define INFO_WRITERECWITHERROR          372
 #define INFO_CONVERSIONCHANGES          373
+#define INFO_NEWFROMIMPORT              374
 #define PRG_VERIFYING                   400
 #define PRG_SUMMARY                     401
 #define PRG_CHECKING                    402
@@ -1230,8 +1233,6 @@
 #define IDM_EDIT_REDO                   40640
 #define IDM_FILE_REVERT                 40646
 #define IDM_HELP_CHECKFORUPDATES        40647
-#define ID_FILE_REVERTTOSAVED           40648
-#define ID_FILE_REVERTTOSAVED40649      40649
 #define ID_FILE_REVERTTOSAVED40650      40650
 #define IDM_EDIT_DEMOTE                 40651
 #define ID_Menu                         40652
@@ -1261,7 +1262,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        358
+#define _APS_NEXT_RESOURCE_VALUE        367
 #define _APS_NEXT_COMMAND_VALUE         40704
 #define _APS_NEXT_CONTROL_VALUE         1849
 #define _APS_NEXT_SYMED_VALUE           101

@@ -41,7 +41,6 @@ enum {
 	FTYPE_ARCHIVE,
 	FTYPE_XMLRECORDS,
 	FTYPE_PLAINTEXT,
-//	FTYPE_TABTEXT,
 	FTYPE_MACREX,
 	FTYPE_DOSDATA,
 	FTYPE_SKY,
@@ -70,6 +69,7 @@ BOOL file_opentemplate(TCHAR * path, TCHAR * createpath);		/* opens file and cre
 BOOL file_createindex(TCHAR * path, INDEXPARAMS * ip, HEAD * hp);	/* starts new index */
 BOOL file_openstylesheet(TCHAR * path);	 /* sets up and loads format */
 int file_type(TCHAR * path);		//	 identifies file type from path
+int file_importtype(TCHAR* path);	//	 identifies import type from path
 TCHAR * file_extensionfortype(int type);	//	 identifies file type from path
 long file_archivetype(TCHAR * path);	/* returns true if file is archive */
 BOOL file_resizeindex(INDEX * FF, short newrecsize);	/* resizes open index file */

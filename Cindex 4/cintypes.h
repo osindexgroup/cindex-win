@@ -79,14 +79,6 @@
 
 #define AUTOSIZE 50		/* max # of auto style strings */
 
-#if 0
-#define STSTRING 256	/* basic standard string */
-#define FTSTRING 128
-#define FSSTRING 32
-#define FMSTRING 16
-#define STYLESTRINGLEN 256
-
-#else
 // lengths of standard strings doubled between V2 and V3
 #define STSTRING 512	
 #define FTSTRING 256
@@ -96,24 +88,16 @@
 #define HEADNOTELEN 1024
 
 //end standard strings
-#endif
 
 #define STYLETYPES 4	// MAX number of page refs styles to deal with
 #define REFTYPES 4      /* number of valid page reference types */
 #define COMPMAX 10	   /* max # components evaluated in individual ref */
 #define CHARPRI 3		/* number of character classes */
 
-# if 0		// version 3
-#define BASEVERSION 290
-#define TOPVERSION 330
-#define CINVERSION 300
-#define FORMVERSION 300	/* version of format structure */
-#else			// version 4
 #define BASEVERSION 290
 #define TOPVERSION 390
 #define CINVERSION 310
 #define FORMVERSION 300	/* version of format structure */
-#endif
 
 #define MINRECENT 4		/* min # recent files */
 #ifdef PUBLISH

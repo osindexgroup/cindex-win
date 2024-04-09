@@ -809,42 +809,7 @@ static void setextent(HWND hwnd)	/* sets window depth; enables disables exposed/
 			disableitem(hwnd,--base);
 	}
 }
-#if 0
-/******************************************************************************/
-static short testsearchok(HWND hwnd)	/* enables ok if fields completed */
 
-{
-	FFLIST * fp = getdata(hwnd);
-	LISTGROUP *lg = &fp->lg;				/* ptr to list struct */
-	int group, tlen,r1len,r2len,d1len,d2len,ulen;
-	char istring[STSTRING];
-
-	for (group = 0; group < lg->size; group++)	{	/* find if any pattern set */
-		if (lg->lsarray[group].patflag)
-			break;
-	}
-	tlen = strlen(lg->lsarray[0].string);
-	r1len = getDItemText(hwnd,IDC_FIND_RANGESTART,istring,sizeof(istring));
-	r2len = getDItemText(hwnd,IDC_FIND_RANGEEND,istring,sizeof(istring));
-	d1len = getDItemText(hwnd,IDC_FIND_DATESTART,istring,sizeof(istring));
-	d2len = getDItemText(hwnd,IDC_FIND_DATEEND,istring,sizeof(istring));
-	ulen = getDItemText(hwnd,IDC_FIND_USERID,istring,sizeof(istring));
-	if (tlen || group == lg->size 
-		&& (lg->newflag || lg->delflag || lg->markflag || lg->modflag || lg->genflag || lg->tagflag || lg->lsarray[0].field > 0
-		|| lg->lsarray[0].style || lg->lsarray[0].font || lg->lsarray[0].forbiddenstyle || lg->lsarray[0].forbiddenfont || FX(hwnd,dateflag) && (d1len || d2len))
-		|| FX(hwnd,scope) == COMR_RANGE && (r1len || r2len)
-		|| ulen)	{	/* if have text or permissible keys */
-		setitemenable(hwnd,IDC_FIND_FINDSTART,g_mdlg != NULL);	// guaranteed disabled if window inactivated
-		setitemenable(hwnd,IDC_FIND_FINDALL,g_mdlg && fp->lastindex && !fp->lastindex->rwind);	// enable only if no record window
-		return (TRUE);
-	}
-	else {
-		disableitem(hwnd,IDC_FIND_FINDSTART);
-		disableitem(hwnd,IDC_FIND_FINDALL);
-		return (FALSE);
-	}
-}
-#else
 /******************************************************************************/
 static short testsearchok(HWND hwnd)	/* enables ok if fields completed */
 
@@ -877,7 +842,6 @@ static short testsearchok(HWND hwnd)	/* enables ok if fields completed */
 	setitemenable(hwnd, IDC_FIND_FINDALL, g_mdlg && fp->lastindex && !fp->lastindex->rwind);	// enable only if no record window
 	return TRUE;
 }
-#endif
 /******************************************************************************/
 static int fcheck(INDEX * FF, HWND hwnd, LISTGROUP *lg)		/* checks search parameters */
 

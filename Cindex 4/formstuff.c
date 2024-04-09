@@ -31,13 +31,8 @@ static char f_newlevel[] = {FO_NEWLEVEL,0};
 static char f_pgc[] = {FO_EPAGE,0};
 static char *f_titleskiplist;
 
-#if 0
-static char *f_openset = "\'\"‘“";
-static char *f_closeset = "\'\"’”";
-#else
 static unichar f_openset[] = {34,39,8220,8216/*,8249*/,0}; // last char is angle quote
 static unichar f_closeset[] = {34,39,8221,8217/*,8250*/,0};
-#endif
 static TCHAR * _labelpos;
 static unsigned char entrybasebuff[EBUFSIZE+2];		/* big array for building entries */
 static char _trefbuff[PBUFFLEN];		/* buffer for sorting page/cross-refs */
@@ -1515,40 +1510,6 @@ static char * copystep(char * str1, char *str2)		/* adds string (with protection
 	*str1 = '\0';
 	return (str1);
 }
-#if 0
-/******************************************************************************/
-static short findindent(INDEX * FF, short indent)     /* returns indent for this field */
-
-{
-	ENTRYFORMAT * efp;
-	short level, runflag;
-	float points;
-	
-	efp = &FF->head.formpars.ef;
-	if (efp->itype && !(indent&FO_AHEAD))	{	/* if want any indent */
-		level = indent&FO_HMASK;
-		runflag = indent&FO_RFLAG;
-//		if (efp->itype == FI_AUTO || efp->itype == FI_SPECIAL && level < L_SPECIAL)	{	/* auto */
-		if (efp->itype == FI_AUTO || efp->itype == FI_SPECIAL && level < FF->head.indexpars.maxfields-2)	{	/* auto */
-			points = level*efp->autolead;	/* indent (points) */
-			if (runflag)			/* if runover */
-				points += efp->autorun;
-			if (!efp->autounit)		/* if unit is ems */
-				points *= LX(FF->vwind,emwidth);
-		}
-		else 	{	/* fixed, or special */
-			if (FF->head.formpars.ef.itype == FI_SPECIAL && level == FF->head.indexpars.maxfields-2)
-				level = L_SPECIAL;
-			points = runflag ? efp->field[level].runindent : efp->field[level].leadindent;
-			if (!efp->fixedunit)		/* if unit is ems */
-				points *= LX(FF->vwind,emwidth);
-		}
-	}
-	else
-		points = 0;
-	return ((short)points);                       
-}
-#else
 /******************************************************************************/
 static short findindent(INDEX * FF, short indent)     /* returns indent for this field */
 
@@ -1581,7 +1542,6 @@ static short findindent(INDEX * FF, short indent)     /* returns indent for this
 		points = 0;
 	return ((short)points);                       
 }
-#endif
 /******************************************************************************/
 static char *suppressmatch(char *s1, char *s2, char * suppress)	/* finds if refs match through suppression string */
 
@@ -1671,87 +1631,6 @@ static char * setpagestyle(INDEX * FF, char *sptr)	/* styles page refs */
 	}
 	return (sptr);
 }
-#if 0
-/******************************************************************************/
-static BOOL conflate(char *dest, char *source, char connect, BOOL overlap)		/* conflates refs */
-
-{
-	unsigned char *p1, *p2, *e1, *e2, *base1, *base2, *p0;
-	unsigned long val0 = 0, val1 = 0, val2 = 0, val3 = 0;
-
-	e1 = dest + strlen(dest);			// end of first ref
-	e2 = source + strlen(source);		// end of second ref
-	while (e1 > dest + 1 && iscodechar(*(e1 - 2))) {	// check trailing codes
-		if (e2 > source + 1 && iscodechar(*(e2 - 2)) && *--e1 == *--e2) {	// if match, skip back
-			e1--;
-			e2--;
-		}
-		else		// mismatch, so fail
-			return FALSE;
-	}
-	p1 = e1;		// end of ref, before any trailing codes
-	if (base1 = strchr(dest, connect)) {	/* if first ref has second segment */
-											/* this little bit gets val of first seg of first ref */
-		for (p0 = base1; !isdigit(*--p0) && p0 >dest;)		/* skip non-numerical suffix to first seg */
-			;
-		while (isdigit(*--p0) && p0 >= dest)	   /* move back through digits */
-			;
-		val0 = atol(++p0);		/* get value of first seg */
-		base1++;				/* set base to second seg */
-	}
-	else {
-		val0 = 0;			/* no initial segment to worry about (assume refs already ordered) */
-		base1 = dest;		/* set base to start */
-	}
-	if (base2 = strchr(source, connect)) {		/* if second ref has second seg */
-		for (p2 = base2 + strlen(base2); !isdigit(*--p2) && p2 >base2;)		/* skip non-numerical suffix to second seg */
-			;
-		while (isdigit(*--p2) && p2 >= base2)	   /* move back through digits */
-			;
-		val3 = atol(++p2);		/* get value of second seg */
-		p2 = base2; 			/* set mark to end of first */
-	}
-	else
-		p2 = e2;			/* set to end of whole ref */
-	while (*--p1 == *--p2 && !isdigit(*p1))		/* while non-numerical suffixes match */
-		;
-	if (!isdigit(*p1) || !isdigit(*p2))	/* if first has suffix that differs from second */
-		return (FALSE);
-	while (isdigit(*--p1) && p1 >= dest)
-		;
-	while (isdigit(*--p2))
-		;
-	p1++;
-	p2++;		 /* ptrs sit at beginning of last numerical seg	*/
-
-	int refgap = overlap ? 0 : 1;	// threshold distance between highest component of first ref and lowest component of second
-
-	if (((base1 == dest || p1 > base1) && (p1 - base1 != p2 - source || strncmp(base1, source, p1 - base1)))
-		|| p1 == base1 && strncmp(dest, source, p2 - source) || (val2 = atol(p2)) > (val1 = atol(p1)) + refgap
-		|| val2 < val0)
-		return (FALSE);
-	/* if (only 1 seg in first ref || second seg has part before number) && early parts differ
-	|| second seg of first ref is abbreviated and first doesn't match second ref up to corresponding part
-	|| second ref > first +1 || second ref < first part of first */
-
-	//	NSLog(@"Comparing: %s[%ld], %s[%ld]",dest,val1,source,val2);
-	//	if (base2 && (val2 <= val1) || !base2 && val1 >= val2) {
-	//		NSLog(@"Overlap: %s, %s",dest, source);
-	//	}
-
-	/* if (second ref has 2 segs && (second is > higher part of first ref || < ^^lower in second)) || second has one that isn't wholly contained in first */
-	// ^^ this test is kludge to allow cases where multi-part second refs have numerical suffix, e.g., 140, 141-144t7.1
-	if (base2 && (val3 > val1 || val3 < val2) || !base2 && (overlap ? val1 < val2 : val1 <= val2)) {
-		if (base1 == dest)	/* if only one part to first ref */
-			*e1++ = connect;
-		else
-			e1 = base1;
-		//		NSLog(@"[%d] %s -< %s",overlap,e1, base2 ? base2+1 : source);
-		strcpy(e1, base2 ? base2 + 1 : source);		/* copy second part if any, otherwise first */
-	}
-	return (TRUE);
-}
-#else
 /******************************************************************************/
 static BOOL conflate(char *dest, char *source, char connect, BOOL overlap)		/* conflates refs */
 
@@ -1849,4 +1728,3 @@ static BOOL conflate(char *dest, char *source, char connect, BOOL overlap)		/* c
 	}
 	return (TRUE);
 }
-#endif

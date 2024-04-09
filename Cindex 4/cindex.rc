@@ -218,7 +218,6 @@ BEGIN
         MENUITEM "&Help Topics",                IDM_HELP_TOPICS
         MENUITEM SEPARATOR
         MENUITEM "&About Cindex...",            IDM_HELP_ABOUT
-        MENUITEM "Check for &Updates...",       IDM_HELP_CHECKFORUPDATES
     END
 END
 #endif
@@ -294,89 +293,6 @@ BEGIN
         MENUITEM "Right",                       IDM_ALIGNMENT_RIGHT
     END
 END
-
-#if defined(APSTUDIO_INVOKED) || defined(READER)
-#if defined(APSTUDIO_INVOKED)
-CDX_FRAME$$(READER) MENU
-#else
-CDX_FRAME$ MENU
-#endif
-BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "&Open...\tCtrl+O",            IDM_FILE_OPEN
-        MENUITEM "&Close\tCtrl+W",              IDM_FILE_CLOSE
-        MENUITEM "Save &As...",                 IDM_FILE_SAVEAS
-        MENUITEM SEPARATOR
-        MENUITEM "Page Set&up...",              IDM_FILE_PAGESETUP
-        MENUITEM "&Print...\tCtrl+P",           IDM_FILE_PRINT
-        MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       IDM_FILE_EXIT
-    END
-    POPUP "&Edit"
-    BEGIN
-        MENUITEM "&Copy\tCtrl+C",               IDM_EDIT_COPY
-        MENUITEM SEPARATOR
-        MENUITEM "Select &All\tCtrl+A",         IDM_EDIT_SELECTALL
-        MENUITEM SEPARATOR
-        MENUITEM "&Find...\tCtrl+F",            IDM_EDIT_FIND
-        MENUITEM "Find A&gain\tCtrl+Shift+G",   IDM_EDIT_FINDAGAIN
-        MENUITEM SEPARATOR
-        MENUITEM "Ne&w Group\tCtrl+Shift+N",    IDM_EDIT_NEWGROUP
-        MENUITEM SEPARATOR
-        MENUITEM "Preference&s...",             IDM_EDIT_PREFERENCES
-    END
-    POPUP "&View"
-    BEGIN
-        MENUITEM "&Go To...\tCtrl+G",           IDM_VIEW_GOTO
-        MENUITEM SEPARATOR
-        MENUITEM "&All Records\tCtrl+M",        IDM_VIEW_ALLRECORDS
-        MENUITEM "&New Records",                IDM_VIEW_NEWRECORDS
-        MENUITEM "Grou&p",                      IDM_VIEW_GROUP
-        MENUITEM "&Temporary Group",            IDM_VIEW_TEMPORARYGROUP
-        MENUITEM SEPARATOR
-        MENUITEM "&Full Format\tCtrl+H",        IDM_VIEW_FULLFORMAT
-        MENUITEM "&Draft Format\tCtrl+J",       IDM_VIEW_DRAFTFORMAT
-        MENUITEM "Summar&y",                    IDM_VIEW_SUMMARY
-        MENUITEM "&Unformatted",                IDM_VIEW_UNFORMATTED
-        MENUITEM SEPARATOR
-        MENUITEM "&Hide by Attribute...",       IDM_VIEW_ATTRIBUTES
-        MENUITEM "Show Numbe&rs",               IDM_VIEW_SHOWNUMBERS
-        MENUITEM "&View Depth",                 IDM_VIEW_VIEWDEPTH
-        MENUITEM "&Wrap Lines",                 IDM_VIEW_WRAPLINES
-        MENUITEM SEPARATOR
-        MENUITEM "&Sorted",                     IDM_VIEW_SHOWSORTED
-    END
-    POPUP "&Document"
-    BEGIN
-        MENUITEM "&Margins && Columns...",      IDM_DOCUMENT_MARGINSCOLUMNS
-        MENUITEM "Headers && &Footers...",      IDM_DOCUMENT_HEADERSFOOTER
-        MENUITEM "&Grouping Entries...",        IDM_DOCUMENT_GROUPINGENTRIES
-        MENUITEM "Style && &Layout...",         IDM_DOCUMENT_STYLELAYOUT
-        MENUITEM SEPARATOR
-        MENUITEM "&Headings...",                IDM_DOCUMENT_HEADINGS
-        MENUITEM "&Cross-References...",        IDM_DOCUMENT_CROSSREFERENCES
-        MENUITEM "&Page References...",         IDM_DOCUMENT_PAGEREFERENCES
-    END
-    POPUP "&Tools"
-    BEGIN
-        MENUITEM "&Count Records...",           IDM_TOOLS_COUNTRECORDS
-        MENUITEM "&Index Statistics...",        IDM_TOOLS_INDEXSTATISTICS
-    END
-    POPUP "&Window"
-    BEGIN
-        MENUITEM "&Cascade",                    IDM_WINDOW_CASCADE
-        MENUITEM "&Tile",                       IDM_WINDOW_TILE
-        MENUITEM "Close &All",                  IDM_WINDOW_CLOSEALL
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "&Help Topics",                IDM_HELP_TOPICS
-        MENUITEM SEPARATOR
-        MENUITEM "&About Cindex...",            IDM_HELP_ABOUT
-    END
-END
-#endif
 
 #if defined(APSTUDIO_INVOKED) || defined(PUBLISH)
 #if defined(APSTUDIO_INVOKED)
@@ -505,392 +421,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Reconcile Headings...",      IDM_TOOLS_RECONCILEHEADINGS
         MENUITEM "Ma&nage Cross-References...", IDM_TOOLS_GENERATECROSSREFERENCES
-        MENUITEM "&Alter References...",        IDM_TOOLS_ALTERREFERENCES
-        MENUITEM "Split Headings...",           IDM_TOOLS_SPLITHEADINGS
-        MENUITEM SEPARATOR
-        MENUITEM "&Sort...",                    IDM_TOOLS_SORT
-        MENUITEM SEPARATOR
-        MENUITEM "Com&press...",                IDM_TOOLS_COMPRESS
-        MENUITEM "&Expand",                     IDM_TOOLS_EXPAND
-        MENUITEM SEPARATOR
-        MENUITEM "&Count Records...",           IDM_TOOLS_COUNTRECORDS
-        MENUITEM "&Index Statistics...",        IDM_TOOLS_INDEXSTATISTICS
-        MENUITEM SEPARATOR
-        POPUP "A&bbreviations"
-        BEGIN
-            MENUITEM "New...",                      IDM_TOOLS_ABBREV_NEW
-            MENUITEM "Load...",                     IDM_TOOLS_ABBREV_ATTACH
-            MENUITEM "Close",                       IDM_TOOLS_ABBREV_DETACH
-            MENUITEM "Edit...",                     IDM_TOOLS_ABBREV_EDIT
-        END
-        MENUITEM "&Hot Keys...",                IDM_TOOLS_HOTKEYS
-        MENUITEM "&Fonts...",                   IDM_TOOLS_FONTS
-        MENUITEM "&Markup Tags...",             IDM_TOOLS_MARKUPTAGS
-        MENUITEM SEPARATOR
-        POPUP "Rec&ord Events"
-        BEGIN
-            MENUITEM " &1 Record Macro",            IDM_MACRO_1
-            MENUITEM " &2 Record Macro",            IDM_MACRO_2
-            MENUITEM " &3 Record Macro",            IDM_MACRO_3
-            MENUITEM " &4 Record Macro",            IDM_MACRO_4
-            MENUITEM " &5 Record Macro",            IDM_MACRO_5
-            MENUITEM " &6 Record Macro",            IDM_MACRO_6
-            MENUITEM " &7 Record Macro",            IDM_MACRO_7
-            MENUITEM " &8 Record Macro",            IDM_MACRO_8
-            MENUITEM " &9 Record Macro",            IDM_MACRO_9
-            MENUITEM "1&0 Record Macro",            IDM_MACRO_10
-        END
-        POPUP "Pla&y Events"
-        BEGIN
-            MENUITEM " &1 Replay Macro\tAlt+1",     IDM_PMACRO_1
-            MENUITEM " &2 Replay Macro\tAlt+2",     IDM_PMACRO_2
-            MENUITEM " &3 Replay Macro\tAlt+3",     IDM_PMACRO_3
-            MENUITEM " &4 Replay Macro\tAlt+4",     IDM_PMACRO_4
-            MENUITEM " &5 Replay Macro\tAlt+5",     IDM_PMACRO_5
-            MENUITEM " &6 Replay Macro\tAlt+6",     IDM_PMACRO_6
-            MENUITEM " &7 Replay Macro\tAlt+7",     IDM_PMACRO_7
-            MENUITEM " &8 Replay Macro\tAlt+8",     IDM_PMACRO_8
-            MENUITEM " &9 Replay Macro\tAlt+9",     IDM_PMACRO_9
-            MENUITEM "1&0 Replay Macro\tAlt+0",     IDM_PMACRO_10
-        END
-        MENUITEM SEPARATOR
-        MENUITEM "&Groups...",                  IDM_TOOLS_GROUPS
-    END
-    POPUP "&Window"
-    BEGIN
-        MENUITEM "Clip&board",                  IDM_WINDOW_CLIPBOARD
-        MENUITEM SEPARATOR
-        MENUITEM "&Cascade",                    IDM_WINDOW_CASCADE
-        MENUITEM "&Tile",                       IDM_WINDOW_TILE
-        MENUITEM "Close &All",                  IDM_WINDOW_CLOSEALL
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "&Help Topics",                IDM_HELP_TOPICS
-        MENUITEM SEPARATOR
-        MENUITEM "&About Cindex...",            IDM_HELP_ABOUT
-        MENUITEM "Check for &Updates...",       IDM_HELP_CHECKFORUPDATES
-    END
-END
-#endif
-
-#if defined(APSTUDIO_INVOKED) || defined(STUDENT)
-#if defined(APSTUDIO_INVOKED)
-CDX_FRAME$$(STUDENT) MENUEX
-#else
-CDX_FRAME$ MENUEX
-#endif
-BEGIN
-    POPUP "&File",                          65535,MFT_STRING,MFS_ENABLED
-    BEGIN
-        MENUITEM "&New...\tCtrl+N",             IDM_FILE_NEW,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Open...\tCtrl+O",            IDM_FILE_OPEN,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Close\tCtrl+W",              IDM_FILE_CLOSE,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Save\tCtrl+S",               IDM_FILE_SAVE,MFT_STRING,MFS_ENABLED
-        MENUITEM "Save &As...",                 IDM_FILE_SAVEAS,MFT_STRING,MFS_ENABLED
-        MENUITEM "Save &Backup Copy...",        IDM_FILE_SAVEACOPYAS,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Revert to Saved\tCtrl+Shift+R", ID_FILE_REVERTTOSAVED40649,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Save Sty&le Sheet...",        IDM_FILE_SAVEFORMAT,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Import...",                  IDM_FILE_IMPORT,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Ne&w Group\tCtrl+Shift+N",    IDM_EDIT_NEWGROUP,MFT_STRING,MFS_ENABLED
-        MENUITEM "Sa&ve Group...",              IDM_EDIT_SAVEGROUP,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Page Set&up...",              IDM_FILE_PAGESETUP,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Print...\tCtrl+P",           IDM_FILE_PRINT,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "E&xit",                       IDM_FILE_EXIT,MFT_STRING,MFS_ENABLED
-    END
-    POPUP "&Edit",                          65535,MFT_STRING,MFS_ENABLED
-    BEGIN
-        MENUITEM "&Undo\tCtrl+Z",               IDM_EDIT_UNDO,MFT_STRING,MFS_ENABLED
-        MENUITEM "Redo\tCtrl+Y",                IDM_EDIT_REDO,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Cu&t\tCtrl+X",                IDM_EDIT_CUT,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Copy\tCtrl+C",               IDM_EDIT_COPY,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Paste\tCtrl+V",              IDM_EDIT_PASTE,MFT_STRING,MFS_ENABLED
-        MENUITEM "Cl&ear",                      IDM_EDIT_CLEAR,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Select &All\tCtrl+A",         IDM_EDIT_SELECTALL,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&New Record\tCtrl+K",         IDM_EDIT_NEWRECORD,MFT_STRING,MFS_ENABLED
-        MENUITEM "Edit Rec&ord\tCtrl+E",        IDM_EDIT_EDITRECORD,MFT_STRING,MFS_ENABLED
-        MENUITEM "Dupl&icate\tCtrl+Shift+Y",    IDM_EDIT_DUPLICATE,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Demote Headings\tCtrl+Shift+D", IDM_EDIT_DEMOTE,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Deleted\tCtrl+D",            IDM_EDIT_DELETE,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Labeled",                    IDM_EDIT_TAG,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Find...\tCtrl+F",            IDM_EDIT_FIND,MFT_STRING,MFS_ENABLED
-        MENUITEM "Find A&gain\tCtrl+Shift+G",   IDM_EDIT_FINDAGAIN,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Replace...\tCtrl+R",         IDM_EDIT_REPLACE,MFT_STRING,MFS_ENABLED
-        MENUITEM "Spelling...\tCtrl+Shift+P",   IDM_TOOLS_CHECKSPELLING,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "New A&bbreviation...\tCtrl+Shift+K", IDM_EDIT_NEWABBREV,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Preference&s...",             IDM_EDIT_PREFERENCES,MFT_STRING,MFS_ENABLED
-    END
-    POPUP "&View",                          65535,MFT_STRING,MFS_ENABLED
-    BEGIN
-        MENUITEM "&Go To...\tCtrl+G",           IDM_VIEW_GOTO,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&All Records\tCtrl+M",        IDM_VIEW_ALLRECORDS,MFT_STRING,MFS_ENABLED
-        MENUITEM "&New Records",                IDM_VIEW_NEWRECORDS,MFT_STRING,MFS_ENABLED
-        MENUITEM "Grou&p",                      IDM_VIEW_GROUP,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Temporary Group",            IDM_VIEW_TEMPORARYGROUP,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Full Format\tCtrl+H",        IDM_VIEW_FULLFORMAT,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Draft Format\tCtrl+J",       IDM_VIEW_DRAFTFORMAT,MFT_STRING,MFS_ENABLED
-        MENUITEM "Summar&y",                    IDM_VIEW_SUMMARY,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Unformatted",                IDM_VIEW_UNFORMATTED,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Hide by Attribute...",       IDM_VIEW_ATTRIBUTES,MFT_STRING,MFS_ENABLED
-        MENUITEM "Show Numbe&rs",               IDM_VIEW_SHOWNUMBERS,MFT_STRING,MFS_ENABLED
-        MENUITEM "&View Depth",                 IDM_VIEW_VIEWDEPTH,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Wrap Lines",                 IDM_VIEW_WRAPLINES,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Sorted",                     IDM_VIEW_SHOWSORTED,MFT_STRING,MFS_ENABLED
-    END
-    POPUP "&Character",                     65535,MFT_STRING,MFS_ENABLED
-    BEGIN
-        MENUITEM "&Default Font\tCtrl+Shift+D", IDM_FONT_DEFAULT,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Plain\tCtrl+T",              IDM_STYLE_REGULAR,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Bold\tCtrl+B",               IDM_STYLE_BOLD,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Italic\tCtrl+I",             IDM_STYLE_ITALIC,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Underline\tCtrl+U",          IDM_STYLE_UNDERLINE,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Small Caps\tCtrl+Q",         IDM_STYLE_SMALLCAPS,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Sup&erscript",                IDM_STYLE_SUPER,MFT_STRING,MFS_ENABLED
-        MENUITEM "Subscrip&t",                  IDM_STYLE_SUB,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Initial &Caps",               IDM_STYLE_INITIALCAPS,MFT_STRING,MFS_ENABLED
-        MENUITEM "Uppe&rcase",                  IDM_STYLE_UPPERCASE,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Lowercase",                  IDM_STYLE_LOWERCASE,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Character &Map...",           IDM_FONT_SYMBOLS,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Text Alignment",              IDM_ALIGNMENT,MFT_STRING | MFT_RIGHTJUSTIFY,MFS_ENABLED
-    END
-    POPUP "&Document",                      65535,MFT_STRING,MFS_ENABLED
-    BEGIN
-        MENUITEM "&Margins && Columns...",      IDM_DOCUMENT_MARGINSCOLUMNS,MFT_STRING,MFS_ENABLED
-        MENUITEM "Headers && &Footers...",      IDM_DOCUMENT_HEADERSFOOTER,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Grouping Entries...",        IDM_DOCUMENT_GROUPINGENTRIES,MFT_STRING,MFS_ENABLED
-        MENUITEM "Style && &Layout...",         IDM_DOCUMENT_STYLELAYOUT,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Headings...",                IDM_DOCUMENT_HEADINGS,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Cross-References...",        IDM_DOCUMENT_CROSSREFERENCES,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Page References...",         IDM_DOCUMENT_PAGEREFERENCES,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Styled Strings...",          IDM_DOCUMENT_STYLEDSTRINGS,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Record Structure...",        IDM_DOCUMENT_RECORDSTRUCTURE,MFT_STRING,MFS_ENABLED
-        MENUITEM "Reference Synta&x...",        IDM_DOCUMENT_REFERENCESYNTAX,MFT_STRING,MFS_ENABLED
-        MENUITEM "Smart Flip &Words...",        IDM_DOCUMENT_FLIPWORDS,MFT_STRING,MFS_ENABLED
-    END
-    POPUP "&Tools",                         65535,MFT_STRING,MFS_ENABLED
-    BEGIN
-        MENUITEM "Chec&k Index...",             40692,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Reconcile Headings...",      IDM_TOOLS_RECONCILEHEADINGS,MFT_STRING,MFS_ENABLED
-        MENUITEM "Ma&nage Cross-References...", IDM_TOOLS_GENERATECROSSREFERENCES,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Alter References...",        IDM_TOOLS_ALTERREFERENCES,MFT_STRING,MFS_ENABLED
-        MENUITEM "Split Headings...",           IDM_TOOLS_SPLITHEADINGS,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Sort...",                    IDM_TOOLS_SORT,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Com&press...",                IDM_TOOLS_COMPRESS,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Expand",                     IDM_TOOLS_EXPAND,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Count Records...",           IDM_TOOLS_COUNTRECORDS,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Index Statistics...",        IDM_TOOLS_INDEXSTATISTICS,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        POPUP "A&bbreviations",                 65535,MFT_STRING,MFS_ENABLED
-        BEGIN
-            MENUITEM "New...",                      IDM_TOOLS_ABBREV_NEW,MFT_STRING,MFS_ENABLED
-            MENUITEM "Load...",                     IDM_TOOLS_ABBREV_ATTACH,MFT_STRING,MFS_ENABLED
-            MENUITEM "Close",                       IDM_TOOLS_ABBREV_DETACH,MFT_STRING,MFS_ENABLED
-            MENUITEM "Edit...",                     IDM_TOOLS_ABBREV_EDIT,MFT_STRING,MFS_ENABLED
-        END
-        MENUITEM "&Hot Keys...",                IDM_TOOLS_HOTKEYS,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Fonts...",                   IDM_TOOLS_FONTS,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Markup Tags...",             IDM_TOOLS_MARKUPTAGS,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        POPUP "Rec&ord Events",                 65535,MFT_STRING,MFS_ENABLED
-        BEGIN
-            MENUITEM " &1 Record Macro",            IDM_MACRO_1,MFT_STRING,MFS_ENABLED
-            MENUITEM " &2 Record Macro",            IDM_MACRO_2,MFT_STRING,MFS_ENABLED
-            MENUITEM " &3 Record Macro",            IDM_MACRO_3,MFT_STRING,MFS_ENABLED
-            MENUITEM " &4 Record Macro",            IDM_MACRO_4,MFT_STRING,MFS_ENABLED
-            MENUITEM " &5 Record Macro",            IDM_MACRO_5,MFT_STRING,MFS_ENABLED
-            MENUITEM " &6 Record Macro",            IDM_MACRO_6,MFT_STRING,MFS_ENABLED
-            MENUITEM " &7 Record Macro",            IDM_MACRO_7,MFT_STRING,MFS_ENABLED
-            MENUITEM " &8 Record Macro",            IDM_MACRO_8,MFT_STRING,MFS_ENABLED
-            MENUITEM " &9 Record Macro",            IDM_MACRO_9,MFT_STRING,MFS_ENABLED
-            MENUITEM "1&0 Record Macro",            IDM_MACRO_10,MFT_STRING,MFS_ENABLED
-        END
-        POPUP "Pla&y Events",                   65535,MFT_STRING,MFS_ENABLED
-        BEGIN
-            MENUITEM " &1 Replay Macro\tAlt+1",     IDM_PMACRO_1,MFT_STRING,MFS_ENABLED
-            MENUITEM " &2 Replay Macro\tAlt+2",     IDM_PMACRO_2,MFT_STRING,MFS_ENABLED
-            MENUITEM " &3 Replay Macro\tAlt+3",     IDM_PMACRO_3,MFT_STRING,MFS_ENABLED
-            MENUITEM " &4 Replay Macro\tAlt+4",     IDM_PMACRO_4,MFT_STRING,MFS_ENABLED
-            MENUITEM " &5 Replay Macro\tAlt+5",     IDM_PMACRO_5,MFT_STRING,MFS_ENABLED
-            MENUITEM " &6 Replay Macro\tAlt+6",     IDM_PMACRO_6,MFT_STRING,MFS_ENABLED
-            MENUITEM " &7 Replay Macro\tAlt+7",     IDM_PMACRO_7,MFT_STRING,MFS_ENABLED
-            MENUITEM " &8 Replay Macro\tAlt+8",     IDM_PMACRO_8,MFT_STRING,MFS_ENABLED
-            MENUITEM " &9 Replay Macro\tAlt+9",     IDM_PMACRO_9,MFT_STRING,MFS_ENABLED
-            MENUITEM "1&0 Replay Macro\tAlt+0",     IDM_PMACRO_10,MFT_STRING,MFS_ENABLED
-        END
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Groups...",                  IDM_TOOLS_GROUPS,MFT_STRING,MFS_ENABLED
-    END
-    POPUP "&Window",                        65535,MFT_STRING,MFS_ENABLED
-    BEGIN
-        MENUITEM "Clip&board",                  IDM_WINDOW_CLIPBOARD,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Cascade",                    IDM_WINDOW_CASCADE,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Tile",                       IDM_WINDOW_TILE,MFT_STRING,MFS_ENABLED
-        MENUITEM "Close &All",                  IDM_WINDOW_CLOSEALL,MFT_STRING,MFS_ENABLED
-    END
-    POPUP "&Help",                          65535,MFT_STRING,MFS_ENABLED
-    BEGIN
-        MENUITEM "&Help Topics",                IDM_HELP_TOPICS,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&About Cindex...",            IDM_HELP_ABOUT,MFT_STRING,MFS_ENABLED
-    END
-END
-#endif
-
-#if defined(APSTUDIO_INVOKED) || defined(DEMO)
-#if defined(APSTUDIO_INVOKED)
-CDX_FRAME$$(DEMO) MENU
-#else
-CDX_FRAME$ MENU
-#endif
-BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "&New...\tCtrl+N",             IDM_FILE_NEW
-        MENUITEM "&Open...\tCtrl+O",            IDM_FILE_OPEN
-        MENUITEM "&Close\tCtrl+W",              IDM_FILE_CLOSE
-        MENUITEM "&Save\tCtrl+S",               IDM_FILE_SAVE
-        MENUITEM "Save &As...",                 IDM_FILE_SAVEAS
-        MENUITEM "Save &Backup Copy...",        IDM_FILE_SAVEACOPYAS
-        MENUITEM "&Revert to Saved\tCtrl+Shift+R", ID_FILE_REVERTTOSAVED
-        MENUITEM SEPARATOR
-        MENUITEM "Save Sty&le Sheet...",        IDM_FILE_SAVEFORMAT
-        MENUITEM SEPARATOR
-        MENUITEM "&Import...",                  IDM_FILE_IMPORT
-        MENUITEM SEPARATOR
-        MENUITEM "Ne&w Group\tCtrl+Shift+N",    IDM_EDIT_NEWGROUP
-        MENUITEM "Sa&ve Group...",              IDM_EDIT_SAVEGROUP
-        MENUITEM SEPARATOR
-        MENUITEM "Page Set&up...",              IDM_FILE_PAGESETUP
-        MENUITEM "&Print...\tCtrl+P",           IDM_FILE_PRINT
-        MENUITEM "E&xit",                       IDM_FILE_EXIT
-    END
-    POPUP "&Edit"
-    BEGIN
-        MENUITEM "&Undo\tCtrl+Z",               IDM_EDIT_UNDO
-        MENUITEM "Redo\tCtrl+Y",                IDM_EDIT_REDO
-        MENUITEM SEPARATOR
-        MENUITEM "Cu&t\tCtrl+X",                IDM_EDIT_CUT
-        MENUITEM "&Copy\tCtrl+C",               IDM_EDIT_COPY
-        MENUITEM "&Paste\tCtrl+V",              IDM_EDIT_PASTE
-        MENUITEM "Cl&ear",                      IDM_EDIT_CLEAR
-        MENUITEM SEPARATOR
-        MENUITEM "Select &All\tCtrl+A",         IDM_EDIT_SELECTALL
-        MENUITEM SEPARATOR
-        MENUITEM "&New Record\tCtrl+K",         IDM_EDIT_NEWRECORD
-        MENUITEM "Edit Rec&ord\tCtrl+E",        IDM_EDIT_EDITRECORD
-        MENUITEM "Dupl&icate\tCtrl+Shift+Y",    IDM_EDIT_DUPLICATE
-        MENUITEM SEPARATOR
-        MENUITEM "Demote Headings\tCtrl+Shift+D", IDM_EDIT_DEMOTE
-        MENUITEM SEPARATOR
-        MENUITEM "&Deleted\tCtrl+D",            IDM_EDIT_DELETE
-        MENUITEM "&Labeled",                    IDM_EDIT_TAG
-        MENUITEM SEPARATOR
-        MENUITEM "&Find...\tCtrl+F",            IDM_EDIT_FIND
-        MENUITEM "Find A&gain\tCtrl+Shift+G",   IDM_EDIT_FINDAGAIN
-        MENUITEM "&Replace...\tCtrl+R",         IDM_EDIT_REPLACE
-        MENUITEM "Spelling...\tCtrl+Shift+P",   IDM_TOOLS_CHECKSPELLING
-        MENUITEM SEPARATOR
-        MENUITEM "New A&bbreviation...\tCtrl+Shift+K", IDM_EDIT_NEWABBREV
-        MENUITEM SEPARATOR
-        MENUITEM "Preference&s...",             IDM_EDIT_PREFERENCES
-    END
-    POPUP "&View"
-    BEGIN
-        MENUITEM "&Go To...\tCtrl+G",           IDM_VIEW_GOTO
-        MENUITEM SEPARATOR
-        MENUITEM "&All Records\tCtrl+M",        IDM_VIEW_ALLRECORDS
-        MENUITEM "&New Records",                IDM_VIEW_NEWRECORDS
-        MENUITEM "Grou&p",                      IDM_VIEW_GROUP
-        MENUITEM "&Temporary Group",            IDM_VIEW_TEMPORARYGROUP
-        MENUITEM SEPARATOR
-        MENUITEM "&Full Format\tCtrl+H",        IDM_VIEW_FULLFORMAT
-        MENUITEM "&Draft Format\tCtrl+J",       IDM_VIEW_DRAFTFORMAT
-        MENUITEM "Summar&y",                    IDM_VIEW_SUMMARY
-        MENUITEM "&Unformatted",                IDM_VIEW_UNFORMATTED
-        MENUITEM SEPARATOR
-        MENUITEM "&Hide by Attribute...",       IDM_VIEW_ATTRIBUTES
-        MENUITEM "Show Numbe&rs",               IDM_VIEW_SHOWNUMBERS
-        MENUITEM "&View Depth",                 IDM_VIEW_VIEWDEPTH
-        MENUITEM "&Wrap Lines",                 IDM_VIEW_WRAPLINES
-        MENUITEM SEPARATOR
-        MENUITEM "&Sorted",                     IDM_VIEW_SHOWSORTED
-    END
-    POPUP "&Character"
-    BEGIN
-        MENUITEM "&Default Font\tCtrl+Shift+D", IDM_FONT_DEFAULT
-        MENUITEM SEPARATOR
-        MENUITEM "&Plain\tCtrl+T",              IDM_STYLE_REGULAR
-        MENUITEM SEPARATOR
-        MENUITEM "&Bold\tCtrl+B",               IDM_STYLE_BOLD
-        MENUITEM "&Italic\tCtrl+I",             IDM_STYLE_ITALIC
-        MENUITEM "&Underline\tCtrl+U",          IDM_STYLE_UNDERLINE
-        MENUITEM "&Small Caps\tCtrl+Q",         IDM_STYLE_SMALLCAPS
-        MENUITEM SEPARATOR
-        MENUITEM "Sup&erscript",                IDM_STYLE_SUPER
-        MENUITEM "Subscrip&t",                  IDM_STYLE_SUB
-        MENUITEM SEPARATOR
-        MENUITEM "Initial &Caps",               IDM_STYLE_INITIALCAPS
-        MENUITEM "Uppe&rcase",                  IDM_STYLE_UPPERCASE
-        MENUITEM "&Lowercase",                  IDM_STYLE_LOWERCASE
-        MENUITEM SEPARATOR
-        MENUITEM "Character &Map...",           IDM_FONT_SYMBOLS
-        MENUITEM SEPARATOR
-        MENUITEM "Text Alignment",              IDM_ALIGNMENT
-    END
-    POPUP "&Document"
-    BEGIN
-        MENUITEM "&Margins && Columns...",      IDM_DOCUMENT_MARGINSCOLUMNS
-        MENUITEM "Headers && &Footers...",      IDM_DOCUMENT_HEADERSFOOTER
-        MENUITEM "&Grouping Entries...",        IDM_DOCUMENT_GROUPINGENTRIES
-        MENUITEM "Style && &Layout...",         IDM_DOCUMENT_STYLELAYOUT
-        MENUITEM SEPARATOR
-        MENUITEM "&Headings...",                IDM_DOCUMENT_HEADINGS
-        MENUITEM "&Cross-References...",        IDM_DOCUMENT_CROSSREFERENCES
-        MENUITEM "&Page References...",         IDM_DOCUMENT_PAGEREFERENCES
-        MENUITEM SEPARATOR
-        MENUITEM "&Styled Strings...",          IDM_DOCUMENT_STYLEDSTRINGS
-        MENUITEM SEPARATOR
-        MENUITEM "&Record Structure...",        IDM_DOCUMENT_RECORDSTRUCTURE
-        MENUITEM "Reference Synta&x...",        IDM_DOCUMENT_REFERENCESYNTAX
-        MENUITEM "Smart Flip &Words...",        IDM_DOCUMENT_FLIPWORDS
-    END
-    POPUP "&Tools"
-    BEGIN
-        MENUITEM "Chec&k Index...",             40692
-        MENUITEM SEPARATOR
-        MENUITEM "&Reconcile Headings...",      IDM_TOOLS_RECONCILEHEADINGS
-        MENUITEM "Ma&nage Cross-References...", IDM_TOOLS_GENERATECROSSREFERENCES, CHECKED
         MENUITEM "&Alter References...",        IDM_TOOLS_ALTERREFERENCES
         MENUITEM "Split Headings...",           IDM_TOOLS_SPLITHEADINGS
         MENUITEM SEPARATOR
@@ -2211,31 +1741,6 @@ BEGIN
     LTEXT           "",IDC_GROUPINFO_NOT,12,71,12,8
 END
 
-#if defined(APSTUDIO_INVOKED) || defined(DEMO)
-#if defined(APSTUDIO_INVOKED)
-IDD_ABOUTCINDEX$(DEMO) DIALOGEX 0, 0, 246, 154
-#else
-IDD_ABOUTCINDEX DIALOGEX 0, 0, 246, 154
-#endif
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About Cindex for Windows Demonstration Copy"
-FONT 8, "MS Sans Serif", 0, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,179,7,60,14
-    LTEXT           "Static\n\nxx",IDC_ABOUTCINDEX_VER,32,7,144,24
-    ICON            IDI_CINDEX,IDC_STATIC,7,7,20,20
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,7,62,232,1,WS_EX_STATICEDGE
-    LTEXT           "This is an unlicensed demonstration copy of Cindex.",IDC_STATIC,7,69,172,8
-    LTEXT           "",IDC_STATIC,7,80,160,8
-    LTEXT           "",IDC_STATIC,144,93,80,8
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,7,107,232,1,WS_EX_STATICEDGE
-    LTEXT           "Warning: this computer program is protected by copyright law and international treaties. Unauthorized reproduction or distribution of this program, or any portion of it, may result in severe civil and criminal penalties, and will be prosecuted fully.",IDC_STATIC,7,113,232,33
-    PUSHBUTTON      "&Support...",IDC_ABOUTCINDEX_SUPPORT,179,25,60,14
-    LTEXT           "",IDC_STATIC,12,93,100,8
-    PUSHBUTTON      "Credits...",IDC_ABOUTCINDEX_CREDITS,179,44,60,14
-END
-#endif
-
 IDD_CROSSREFS DIALOGEX 0, 0, 309, 111
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTEXTHELP
@@ -2637,55 +2142,6 @@ BEGIN
     PUSHBUTTON      "Clear",IDC_PPREFS_FILE_CLEARCTG,270,103,30,14
     PUSHBUTTON      "Clear",IDC_PPREFS_FILE_CLEARUDC,270,133,30,14
 END
-
-#if defined(APSTUDIO_INVOKED) || defined(READER)
-#if defined(APSTUDIO_INVOKED)
-IDD_ABOUTCINDEX$(READER) DIALOGEX 0, 0, 241, 140
-#else
-IDD_ABOUTCINDEX DIALOGEX 0, 0, 241, 140
-#endif
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About Cindex Reader"
-FONT 8, "MS Sans Serif", 0, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,174,7,60,14
-    LTEXT           "Static\n\nxx",IDC_ABOUTCINDEX_VER,37,7,131,24
-    ICON            IDI_CINDEX,IDC_STATIC,7,7,20,20
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,7,43,227,1,WS_EX_STATICEDGE
-    LTEXT           "This is Cindex Reader.",IDC_STATIC,7,49,172,8
-    LTEXT           "",IDC_STATIC,7,60,197,8
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,7,92,227,1,WS_EX_STATICEDGE
-    LTEXT           "Warning: this computer program is protected by copyright law and international treaties. Unauthorized reproduction or distribution of this program, or any portion of it, may result in severe civil and criminal penalties, and will be prosecuted fully.",IDC_STATIC,7,99,227,33
-    PUSHBUTTON      "&Support...",IDC_ABOUTCINDEX_SUPPORT,174,25,60,14
-    LTEXT           "",IDC_STATIC,12,73,100,8
-    LTEXT           "",IDC_STATIC,144,73,80,8
-END
-#endif
-
-#if defined(APSTUDIO_INVOKED) || defined(STUDENT)
-#if defined(APSTUDIO_INVOKED)
-IDD_ABOUTCINDEX$(STUDENT) DIALOGEX 0, 0, 246, 154
-#else
-IDD_ABOUTCINDEX DIALOGEX 0, 0, 246, 154
-#endif
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About Cindex for Windows Student Edition"
-FONT 8, "MS Sans Serif", 0, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,179,7,60,14
-    LTEXT           "Static\n\nxx",IDC_ABOUTCINDEX_VER,32,7,144,24
-    ICON            IDI_CINDEX,IDC_STATIC,7,7,20,20
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,6,60,232,1,WS_EX_STATICEDGE
-    LTEXT           "This is a student edition of Cindex.   Maximum capacity 500 records.",IDC_STATIC,7,67,226,8
-    LTEXT           "",IDC_STATIC,7,78,151,8
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,6,107,232,1,WS_EX_STATICEDGE
-    LTEXT           "Warning: this computer program is protected by copyright law and international treaties. Unauthorized reproduction or distribution of this program, or any portion of it, may result in severe civil and criminal penalties, and will be prosecuted fully.",IDC_STATIC,7,113,232,33
-    PUSHBUTTON      "&Support...",IDC_ABOUTCINDEX_SUPPORT,179,25,60,14
-    LTEXT           "",IDC_STATIC,12,92,100,8
-    LTEXT           "",IDC_STATIC,144,92,80,8
-    PUSHBUTTON      "Credits...",IDC_ABOUTCINDEX_CREDITS,179,43,60,14
-END
-#endif
 
 IDD_MACRO_NAME DIALOGEX 0, 0, 175, 47
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -3509,32 +2965,6 @@ BEGIN
 END
 #endif
 
-#if defined(APSTUDIO_INVOKED) || defined(READER)
-#if defined(APSTUDIO_INVOKED)
-CDX_FRAME$$(READER) ACCELERATORS
-#else
-CDX_FRAME$ ACCELERATORS
-#endif
-BEGIN
-    "A",            IDM_EDIT_SELECTALL,     VIRTKEY, CONTROL, NOINVERT
-    "C",            IDM_EDIT_COPY,          VIRTKEY, CONTROL, NOINVERT
-    "F",            IDM_EDIT_FIND,          VIRTKEY, CONTROL, NOINVERT
-    "F",            IDM_COMBO_FONT,         VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "G",            IDM_VIEW_GOTO,          VIRTKEY, CONTROL, NOINVERT
-    "G",            IDM_EDIT_FINDAGAIN,     VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "H",            IDM_VIEW_FULLFORMAT,    VIRTKEY, CONTROL, NOINVERT
-    "J",            IDM_VIEW_DRAFTFORMAT,   VIRTKEY, CONTROL, NOINVERT
-    "M",            IDM_VIEW_ALLRECORDS,    VIRTKEY, CONTROL, NOINVERT
-    "N",            IDM_EDIT_NEWGROUP,      VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "O",            IDM_FILE_OPEN,          VIRTKEY, CONTROL, NOINVERT
-    "P",            IDM_FILE_PRINT,         VIRTKEY, CONTROL, NOINVERT
-    "S",            IDM_FILE_SAVE,          VIRTKEY, CONTROL, NOINVERT
-    "S",            IDM_COMBO_SIZE,         VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "W",            IDM_FILE_CLOSE,         VIRTKEY, CONTROL, NOINVERT
-    "Y",            IDM_EDIT_DUPLICATE,     VIRTKEY, CONTROL, NOINVERT
-END
-#endif
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3547,8 +2977,8 @@ VS_VERSION_INFO$(STANDARD) VERSIONINFO
 #else
 VS_VERSION_INFO VERSIONINFO
 #endif
- FILEVERSION 4,2,4,0
- PRODUCTVERSION 4,2,4,0
+ FILEVERSION 4,3,0,0
+ PRODUCTVERSION 4,3,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3566,13 +2996,11 @@ BEGIN
             VALUE "Comments", "Release"
             VALUE "CompanyName", "CINDEX"
             VALUE "FileDescription", "Cindex for Windows Standard Edition"
-            VALUE "FileVersion", "4.2.4.0"
-            VALUE "InternalName", "Cindex 4.2"
-            VALUE "LegalCopyright", ""
-            VALUE "LegalTrademarks", ""
+            VALUE "FileVersion", "4.3.0.0"
+            VALUE "InternalName", "Cindex 4.3"
             VALUE "OriginalFilename", "Cindex.exe"
             VALUE "ProductName", "Cindex for Windows"
-            VALUE "ProductVersion", "4.2.4.0"
+            VALUE "ProductVersion", "4.3.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -3588,8 +3016,8 @@ VS_VERSION_INFO$(PUBLISH) VERSIONINFO
 #else
 VS_VERSION_INFO VERSIONINFO
 #endif
- FILEVERSION 4,2,4,0
- PRODUCTVERSION 4,2,4,0
+ FILEVERSION 4,3,0,0
+ PRODUCTVERSION 4,3,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3607,136 +3035,11 @@ BEGIN
             VALUE "Comments", "Release"
             VALUE "CompanyName", "CINDEX"
             VALUE "FileDescription", "Cindex for Windows Publisher's Edition"
-            VALUE "FileVersion", "4.2.4.0"
-            VALUE "InternalName", "Cindex 4.2 Publisher"
-            VALUE "LegalCopyright", ""
-            VALUE "LegalTrademarks", ""
+            VALUE "FileVersion", "4.3.0.0"
+            VALUE "InternalName", "Cindex 4.3 Publisher"
             VALUE "OriginalFilename", "Cindex.exe"
             VALUE "ProductName", "Cindex for Windows"
-            VALUE "ProductVersion", "4.2.4.0"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1252
-    END
-END
-#endif
-
-#if defined(APSTUDIO_INVOKED) || defined(READER)
-#if defined(APSTUDIO_INVOKED)
-VS_VERSION_INFO$(READER) VERSIONINFO
-#else
-VS_VERSION_INFO VERSIONINFO
-#endif
- FILEVERSION 3,0,0,0
- PRODUCTVERSION 3,0,0,0
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040904e4"
-        BEGIN
-            VALUE "Comments", "Release"
-            VALUE "CompanyName", "CINDEX"
-            VALUE "FileDescription", "Cindex for Windows"
-            VALUE "FileVersion", "3.0.0.0"
-            VALUE "InternalName", "Cindex Reader 3.0"
-            VALUE "LegalCopyright", ""
-            VALUE "LegalTrademarks", ""
-            VALUE "OriginalFilename", "Cindex.exe"
-            VALUE "ProductName", "Cindex for Windows"
-            VALUE "ProductVersion", "Reader 3.0"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1252
-    END
-END
-#endif
-
-#if defined(APSTUDIO_INVOKED) || defined(STUDENT)
-#if defined(APSTUDIO_INVOKED)
-VS_VERSION_INFO$(STUDENT) VERSIONINFO
-#else
-VS_VERSION_INFO VERSIONINFO
-#endif
- FILEVERSION 4,2,4,0
- PRODUCTVERSION 4,2,4,0
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040904e4"
-        BEGIN
-            VALUE "Comments", "Release"
-            VALUE "CompanyName", "CINDEX"
-            VALUE "FileDescription", "Cindex for Windows Student Edition"
-            VALUE "FileVersion", "4.2.4.0"
-            VALUE "InternalName", "Cindex 4.2 Student"
-            VALUE "LegalCopyright", ""
-            VALUE "LegalTrademarks", ""
-            VALUE "OriginalFilename", "Cindex.exe"
-            VALUE "ProductName", "Cindex for Windows"
-            VALUE "ProductVersion", "4.2.4.0"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1252
-    END
-END
-#endif
-
-#if defined(APSTUDIO_INVOKED) || defined(DEMO)
-#if defined(APSTUDIO_INVOKED)
-VS_VERSION_INFO$(DEMO) VERSIONINFO
-#else
-VS_VERSION_INFO VERSIONINFO
-#endif
- FILEVERSION 4,2,4,0
- PRODUCTVERSION 4,2,4,0
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040904e4"
-        BEGIN
-            VALUE "Comments", "Release"
-            VALUE "CompanyName", "CINDEX"
-            VALUE "FileDescription", "Cindex for Windows Demo"
-            VALUE "FileVersion", "4.2.4.0"
-            VALUE "InternalName", "Cindex 4.2 Demo"
-            VALUE "LegalCopyright", ""
-            VALUE "LegalTrademarks", ""
-            VALUE "OriginalFilename", "Cindex.exe"
-            VALUE "ProductName", "Cindex for Windows"
-            VALUE "ProductVersion", "4.2.4.0"
+            VALUE "ProductVersion", "4.3.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -3756,23 +3059,23 @@ END
 // remains consistent on all systems.
 IDI_CINDEX              ICON                    "cindex.ico"
 
-IDI_INDEX               ICON                    "index.ico"
-
 IDI_XMLRECORDS          ICON                    "xmlrecords.ico"
 
 IDI_ARCHIVE             ICON                    "archive.ico"
 
 IDI_ABBREV              ICON                    "abbrev.ico"
 
-IDI_STYLE               ICON                    "style.ico"
-
-IDI_TPL                 ICON                    "tpl.ico"
-
-IDI_INDEX_OLD           ICON                    "index_old.ico"
+IDI_INDEX               ICON                    "index.ico"
 
 IDI_STYLE_OLD           ICON                    "style_old.ico"
 
 IDI_TPL_OLD             ICON                    "tpl_old.ico"
+
+IDI_INDEX_OLD           ICON                    "index_old.ico"
+
+IDI_STYLE               ICON                    "style.ico"
+
+IDI_TPL                 ICON                    "tpl.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -4375,14 +3678,6 @@ BEGIN
         BOTTOMMARGIN, 133
     END
 
-    "IDD_ABOUTCINDEX$(DEMO)", DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 239
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 147
-    END
-
     IDD_CROSSREFS, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -4446,22 +3741,6 @@ BEGIN
     IDD_PPREFS_FOLDERS, DIALOG
     BEGIN
         RIGHTMARGIN, 304
-    END
-
-    "IDD_ABOUTCINDEX$(READER)", DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 234
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 133
-    END
-
-    "IDD_ABOUTCINDEX$(STUDENT)", DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 239
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 147
     END
 
     IDD_MACRO_NAME, DIALOG
@@ -4707,39 +3986,6 @@ IDD_SORT_REFS AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
-
-#if defined(APSTUDIO_INVOKED) || defined(STUDENT)
-#if defined(APSTUDIO_INVOKED)
-IDD_ABOUTCINDEX$(STUDENT) AFX_DIALOG_LAYOUT
-#else
-IDD_ABOUTCINDEX AFX_DIALOG_LAYOUT
-#endif
-BEGIN
-    0
-END
-#endif
-
-#if defined(APSTUDIO_INVOKED) || defined(READER)
-#if defined(APSTUDIO_INVOKED)
-IDD_ABOUTCINDEX$(READER) AFX_DIALOG_LAYOUT
-#else
-IDD_ABOUTCINDEX AFX_DIALOG_LAYOUT
-#endif
-BEGIN
-    0
-END
-#endif
-
-#if defined(APSTUDIO_INVOKED) || defined(DEMO)
-#if defined(APSTUDIO_INVOKED)
-IDD_ABOUTCINDEX$(DEMO) AFX_DIALOG_LAYOUT
-#else
-IDD_ABOUTCINDEX AFX_DIALOG_LAYOUT
-#endif
-BEGIN
-    0
-END
-#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -5159,6 +4405,7 @@ BEGIN
     INFO_UPDATEAVAILABLE    "%s"
     INFO_WRITERECWITHERROR  "%ld records from the current view have been written to %S.\nThe longest record contains %d characters. %ld records contain Unicode characters that cannot be represented in the Windows character set."
     INFO_CONVERSIONCHANGES  "During conversion Cindex changed the following characters: %S"
+    INFO_NEWFROMIMPORT      "This new index contains %ld records imported from “%S"""
 END
 
 STRINGTABLE

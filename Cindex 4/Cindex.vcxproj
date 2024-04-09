@@ -3103,7 +3103,6 @@
     <None Include="cindex1.ico" />
     <None Include="ClassDiagram1.cd" />
     <None Include="icon1.ico" />
-    <None Include="index_old.ico" />
     <None Include="resource.hm" />
     <None Include="abbrev.ico" />
     <None Include="archive.ico" />
@@ -3119,13 +3118,11 @@
     <None Include="screen.bmp" />
     <None Include="screen_pub.bmp" />
     <None Include="style.ico" />
-    <None Include="style_old.ico" />
     <None Include="tags.ico" />
     <None Include="text.ico" />
     <None Include="toolbar_main.bmp" />
     <None Include="toolbar_rec.bmp" />
     <None Include="tpl.ico" />
-    <None Include="tpl_old.ico" />
     <None Include="udic.ico" />
     <None Include="viewtool_read.bmp" />
     <None Include="2.0 fixes.txt" />
@@ -3194,6 +3191,9 @@
     <Image Include="32uline_off.bmp" />
     <Image Include="bitmap2.bmp" />
     <Image Include="bitmap3.bmp" />
+    <Image Include="index_old.ico" />
+    <Image Include="style_old.ico" />
+    <Image Include="tpl_old.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

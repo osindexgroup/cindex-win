@@ -309,39 +309,7 @@ short com_getrecrange(INDEX * FF, short scope, char *lptr, char * hptr, RECN * f
 		*first = recptr->num;   	/* set it */
 	return (FALSE);		/* ok */
 }
-#if 0
-/******************************************************************************/
-RECN com_findrecord(INDEX * FF, char *arg, short lastmatchflag)		/* finds record by lead or number */
 
-{
-	char astring[256], *tptr, *eptr;
-	RECORD * recptr;
-	RECN num;
-	
-	if (*arg)	{		/* if specifying a record */
-		recptr = NULL;		/* set up to fail */
-		strcpy(astring, *arg == ESCCHR ? arg+1 : arg);	/* make copy of search string */
-		str_extend(astring);		/* make xstring */
-		for (tptr = astring; tptr = strchr(tptr,';'); tptr++) {	/* for all semicolons */
-			if (*(tptr-1) != '\\')		/* if not protected */	
-				*tptr = '\0';
-		}		/* NB: this loop will screw up semicolons that are part of a page ref for page sort lookup */
-		if (isdigit(*arg))	{				/* if number */
-			num = strtoul(astring,&eptr,10);
-			if (!(recptr = search_findbynumber(FF,num)))
-				senderronstatusline(num > FF->head.rtot ? ERR_RECNOTEXISTERR : ERR_RECNOTINVIEWERR, WARN,num);
-		}
-		else {
-			if (!(recptr = search_findbylead(FF,astring)))	/* else by leads */
-				senderronstatusline(ERR_RECMATCHERR, WARN, astring);
-			else if (lastmatchflag)		/* if want to find last matching record */
-				recptr = search_lastmatch(FF,recptr, astring,MATCH_TRUNCATED|MATCH_IGNORECODES|MATCH_IGNORECASE);
-		}
-		return (recptr ? recptr->num : 0);
-	}
-	return (LX(FF->vwind,lines)[0].rnum);
-}
-#else
 /******************************************************************************/
 RECN com_findrecord(INDEX * FF, char *arg, short lastmatchflag)		/* finds record by lead or number */
 
@@ -378,7 +346,6 @@ RECN com_findrecord(INDEX * FF, char *arg, short lastmatchflag)		/* finds record
 //	return (LX(FF->vwind,lines)[0].rnum);
 	return 0;
 }
-#endif
 /******************************************************************************/
 void com_setbyindexstate(HWND wptr,HMENU hMenu, UINT item)		/* sets menu items by index context */
 
@@ -488,11 +455,6 @@ void com_setbyindexstate(HWND wptr,HMENU hMenu, UINT item)		/* sets menu items b
 		com_set(IDM_TOOLS_GENERATECROSSREFERENCES,OFF);
 		com_set(IDM_TOOLS_GROUPS,OFF);
 	};
-#if 0
-#if TOPREC < RECLIMIT || READER		/* if a demo copy */
-		com_set(IDM_TOOLS_CHECKSPELLING,OFF);
-#endif
-#endif
 }
 /*******************************************************************************/
 long mc_setgroup(HWND hwnd,int comid,HWND chandle,UINT notify)	/* finds group to use */
@@ -553,26 +515,18 @@ static INT_PTR CALLBACK aboutproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 					if (GetFileVersionInfo(path,0,vsize,vdata))	{
 						VerQueryValue(vdata, TEXT("\\StringFileInfo\\040904E4\\FileDescription"),&valptr, &vlen);
 						VerQueryValue(vdata, TEXT("\\StringFileInfo\\040904E4\\ProductVersion"),&val1ptr, &v1len);
-						VerQueryValue(vdata, TEXT("\\StringFileInfo\\040904E4\\LegalCopyright"),&val2ptr, &v2len);
+		//				VerQueryValue(vdata, TEXT("\\StringFileInfo\\040904E4\\LegalCopyright"),&val2ptr, &v2len);
 						VerQueryValue(vdata, TEXT("\\StringFileInfo\\040904E4\\FileVersion"),&val3ptr, &v3len);
-						dprintf(hwnd,IDC_ABOUTCINDEX_VER,"%S\n%S  (%S)\n%S",valptr,val1ptr,val3ptr,val2ptr);
+						dprintf(hwnd,IDC_ABOUTCINDEX_VER,"%S\n%S  (%S)",valptr,val1ptr,val3ptr);
  
 					
 					}
 					freemem(vdata);
 				}
 			}
-#if TOPREC == RECLIMIT			/* if full version */
-			vsize = STSTRING;
-			if (reg_getmachinekeyvalue(NULL,TEXT("Owner"),tstring,&vsize) && *tstring)	/* if got value from registry */
-				SetDlgItemText(hwnd,IDC_ABOUTCINDEX_USER,tstring);
-			vsize = STSTRING;
-			if (reg_getmachinekeyvalue(NULL,TEXT("Company"),tstring,&vsize) && *tstring)	/* if got value from registry */
-				SetDlgItemText(hwnd,IDC_ABOUTCINDEX_ORG,tstring);
-			vsize = STSTRING;
-			if (reg_getmachinekeyvalue(NULL,TEXT("Sernum"),tstring,&vsize) && *tstring)	/* if got value from registry */
-				SetDlgItemText(hwnd,IDC_ABOUTCINDEX_SER,tstring);
-#endif
+			SetDlgItemText(hwnd, IDC_ABOUTCINDEX_USER, TEXT("Everyone"));
+			SetDlgItemText(hwnd, IDC_ABOUTCINDEX_ORG, TEXT("Any"));
+			SetDlgItemText(hwnd, IDC_ABOUTCINDEX_SER, TEXT("Unrestricted Use"));
 			centerwindow(hwnd,0);
 			return TRUE;
 		case WM_COMMAND:
@@ -705,14 +659,8 @@ void com_settextmenus(INDEX * FF,int font,int size)	/* sets default menus */
 	else {
 		EnableWindow(g_hwfcb,FALSE);	/* font name window */
 		EnableWindow(g_hwscb,FALSE);	/* font size window */
-#if 0
-		ComboBox_SelectString(g_hwfcb,-1, toNative(g_prefs.gen.fm[0].name));	/* select default font */
-		_itoa(g_prefs.privpars.size,tstring,10);
-		SetWindowText(g_hwscb,toNative(tstring));		/* indicate size */
-#else
 		ComboBox_SetCurSel(g_hwfcb,-1);
 		ComboBox_SetCurSel(g_hwscb,-1);
-#endif
 	}
 }
 /*********************************************************************************/

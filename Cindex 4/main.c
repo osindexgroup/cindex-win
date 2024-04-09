@@ -242,17 +242,6 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE previnstance, PSTR cmdline, in
 
 //	g_version.dwOSVersionInfoSize = sizeof(g_version);
 	dofsyscolor();	// configure selection highlight
-//	GetVersionEx(&g_version);
-#if TOPREC == RECLIMIT && !READER && !_DEBUG			/* check registration & spelling if not demo or reader */
-	if (!reg_getmachinekeyvalue(NULL,TEXT("Sernum"),path,&vsize) || !testsernum(fromNative(path)))	{	/* if got value from registry */
-		MessageBox(NULL,TEXT("This is an unregistered copy of Cindex."),TEXT("Cindex 4.0"),MB_OK);
-		return (FALSE);
-	}
-#endif
-//	if (g_version.dwMajorVersion < 5 || g_version.dwMajorVersion == 5 && (g_version.dwMinorVersion == 0 || *(g_version.szCSDVersion+nstrlen(g_version.szCSDVersion)-1) < '2'))	{	/* if can't run */
-//		senderr(ERR_WVERSIONERR,WARN);
-//		return FALSE;
-//	}
 	dde_setup();		/* sets up ddeml */
 #if 0			/* keep this until we can find the right check for  multiple copies */
 	if (dde_sendcheck())	{	/* if this copy is running anywhere */
@@ -279,17 +268,8 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE previnstance, PSTR cmdline, in
 		if (!g_prefs.gen.setid || getuserid())	{	/* if don't want userid or got it */
 #endif //PUBLISH
 			accel = LoadAccelerators(hinstance,szframename);
-#if 0
-			if (reg_getkeyvalue(K_GENERAL,FRAME,&wp,&wp.length) && wp.length == sizeof(WINDOWPLACEMENT))	{// if have size/pos from registry 
-				if (g_prefs.gen.maxcin)
-					 wp.showCmd = SW_SHOWMAXIMIZED;
-				SetWindowPlacement(g_hwframe,&wp);
-			}
-			else
-				ShowWindow(g_hwframe,g_prefs.gen.maxcin ? SW_MAXIMIZE : cmdshow);
-#endif
-			http_connect(TRUE);		//  silent check
-			reg_setkeyvalue(K_UPDATES,TEXT("CheckForUpdates"),REG_SZ, g_prefs.gen.autoupdate ? TEXT("1") : TEXT("0"),1);
+//			http_connect(TRUE);		//  silent check
+//			reg_setkeyvalue(K_UPDATES,TEXT("CheckForUpdates"),REG_SZ, g_prefs.gen.autoupdate ? TEXT("1") : TEXT("0"),1);
 			hwsplash = CreateDialog(g_hinst,MAKEINTRESOURCE(IDD_SPLASH),g_hwframe,splashproc);
 			OleInitialize(NULL);
 			ucnv_setDefaultName("UTF-8");	// set default code page to UTF-8
@@ -303,6 +283,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE previnstance, PSTR cmdline, in
 				(SHGetFolderPath(NULL,CSIDL_PERSONAL,NULL,SHGFP_TYPE_CURRENT,path) == S_OK))	// or path to docs folder
 				SetCurrentDirectory(path);
 			UpdateWindow(g_hwframe);
+#if 0
 #if TOPREC == RECLIMIT
 			win_sparkle_set_registry_path(K_WINSPARKLE);
 #ifdef PUBLISH
@@ -315,6 +296,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE previnstance, PSTR cmdline, in
 			win_sparkle_set_can_shutdown_callback(canquitforupdate);
 			win_sparkle_set_shutdown_request_callback(quitforupdate);
 			win_sparkle_init();
+#endif
 #endif
 			while (GetMessage(&msg,NULL, 0,0))	{	/* while not exit */
 				EXCEPTION_POINTERS * ep;
@@ -341,8 +323,10 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE previnstance, PSTR cmdline, in
 					senderr(ERR_DAMAGEDRECORD,WARN,ep->ExceptionRecord->ExceptionInformation[0]);		/* if error */
 				}
 			}
+#if 0
 #if TOPREC == RECLIMIT
 			win_sparkle_cleanup();
+#endif
 #endif
 			OleFlushClipboard();
 			OleUninitialize();

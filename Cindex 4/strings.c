@@ -225,12 +225,6 @@ static void setleadcaps(char * s1, char * s2)	// switches lead chars as appropri
 
 	s1 = str_skipcodes(s1);
 	s2 = str_skipcodes(s2);
-#if 0
-	if (islower(*s2) && isupper(*s1) && !isupper(*(s1+1)))	{	/* if need case change */
-		*s1 =_tolower(*s1);	/* switch case of leads */
-		*s2 =_toupper(*s2);	/* switch case of leads */
-	}
-#else
 	uc1 = u8_toU(s1);
 	uc2 = u8_toU(s2);
 //	if (u_islower(uc2) && u_isupper(uc1) && !u_isupper(u8_toU(u8_back1(s1))))	{	/* if need case change */
@@ -238,7 +232,6 @@ static void setleadcaps(char * s1, char * s2)	// switches lead chars as appropri
 		u8_appendU(s1, u_tolower(uc1));	/* switch case of leads */
 		u8_appendU(s2, u_toupper(uc2));	/* switch case of leads */
 	}
-#endif
 }
 /**********************************************************************************/
 static void strinsert(char * s1, char *s2)	// inserts ss2 at s1
@@ -575,6 +568,18 @@ int str_xindex(char * list, char * string)	/* finds index of string in array */
 	return (-1);
 }
 /*******************************************************************************/
+int str_xindexcontaining(char* list, char* substring)	/* finds index of string that contains substring */
+
+{
+	int index;
+
+	for (index = 0; list && *list != EOCS; index++, list += strlen(list) + 1) {
+		if (strstr(list, substring))		/* if match */
+			return (index);
+	}
+	return (-1);
+}
+/*******************************************************************************/
 char * str_xatindex(char * list, int index)	/* finds string at indexed position */
 
 {	
@@ -880,20 +885,6 @@ int str_adjustcodes(char * dest, int flags)	/* cleans up codes, removes surplus 
 char * str_xfindcross(INDEX * FF, register char * string, short sflag)	/* find cross-ref (if any) in string */
 
 {
-#if 0
-	unsigned short matchlen, tlen;
-	
-	for (matchlen = 0; isgraph(FF->head.refpars.crosstart[matchlen]); matchlen++)	/* find length of segment to search for */
-		; 
-	if (matchlen)	{	/* if anything to seek */
-		while (string = str_xfind(string,FF->head.refpars.crosstart,sflag,matchlen,&tlen)) {	/* while possible refs */
-			if (str_crosscheck(FF,string))		/* if a real cross ref */
-				return (string);
-			string++;
-		}
-	}
-	return (NULL);
-#else
 	char * base = FF->head.refpars.crosstart;
 	char * tptr = strchr(base, SPACE);
 	
@@ -906,7 +897,6 @@ char * str_xfindcross(INDEX * FF, register char * string, short sflag)	/* find c
 		}
 	}
 	return (NULL);
-#endif
 }
 /******************************************************************************/
 short str_crosscheck(INDEX * FF, char *str)    /* checks string to see if begins with 'see' */
@@ -955,36 +945,10 @@ static char *skiplist(char *base, char *list, short * tokens, int xflags)		/* po
 	} while (str_xfind(list,sptr,(short)xflags,(unsigned short)(eptr-sptr),&tlen) && ++(*tokens));	/* while lead words in base exist as full words in list (within right substring) */
 	return (base);	/* return position of mismatch */
 }
-#if 0
-/******************************************************************************/
-char *str_skipbrackets(char *sptr)	/* skips to char beyond closing bracket */
-
-{
-//	while (*sptr && (*sptr++ != CBRACKET || *(sptr-2) == ESCCHR || *(sptr-2) == KEEPCHR))   /* skip to closing bracket */
-//		;
-	while (*sptr)	{
-		if ((*sptr == ESCCHR || *sptr == KEEPCHR) && *(sptr+1))	/* if have escaped char */
-			sptr++;		/* skip it */
-		if (*sptr++ == CBRACKET)	/* if hit closing bracket */
-			break;
-	}
-	return (sptr);
-}
-#endif
 /******************************************************************************/
 char *str_skiptoclose(char *sptr, unichar tc)	/* skips to char beyond closing char */
 
 {
-#if 0
-	while (*sptr)	{
-		unichar cc = u8_nextU(&sptr);
-		if ((cc == ESCCHR || cc == KEEPCHR) && *sptr)	/* if have escaped char */
-			u8_forward1(sptr);		/* skip it */
-		else if (cc == CBRACE)	/* if hit closing brace */
-			break;
-	}
-	return (sptr);
-#else
 	int sindex = 0;
 	unichar cc;
 
@@ -997,7 +961,6 @@ char *str_skiptoclose(char *sptr, unichar tc)	/* skips to char beyond closing ch
 			break;
 	} while (cc);
 	return (cc ? sptr+sindex : sptr);	// don't advance if no closer
-#endif
 }
 /******************************************************************************/
 char *str_skiplist(char *base, char *list, short * tokens)		/* points to first word in base that isn't in list */
