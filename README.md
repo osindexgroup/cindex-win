@@ -11,4 +11,4 @@ CINDEX for Windows works on any supported version of Microsoft Windows, includin
 
 ## Installers and Support
 
-Installers and Support for Cindex 4.3 are available from [OpenCindex.com](https://www.opencindex.com).
+Installers and Support for Cindex 4.3 are available from [OpenCindex.com](https://www.opencindex.com/download).
