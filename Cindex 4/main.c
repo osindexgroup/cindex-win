@@ -1215,7 +1215,7 @@ static INT_PTR CALLBACK splashproc(HWND hwnd, UINT msg, WPARAM wParam,LPARAM lPa
 			SetWindowPos(hwnd,NULL,(srect.right-splashW)/2,(srect.bottom-splashH)/2, splashW, splashH, SWP_NOZORDER | SWP_FRAMECHANGED);
 			HBITMAP bm = LoadImage(g_hinst, MAKEINTRESOURCE(iid), IMAGE_BITMAP, splashW, splashH, 0);
 			SendDlgItemMessage(hwnd, IDC_SPLASH_IMAGE, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)bm);			
-			m_timerid = SetTimer(NULL,0,10000,timeproc);
+			m_timerid = SetTimer(NULL,0,2500,timeproc);
 			return (FALSE);
 	}
 	return FALSE;
@@ -1269,35 +1269,7 @@ static void displayframe(void)	// shows frame window
 			mc_open(NULL,0,NULL,0);
 	}
 }
-#if 0
-/*****************************************************************************/
-static void showcharactermap(void)		// displays character map
 
-{
-	struct cmstruct ms;
-
-	ms.pip = &m_charmap;
-	ms.active = FALSE;
-
-	EnumWindows(xfind,(LPARAM)&ms);
-	if (!ms.active)	{	// if don't have active map
-		TCHAR name[MAX_PATH] = TEXT("charmap.exe");
-		STARTUPINFO si;
-
-		CloseHandle(m_charmap.hProcess);	// in case prev window closed by user
-		CloseHandle(m_charmap.hThread);
-		ZeroMemory(&si, sizeof(si));
-		si.cb = sizeof(si);
-		ZeroMemory(&m_charmap, sizeof(PROCESS_INFORMATION));
-		if (!CreateProcess(NULL,name,NULL,NULL,FALSE,0,NULL,NULL,&si,&m_charmap))	{
-			DWORD err = GetLastError();
-			TCHAR tbuff[4096];
-			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,NULL,err,0,tbuff,4096,NULL);
-			senderr(ERR_NOCHARMAP,WARN,tbuff);
-		}
-	}
-}
-#else
 /*****************************************************************************/
 static void showcharactermap(void)		// displays character map
 
@@ -1331,7 +1303,6 @@ static void showcharactermap(void)		// displays character map
 		}
 	}
 }
-#endif
 /*****************************************************************************/
 static BOOL CALLBACK xfind(HWND hwnd,LPARAM param)
 

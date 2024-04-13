@@ -3,12 +3,16 @@ Auto Index=Yes
 Compatibility=1.1 or later
 Compiled file=Cindex.chm
 Contents file=Table of Contents.hhc
+Default Window=main
 Default topic=WinCin Help\web-content\base\Cindex Help.htm
 Display compile progress=No
 Full-text search=Yes
 Index file=Index.hhk
 Language=0x409 English (United States)
 Title=Cindex 4.3 Help
+
+[WINDOWS]
+main=,"Table of Contents.hhc","Index.hhk","WinCin Help\web-content\base\Cindex Help.htm","WinCin Help\web-content\base\Cindex Help.htm",,,,,0x42520,,0x3046,[474,216,1105,706],,,,,,,0
 
 
 [FILES]
