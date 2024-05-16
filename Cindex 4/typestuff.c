@@ -266,7 +266,7 @@ BOOL type_checkfonts(FONTMAP * fm)	/* checks that preferred or substitute fonts 
 	}
 	*eptr = '\0';
 	if (*estring)	{
-		senderr(ERR_FONTMISSING,WARN,estring);
+		showError(NULL,ERR_FONTMISSING,WARN,estring);
 		return (FALSE);
 	}
 	return (TRUE);
@@ -416,51 +416,9 @@ short type_maplocal(FONTMAP * fmp, char * fname, int base)	// finds local id for
 		if (!strcmp(fmp[base].pname,fname))	/* if have a match */
 			return (base);
 	}
-	senderr (ERR_INTERNALERR, WARN, "missing font");
+	showError(NULL,ERR_INTERNALERR, WARN, "missing font");
 	return (0);			/* always return default font on error */
 }
-#if 0
-/**********************************************************************/
-short type_findlocal(FONTMAP * fmp, char * fname, int base)	/* finds/assigns local id for font */
-
-{	
-	if (!*fname)		/* if want default font */
-		return (0);
-	for (; base < FONTLIMIT; base++)		{	/* for all local fonts */
-		if (!*fmp[base].name)	{			/* an empty slot */
-			strcpy(fmp[base].pname,fname);	/* load preferred name */
-			strcpy(fmp[base].name,fname);	/* set sub/actual name */
-			fmp[base].flags = type_ispecialfont(fname) ? CHARSETSYMBOLS : 0;
-		}
-		if (!strcmp(fmp[base].name,fname))	/* if have a match */
-			return (base);
-	}
-	senderr (ERR_INTERNALERR, WARN, "missing font");
-	return (0);			/* always return default font on error */
-}
-/**********************************************************************/
-short type_findlocal(FONTMAP * fmp, char * fname, int base)	/* finds/assigns local id for font */
-
-{	
-	if (*fname)		{	// if want other than default font
-		for (; base < FONTLIMIT; base++)		{	/* for all local fonts */
-			if (!strcmp(fmp[base].pname,fname))	// if have a match to preferred name
-				return (base);
-			if (!*fmp[base].name)	{			/* an empty slot */
-				strcpy(fmp[base].pname,fname);	/* load preferred name */
-				if (type_findindex(fname) >= 0)		// if this is an available font
-					strcpy(fmp[base].name,fname);	// set preferred name as alt name
-				else
-					strcpy(fmp[base].name,fmp[0].name);	// set default font alt as alt name
-				fmp[base].flags = type_ispecialfont(fname) ? CHARSETSYMBOLS : 0;
-				return base;
-			}
-		}
-		senderr(ERR_INTERNALERR, WARN, "missing font");	// will return default font
-	}
-	return (0);
-}
-#else
 /**********************************************************************/
 short type_findlocal(FONTMAP * fmp, char * fname, int base)	/* finds/assigns local id for font */
 
@@ -479,11 +437,10 @@ short type_findlocal(FONTMAP * fmp, char * fname, int base)	/* finds/assigns loc
 				return base;
 			}
 		}
-		senderr(ERR_INTERNALERR, WARN, "missing font");	// will return default font
+		showError(NULL,ERR_INTERNALERR, WARN, "missing font");	// will return default font
 	}
 	return (0);
 }
-#endif
 /**********************************************************************/
 short type_makelocal(FONTMAP * fmp, char * pname, char * fname, int base)	// finds/assigns local id for import font
 
@@ -500,7 +457,7 @@ short type_makelocal(FONTMAP * fmp, char * pname, char * fname, int base)	// fin
 			return (base);
 		}
 	}
-	senderr (ERR_INTERNALERR, WARN, "missing font");
+	showError(NULL,ERR_INTERNALERR, WARN, "missing font");
 	return (-1);
 }
 /******************************************************************************/
@@ -527,7 +484,7 @@ void type_findfonts(HWND hwnd)	/* finds fonts */
 		ReleaseDC(hwnd,dc);
 	}
 	else
-		senderr(ERR_INTERNALERR, WARN, "can't find fonts");
+		showError(NULL,ERR_INTERNALERR, WARN, "can't find fonts");
 }
 /******************************************************************************/
 static int CALLBACK enumfont(ENUMLOGFONTEX * elf, NEWTEXTMETRICEX * tm, int fonttype, LPARAM lParam)	/* finds fonts */
@@ -575,7 +532,7 @@ void type_setfont(HDC dc, char * name, short size, short style)	/* sets appropri
 	if (fh = getfont(&lf))	/* if can get font */
 		SelectFont(dc,fh);
 	else
-		senderr(ERR_INTERNALERR,WARN,"Can't Load Font");
+		showError(NULL,ERR_INTERNALERR,WARN,"Can't Load Font");
 }
 /******************************************************************************/
 static HFONT getfont(LOGFONT * lfptr)	/* finds (or creates) font matching spec */

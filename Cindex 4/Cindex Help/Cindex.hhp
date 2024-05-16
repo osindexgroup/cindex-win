@@ -9,7 +9,7 @@ Display compile progress=No
 Full-text search=Yes
 Index file=Index.hhk
 Language=0x409 English (United States)
-Title=Cindex 4.3 Help
+Title=Cindex 4.4 Help
 
 [WINDOWS]
 main=,"Table of Contents.hhc","Index.hhk","WinCin Help\web-content\base\Cindex Help.htm","WinCin Help\web-content\base\Cindex Help.htm",,,,,0x42520,,0x3046,[474,216,1105,706],,,,,,,0
@@ -178,6 +178,7 @@ WinCin Help\web-content\Whatsnew\New_export.htm
 WinCin Help\web-content\Whatsnew\New_sorting.htm
 WinCin Help\web-content\Whatsnew\New_view.htm
 WinCin Help\web-content\Whatsnew\New_import.htm
+WinCin Help\web-content\base\Compare_index.htm
 
 [TEXT POPUPS]
 cshelp.txt

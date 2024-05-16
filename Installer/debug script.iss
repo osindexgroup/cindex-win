@@ -72,7 +72,6 @@ Source: "inno\icuuc58.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\libexpat.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\libhunspell.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\libiconv.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "inno\WinSparkle.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\msvcp140.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\vcruntime140.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\notices.rtf"; DestDir: "{app}"; Flags: ignoreversion
@@ -171,7 +170,7 @@ Root: HKLM; Subkey: "SOFTWARE\Classes\CLSID\{{5C74DAC0-05CC-11d1-9141-0000000000
 ;Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Company"; ValueData: "Cindex"; Flags: uninsdeletekey
 ;Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Sernum"; ValueData: "FI117920PI-9793"; Flags: uninsdeletekey
 
-Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Owner"; ValueData: "{userinfoname}"; Flags: uninsdeletekey
-Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Company"; ValueData: "{userinfoorg}"; Flags: uninsdeletekey
-Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Sernum"; ValueData: "{userinfoserial}"; Flags: uninsdeletekey
+;Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Owner"; ValueData: "{userinfoname}"; Flags: uninsdeletekey
+;Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Company"; ValueData: "{userinfoorg}"; Flags: uninsdeletekey
+;Root: HKLM; Subkey: "SOFTWARE\Indexing Research\Cindex\4.0"; ValueType: string; ValueName:"Sernum"; ValueData: "{userinfoserial}"; Flags: uninsdeletekey
 

@@ -79,7 +79,7 @@ short imp_loaddata(INDEX * FF, IMPORTPARAMS * imp, TCHAR * path)	/* opens & read
 			char * errormessage;
 			result = xml_parserecords(FF,imp,mf.base,mf.size, &errormessage);
 			if (result > 1)	// fatal error
-				senderr(result,WARN,errormessage);	/* send error message */
+				showError(NULL,result,WARN,errormessage);	/* send error message */
 		}
 		else {
 			imp->sepstr[0] = imp->sepstr[2] = '"';	/* set delimit chars */
@@ -89,7 +89,7 @@ short imp_loaddata(INDEX * FF, IMPORTPARAMS * imp, TCHAR * path)	/* opens & read
 				imp->subtype = file_archivetype(path);	// set win or mac subtype
 			else if (imp->type == I_PLAINTAB)	{
 				if (!imp_findtexttype(imp,mf.base,mf.size))		{	// if can't manage the file
-					if (!sendwarning(WARN_BADIMPORTTYPE,file_getname(path)))	{	// if don't want to import
+					if (!showWarning(NULL,WARN_BADIMPORTTYPE,file_getname(path)))	{	// if don't want to import
 						mfile_close(&mf);
 						return FALSE;
 					}
@@ -102,7 +102,7 @@ short imp_loaddata(INDEX * FF, IMPORTPARAMS * imp, TCHAR * path)	/* opens & read
 			ocurs = SetCursor(g_waitcurs);
 			result = readrecords(FF,imp,mf.base,mf.size);
 			if (result > 1)
-				senderr(result,WARN,path);	/* send error message */
+				showError(NULL,result,WARN,path);	/* send error message */
 		}
 		mfile_close(&mf);
 		if (result < 0)		{/* if errors we want to display */
@@ -128,7 +128,7 @@ short imp_loaddata(INDEX * FF, IMPORTPARAMS * imp, TCHAR * path)	/* opens & read
 			index_flush(FF);			/* force update on file */
 			view_allrecords(FF->vwind);		/* redisplay all recs */
 			if (imp->markcount)	/* if marked any bad characters */
-				sendinfo(INFO_IMPORTMARKED,imp->markcount);
+				showInfo(NULL,INFO_IMPORTMARKED,imp->markcount);
 			return TRUE;
 		}
 	}
@@ -268,28 +268,28 @@ int imp_resolveerrors (INDEX *FF, IMPORTPARAMS * imp)	/* resolves (or not) impor
 	short needsize;
 	needsize = imp->longest > FF->head.indexpars.recsize ? imp->longest : FF->head.indexpars.recsize;
 	if (imp->freespace < imp->recordcount*(needsize+RECSIZE))	{	/* if would have room */
-		senderr(ERR_DISKFULLERR,WARN);
+		showError(NULL,ERR_DISKFULLERR,WARN);
 		return (0);
 	}
 #endif
 	if (imp->ecount > imp->fielderrcnt + imp->lenerrcnt +imp->fonterrcnt + imp->emptyerrcnt)	{	// if errors that we can't correct or ignore			
-		if (!sendwarning(WARN_IMPORTERRORSWARN))		/* if don't want to ignore */
+		if (!showWarning(NULL,WARN_IMPORTERRORSWARN))		/* if don't want to ignore */
 			return (-1);		
 	}
 	if (imp->fonterrcnt)	{		// if font error
-		if (!sendwarning(WARN_MISSINGFONT, imp->fonterrcnt))
+		if (!showWarning(NULL,WARN_MISSINGFONT, imp->fonterrcnt))
 			return (-1);
 	}
 	if (imp->fielderrcnt && FF->head.rtot)	{		/* if need field query */
-		if (imp->deepest > FIELDLIM || !sendwarning(WARN_RECFIELDNUMWARN, imp->deepest))
+		if (imp->deepest > FIELDLIM || !showWarning(NULL,WARN_RECFIELDNUMWARN, imp->deepest))
 			return (-1);
 	}
 	if (imp->lenerrcnt && FF->head.rtot)	{		/* if need length query */
-		if (imp->longest > MAXREC || !sendwarning(WARN_RECENLARGESIZE,imp->longest-FF->head.indexpars.recsize))
+		if (imp->longest > MAXREC || !showWarning(NULL,WARN_RECENLARGESIZE,imp->longest-FF->head.indexpars.recsize))
 			return (-1);
 	}
 	if (imp->conflictingseparators && FF->head.rtot)	{		// if specifying separators for index that has records
-		if (!sendwarning(WARN_CONFLICTINGESPARATORS))
+		if (!showWarning(NULL,WARN_CONFLICTINGESPARATORS))
 			return (-1);
 	}
 	if (imp->deepest > FF->head.indexpars.maxfields)	{	/* if need to increase # fields */
@@ -307,7 +307,7 @@ int imp_resolveerrors (INDEX *FF, IMPORTPARAMS * imp)	/* resolves (or not) impor
 		FF->head.indexpars.required = TRUE;
 	}
 	if (imp->emptyerrcnt)		// if empty error
-		sendinfo(WARN_EMPTYRECORD, imp->emptyerrcnt);	// just send info
+		showInfo(NULL,WARN_EMPTYRECORD, imp->emptyerrcnt);	// just send info
 	return (1);
 }
 /***************************************************************************/
@@ -343,7 +343,7 @@ static BOOL setfonts(INDEX * FF, IMPORTPARAMS *imp, char * data, unsigned long e
 				imp->tfm[fontindex].flags |= CHARSETSYMBOLS;
 		}
 		if (fontcount < 2)	{
-			senderr(ERR_NOFONT,WARN);
+			showError(NULL,ERR_NOFONT,WARN);
 			return FALSE;
 		}
 	}

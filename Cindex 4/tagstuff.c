@@ -248,7 +248,7 @@ TAGSET * ts_openset(TCHAR * tagpath)		/* returns pointer to tag set on path */
 		mfile_close(&mf);
 	}
 	if (!th)
-		senderr(ERR_TAGOPEN,WARN,tagpath);	/* maybe later give more specific error message */
+		showError(NULL,ERR_TAGOPEN,WARN,tagpath);	/* maybe later give more specific error message */
 	return (th);
 }
 /*******************************************************************************/
@@ -341,7 +341,7 @@ static INT_PTR CALLBACK tmproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 					return (TRUE);
 				case IDC_TAGS_MAINDELETE:
 					getcurrentset(hwnd,cursetname,tabindex);	/* get name of current set */
-					if (sendwarning(WARN_DELTAGSET, cursetname))	{	/* if really want to delete tag set */
+					if (showWarning(hwnd,WARN_DELTAGSET, cursetname))	{	/* if really want to delete tag set */
 						getcurrentset(hwnd,cursetname,tabindex);	/* get name of curent set */
 						deletetagset(cursetname,tabindex);
 						buildtagmenu(hwnd,TEXT(""),tabindex);	/* rebuild menu */
@@ -847,11 +847,11 @@ static INT_PTR CALLBACK tsnproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 				case IDOK:
 					GetDlgItemText(hwnd,IDC_TAG_SETNAME,tnp->nptr,_MAX_FNAME+_MAX_EXT);
 					if (*tnp->nptr == '$')	{	// if starts with illegal $
-						senderr(ERR_BADTAGSETNAME,WARN);
+						showError(hwnd,ERR_BADTAGSETNAME,WARN);
 							return (TRUE);
 					}
 					if (ComboBox_FindStringExact(tnp->cbh,-1,tnp->nptr) != CB_ERR)	{	/* if need check and exists */
-						if (!sendwarning(WARN_DUPTAGSET,tnp->nptr))
+						if (!showWarning(hwnd,WARN_DUPTAGSET,tnp->nptr))
 							return (TRUE);
 					}
 				case IDCANCEL:
@@ -933,7 +933,7 @@ static BOOL savetagset(TAGSET * th, TCHAR *tagname, int type)	/* saves tagset in
 				return TRUE;
 		}
 	}
-	senderr(ERR_TAGSAVE,WARN,tagname);
+	showError(NULL,ERR_TAGSAVE,WARN,tagname);
 	return (FALSE);
 }
 /******************************************************************************/
@@ -980,7 +980,7 @@ static int recovertags(HWND hwnd, int baseitem, char * xstr, int baseindex, int 
 		}
 		return (TRUE);
 	}
-	senderr(ERR_TAGOVERFLOW,WARN);
+	showError(NULL,ERR_TAGOVERFLOW,WARN);
 	return (FALSE);
 }
 /***************************************************************************/

@@ -748,13 +748,11 @@ static HDDEDATA data_doreplace(INDEX * FF, CINDEXFINDREPLACE * fr, int datalengt
 				freemem(nptr);
 				search_clearauxbuff(&lg);		/* release any buffers */
 				view_redisplay(FF,0,VD_CUR|VD_IMMEDIATE);
-#if 1
 				if (markcount)	/* if some marked records */
-					sendinfo(INFO_REPLACEMARKED,repcount,markcount);
+					showInfo(NULL,INFO_REPLACEMARKED,repcount,markcount);
 				else	
-					sendinfo(INFO_REPLACECOUNT,repcount);
+					showInfo(NULL,INFO_REPLACECOUNT,repcount);
 				return (HDDEDATA)DDE_FACK;
-#endif
 			}
 		}
 	}

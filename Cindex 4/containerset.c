@@ -97,7 +97,6 @@ LRESULT CALLBACK container_proc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 			view_showgroup(hwnd,fromNative((TCHAR *)lParam));
 			return (0);
 		case WM_INITMENUPOPUP:
-//		case WMM_UPDATETOOLBARS:
 		case WM_KEYDOWN:
 		case WM_CHAR:
 		case WM_HOTKEY:
@@ -133,7 +132,6 @@ void container_removerecordwindow(HWND hwnd)	/*  removes record window */
 	INDEX * FF = getowner(hwnd);
 
 	if (FF->rcwind) {	// if floating window
-//		rcontainer_removerecordwindow(FF);
 		freedata(FF->rcwind);		/* releases window data */
 		SendMessage(g_hwclient, WM_MDIDESTROY, (WPARAM)FF->rcwind, 0);	/* destroy container */
 		FF->rcwind = NULL;
@@ -141,7 +139,6 @@ void container_removerecordwindow(HWND hwnd)	/*  removes record window */
 	else {
 		CFLIST * cfp = getdata(hwnd);
 		SendMessage(cfp->rbwind, RB_DELETEBAND, (WPARAM)1, 0);
-//		SendMessage(FF->vwind,WMM_UPDATETOOLBARS,0,0);	//reset toolbar for vwind
 		view_setstatus(FF->vwind);		// need this'cause embedded rec window doesn't automatically update view status
 	}
 }
@@ -165,11 +162,9 @@ static void ccommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does m
 		case IDM_EDIT_REPLACE:
 			rep_setwindow(hwnd);
 			return;
-#if !READER		// if not Reader
 		case IDM_TOOLS_CHECKSPELLING:
 			spell_setwindow(hwnd);
 			return;
-#endif
 		case IDM_DOCUMENT_RECORDSTRUCTURE:
 			is_setstruct(hwnd, NULL);
 			return;
@@ -178,9 +173,6 @@ static void ccommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does m
 			return;
 		case IDM_DOCUMENT_FLIPWORDS:
 			is_flipwords(hwnd);
-			return;
-		case IDM_TOOLS_VERIFYCROSSREFERENCES:
-			ts_verify(hwnd);
 			return;
 		case IDM_TOOLS_COUNTRECORDS:
 			ts_count(hwnd);
@@ -365,7 +357,6 @@ static void cactivate(HWND hwnd, BOOL fActive, HWND hwndActivate, HWND hwndDeact
 			FF->acount++;		// count an activation
 		com_pushrecent(FF->pfspec);		/* update recent file list */
 		view_setstatus(FF->vwind);		/* update status bar */
-//		SendMessage(activechild(hwnd),WMM_UPDATETOOLBARS,0,0);
 	}
 	else
 		setmdiactive(hwnd,TRUE);		// discard next click

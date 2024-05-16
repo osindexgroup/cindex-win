@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include <shlobj.h>
 #include <htmlhelp.h>
-#include <winsparkle.h>
 #include "commands.h"
 #include "errors.h"
 #include "files.h"
@@ -67,30 +66,22 @@ enum {
 };
 static TBBUTTON tbb[] = {
 	{BASESEPARATOR,0,0,BTNS_SEP,{0},0,-1},
-#ifndef READER
 	{MAKELONG(STD_FILENEW,STANDARDIMAGELIST),IDM_FILE_NEW,TBSTATE_ENABLED,BTNS_BUTTON,{0},0,0},
-#endif	//READER
 	{MAKELONG(STD_FILEOPEN,STANDARDIMAGELIST),IDM_FILE_OPEN,TBSTATE_ENABLED,BTNS_BUTTON,{0},0,0},
 	{MAKELONG(STD_FILESAVE,STANDARDIMAGELIST),IDM_FILE_SAVE,0,BTNS_BUTTON,{0},0,0},
 	{MAKELONG(STD_PRINT,STANDARDIMAGELIST),IDM_FILE_PRINT,0,BTNS_BUTTON,{0},0,0},
 	{0,0,0,BTNS_SEP,{0},0,-1},
-#ifndef READER
 	{MAKELONG(STD_CUT,STANDARDIMAGELIST),IDM_EDIT_CUT,0,BTNS_BUTTON,{0},0,0},
-#endif	//READER
 	{MAKELONG(STD_COPY,STANDARDIMAGELIST),IDM_EDIT_COPY,0,BTNS_BUTTON,{0},0,0},
-#ifndef READER
 	{MAKELONG(STD_PASTE,STANDARDIMAGELIST),IDM_EDIT_PASTE,0,BTNS_BUTTON,{0},0,0},
 	{0,0,0,BTNS_SEP,{0},0,-1},
-#endif	//READER
 	{MAKELONG(STD_FIND,STANDARDIMAGELIST),IDM_EDIT_FIND,0,BTNS_BUTTON,{0},0,0},
-#ifndef READER
 	{MAKELONG(STD_REPLACE,STANDARDIMAGELIST),IDM_EDIT_REPLACE,0,BTNS_BUTTON,{0},0,0},
 	{0,0,0,BTNS_SEP,{0},0,-1},
 	{MAKELONG(FB_NEW,CINDEXIMAGELIST),IDM_EDIT_NEWRECORD,0,BTNS_BUTTON,{0},0,0},
 	{0,0,TBSTATE_ENABLED,BTNS_SEP,{0},0,0},
 	{MAKELONG(FB_LABEL,CINDEXIMAGELIST),IDM_EDIT_TAG,TBSTATE_ENABLED,BTNS_WHOLEDROPDOWN,{0},0,0},
 	{MAKELONG(FB_DELETE,CINDEXIMAGELIST),IDM_EDIT_DELETE,TBSTATE_ENABLED,BTNS_CHECK,{0},0,0},
-#endif //READER
 	{0,0,0,BTNS_SEP,{0},0,-1},
 	{MAKELONG(FB_ALLRECS,CINDEXIMAGELIST),IDM_VIEW_ALLRECORDS,0,BTNS_BUTTON,{0},0,0},
 	{0,0,0,BTNS_SEP,{0},0,-1},
@@ -100,22 +91,14 @@ static TBBUTTON tbb[] = {
 	{MAKELONG(FB_INDENTED,CINDEXIMAGELIST),IDB_VIEW_INDENTED,0,BTNS_CHECKGROUP,{0},0,0},
 	{MAKELONG(FB_RUNIN,CINDEXIMAGELIST),IDB_VIEW_RUNIN,0,BTNS_CHECKGROUP,{0},0,0},
 	{0,0,0,BTNS_SEP,{0},0,-1},
-#ifndef READER
 	{MAKELONG(FB_SORTALPHA,CINDEXIMAGELIST),IDB_VIEW_SORTALPHA,0,BTNS_CHECKGROUP,{0},0,0},
 	{MAKELONG(FB_SORTPAGE,CINDEXIMAGELIST),IDB_VIEW_SORTPAGE,0,BTNS_CHECKGROUP,{0},0,0},
 	{MAKELONG(FB_SORTNONE,CINDEXIMAGELIST),IDB_VIEW_SORTNONE,0,BTNS_CHECK,{ 0 },0,0 },
-#endif //READER
 };
 
-#ifdef READER
-#define ADDSIZE 8		/* buttons not in base set */
-#define SB_TOTAL 15		/* total # buttons in standard set */
-#define	VB_TOTAL 5		/* total number of buttons in our view set */
-#else
 #define ADDSIZE 16		/* buttons not in base set */
 #define SB_TOTAL 15		/* total # buttons in standard set */
 #define	VB_TOTAL 10		/* total number of buttons in our view set */
-#endif //READER
 
 #define TBBSIZE (sizeof(tbb)/sizeof(TBBUTTON))	/* total size of array */
 
@@ -163,8 +146,8 @@ static struct ttcont ttcontrols[] = {
 static int statwidths[] = {	/* widths of segments of status window */
 	210,
 	280,
-	400,	// sort state
-	500,
+	410,	// sort state
+	510,
 	-1
 };
 #define STAT_NPARTS (sizeof(statwidths)/sizeof(int))
@@ -245,7 +228,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE previnstance, PSTR cmdline, in
 	dde_setup();		/* sets up ddeml */
 #if 0			/* keep this until we can find the right check for  multiple copies */
 	if (dde_sendcheck())	{	/* if this copy is running anywhere */
-		senderr(ERR_DUPCOPY,WARN);
+		showError(NULL,ERR_DUPCOPY,WARN);
 		dde_close();	/* closes ddeml */
 		return (FALSE);
 	}
@@ -268,8 +251,6 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE previnstance, PSTR cmdline, in
 		if (!g_prefs.gen.setid || getuserid())	{	/* if don't want userid or got it */
 #endif //PUBLISH
 			accel = LoadAccelerators(hinstance,szframename);
-//			http_connect(TRUE);		//  silent check
-//			reg_setkeyvalue(K_UPDATES,TEXT("CheckForUpdates"),REG_SZ, g_prefs.gen.autoupdate ? TEXT("1") : TEXT("0"),1);
 			hwsplash = CreateDialog(g_hinst,MAKEINTRESOURCE(IDD_SPLASH),g_hwframe,splashproc);
 			OleInitialize(NULL);
 			ucnv_setDefaultName("UTF-8");	// set default code page to UTF-8
@@ -283,28 +264,10 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE previnstance, PSTR cmdline, in
 				(SHGetFolderPath(NULL,CSIDL_PERSONAL,NULL,SHGFP_TYPE_CURRENT,path) == S_OK))	// or path to docs folder
 				SetCurrentDirectory(path);
 			UpdateWindow(g_hwframe);
-#if 0
-#if TOPREC == RECLIMIT
-			win_sparkle_set_registry_path(K_WINSPARKLE);
-#ifdef PUBLISH
-			CreateMutex(NULL, FALSE, TEXT("CindexPublisherMutex"));	// so that INNO can detect if version running
-			win_sparkle_set_appcast_url("https://www.example.com/path_to_appcast.xml");
-#else
-			CreateMutex(NULL, FALSE, TEXT("CindexMutex"));	// so that INNO can detect if version running
-			win_sparkle_set_appcast_url("https://www.example.com/path_to_appcast.xml");
-#endif
-			win_sparkle_set_can_shutdown_callback(canquitforupdate);
-			win_sparkle_set_shutdown_request_callback(quitforupdate);
-			win_sparkle_init();
-#endif
-#endif
+			http_connect(TRUE);		//  silent check
 			while (GetMessage(&msg,NULL, 0,0))	{	/* while not exit */
 				EXCEPTION_POINTERS * ep;
 				__try {
-					if (calledUpdateClosed)	{	// set by sparkle callback
-						PostQuitMessage(0);
-						continue;
-					}
 					if (msg.message == WM_KEYDOWN && msg.wParam == VK_CANCEL)	{	// want cancel macro
 						if (mcr_cancel())	/* if were recording */
 							mcr_setname(g_hwframe);	/* name it */
@@ -320,14 +283,9 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE previnstance, PSTR cmdline, in
 						com_setdefaultbuttons(TRUE);
 				}
 				__except ((ep = GetExceptionInformation()) && (GetExceptionCode() == ERR_DAMAGEDRECORD ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)){
-					senderr(ERR_DAMAGEDRECORD,WARN,ep->ExceptionRecord->ExceptionInformation[0]);		/* if error */
+					showError(NULL,ERR_DAMAGEDRECORD,WARN,ep->ExceptionRecord->ExceptionInformation[0]);		/* if error */
 				}
 			}
-#if 0
-#if TOPREC == RECLIMIT
-			win_sparkle_cleanup();
-#endif
-#endif
 			OleFlushClipboard();
 			OleUninitialize();
 		}
@@ -351,7 +309,6 @@ static LRESULT CALLBACK frameproc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 {
 	switch (msg)	{
 		HANDLE_MSG(hwnd,WM_CREATE,dofcreate);
-//		HANDLE_MSG(hwnd,WM_COMMAND,dofcommand);
 		HANDLE_MSG(hwnd,WM_NOTIFY,dofnotify);
 		HANDLE_MSG(hwnd,WM_SIZE,dofsize);
 		HANDLE_MSG(hwnd,WM_CLOSE,dofclose);
@@ -387,18 +344,6 @@ static LRESULT CALLBACK frameproc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				hk_unregister();		/* unregister hot keys */
 			}
 			break;
-#if 0
-		case WM_MOUSEWHEEL:
-			{
-				POINT pt;
-				HWND hwc;
-
-				pt.x = LOWORD(lParam);
-				pt.y = HIWORD(lParam);
-				hwc = ChildWindowFromPoint(hwnd,pt);
-				return SendMessage(hwc,msg,wParam,lParam);
-			}
-#endif
 	}
 	return (DefFrameProc(hwnd,g_hwclient,msg,wParam,lParam));
 }
@@ -450,9 +395,6 @@ static void dofcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* sets
 			case IDM_EDIT_PREFERENCES:
 				edit_preferences();
 				return;
-//			case IDM_VIEW_ABBREVIATIONS:
-//				abbrev_view();
-//				return;
 			case IDM_DOCUMENT_MARGINSCOLUMNS:
 				fs_margcol(NULL);
 				return;
@@ -523,7 +465,7 @@ static void dofcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* sets
 				dowindowhelp(TEXT("base\\Cindex Help.htm"));
 				return;
 			case IDM_HELP_CHECKFORUPDATES:
-				win_sparkle_check_update_with_ui();
+				http_connect(NO);
 				return;
 			default:
 				if (id >= IDM_MACRO_1 && id <= IDM_MACRO_10)	{
@@ -650,11 +592,11 @@ static BOOL dofcreate(HWND hwnd, LPCREATESTRUCT cs)
 		SetMenuInfo(submenu,&mmi);
 	}
 
-//	count =  GetMenuItemCount(GetSubMenu(wmenu,5));	// get tools menu
+	// need to change index ofitem if we add menud commands above Abbrevs
 	mi.fMask = MIIM_SUBMENU|MIIM_ID;
-	GetMenuItemInfo(GetSubMenu(wmenu,5),14,TRUE,&mi);	// get abbrev item from tools menu
+	GetMenuItemInfo(GetSubMenu(wmenu,5),15,TRUE,&mi);	// get abbrev item from tools menu
 	mi.wID = IDPM_ABBREVIATIONS;
-	SetMenuItemInfo(GetSubMenu(wmenu,5),14,TRUE,&mi);	// set its id
+	SetMenuItemInfo(GetSubMenu(wmenu,5),15,TRUE,&mi);	// set its id
 	mmi.dwMenuData = IDPM_ABBREVIATIONS;		// id of abbrev submenu
 	SetMenuInfo(mi.hSubMenu,&mmi);				// set id on submenu
 
@@ -711,19 +653,6 @@ static BOOL dofcreate(HWND hwnd, LPCREATESTRUCT cs)
 		NULL);                   // no window creation data
 	configurestatusbar(g_hwstatus, STAT_NPARTS, statwidths);
 	SendMessage(g_hwstatus, WM_SETFONT, (WPARAM)CreateFontIndirect(&getconfigdpi(hwnd)->lfStatusFont), MAKELPARAM(FALSE, 0));
-#if 0
-	g_hwtoolbar = CreateToolbarEx(hwnd,TBSTYLE_TOOLTIPS|TBSTYLE_ALTDRAG|
-		WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS|CCS_TOP|CCS_ADJUSTABLE|TBSTYLE_EX_DRAWDDARROWS,
-		IDC_TOOLBAR,SB_TOTAL,HINST_COMMCTRL,IDB_STD_SMALL_COLOR,tbb,TBBSIZE,0,0,0,0,sizeof(TBBUTTON));
-	tbvb.hInst = g_hinst;
-	tbvb.nID = IDR_VIEWTOOLS;
-	bindex = SendMessage(g_hwtoolbar,TB_ADDBITMAP,VB_TOTAL,(LPARAM)&tbvb);
-	for (count = TBBSIZE; count < TBTOTSIZE; count++)	{
-		if (tbb[count].idCommand)
-			tbb[count].iBitmap = bindex++;
-	}
-	SendMessage(g_hwtoolbar,TB_ADDBUTTONS,ADDSIZE,(LPARAM)&tbb[TBBSIZE]);
-#endif
 	g_hwtoolbar = createtoolbar(hwnd);
 	if (!reg_getkeyvalue(K_TOOLBARS,F_TBREGISTERD,NULL,NULL))	/* if don't have a default setting */
 		com_tbsaverestore(g_hwtoolbar,hwnd,TRUE, F_TBREGISTERD);	/* save it */
@@ -734,9 +663,6 @@ static BOOL dofcreate(HWND hwnd, LPCREATESTRUCT cs)
 		(HMENU)IDM_COMBO_FONT,
 		g_hinst,
 		NULL);
-#if 0
-	SetParent(g_hwfcb,g_hwtoolbar);		/* set toobar as parent */
-#endif
 	layoutForDpi(g_hwfcb, 3, 2, 140, 280);
 	SendMessage(g_hwfcb,WM_SETFONT,(WPARAM)mfont,MAKELPARAM(FALSE,0));
 	type_findfonts(hwnd);	/* finds fonts info */
@@ -790,20 +716,11 @@ static BOOL dofcreate(HWND hwnd, LPCREATESTRUCT cs)
 static void dofactivate(HWND hwnd, UINT state, HWND hwndActDeact, BOOL fMinimized)	/* activates/deactivates */
 
 {
-#if 0
-	HWND cwind;
-
-	if (state != WA_INACTIVE && (cwind = getactivemdi(TRUE)))		/* if have active MDI window */
-		SendMessage(cwind,WMM_UPDATETOOLBARS, 0,0);		/* do its toolbar fn to get buttons, etc */
-	else
-		com_setdefaultbuttons(FALSE);
-#else
 	if (state == WA_INACTIVE)	{	// if we're inactive
 		com_setdefaultbuttons(FALSE);
 //		SendMessage(g_hwtoolbar,TB_ENABLEBUTTON,IDM_FILE_NEW,FALSE);	// enable new, open
 //		SendMessage(g_hwtoolbar,TB_ENABLEBUTTON,IDM_FILE_OPEN,FALSE);
 	}
-#endif
 	DefFrameProc(hwnd,g_hwclient,WM_ACTIVATE,MAKEWPARAM((state), (fMinimized)),(LPARAM)(HWND)(hwndActDeact));
 }
 /************************************************************************/
@@ -1098,6 +1015,7 @@ static BOOL initcindex (void)	/* initializes, registers classes, etc */
 
 	InitCommonControls();
 	LoadLibrary(TEXT("Riched20.dll"));
+//	LoadLibrary(TEXT("Msftedit.dll"));
 	g_recref = RegisterClipboardFormat(CF_CINREC);
 	g_rtfref = RegisterClipboardFormat(CF_RTF);
 //	g_htmlref = RegisterClipboardFormat(CF_HTML);
@@ -1114,8 +1032,6 @@ static BOOL initcindex (void)	/* initializes, registers classes, etc */
 			freemem(vdata);
 		}
 	}
-//	g_hwframe = CreateWindow(szframename,namestring,WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN,
-//		CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT,NULL,NULL,g_hinst,NULL);
 	g_hwframe = CreateWindowEx(0,szframename, namestring, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, g_hinst, NULL);
 	if (RegOpenKeyEx(HKEY_CURRENT_USER,TEXT("Control Panel\\Keyboard"),0,KEY_ALL_ACCESS,&hk) == ERROR_SUCCESS)	{
@@ -1210,7 +1126,7 @@ static INT_PTR CALLBACK splashproc(HWND hwnd, UINT msg, WPARAM wParam,LPARAM lPa
 		case WM_INITDIALOG:
 			splashW = 430 * 1.25;
 			splashH = 215 * 1.25;
-			SystemParametersInfo(SPI_GETWORKAREA,sizeof(RECT),&srect,0);
+			SystemParametersInfo(SPI_GETWORKAREA,sizeof(RECT),&srect,0);	// desktop of primary monitor
 			GetWindowRect(hwnd,&wrect);
 			SetWindowPos(hwnd,NULL,(srect.right-splashW)/2,(srect.bottom-splashH)/2, splashW, splashH, SWP_NOZORDER | SWP_FRAMECHANGED);
 			HBITMAP bm = LoadImage(g_hinst, MAKEINTRESOURCE(iid), IMAGE_BITMAP, splashW, splashH, 0);
@@ -1299,7 +1215,7 @@ static void showcharactermap(void)		// displays character map
 			DWORD err = GetLastError();
 			TCHAR tbuff[4096];
 			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,NULL,err,0,tbuff,4096,NULL);
-			senderr(ERR_NOCHARMAP,WARN,tbuff);
+			showError(NULL,ERR_NOCHARMAP,WARN,tbuff);
 		}
 	}
 }

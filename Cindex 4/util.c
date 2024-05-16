@@ -185,9 +185,13 @@ TCHAR * toNative(char * string)	// converts to native from utf-8
 {
 	static UChar u16str[4096];
 	UErrorCode error = U_ZERO_ERROR;
-	int32_t olength;
+	int32_t olength, subcount;
 
+#if 1	
 	u_strFromUTF8(u16str,sizeof(u16str),&olength,string,-1,&error);
+#else
+	u_strFromUTF8WithSub(u16str, sizeof(u16str), &olength, string, -1, '\@', &subcount,&error);
+#endif
 	return u16str;
 }
 /***************************************************************************/
@@ -807,7 +811,7 @@ void centerwindow(HWND dptr, int mode)		/* center dptr on bgnd */
 	POINT pt;
 	HWND twind, bgnd;
 
-	if (mode)	{/* trying for view window of top index */
+	if (mode)	{	/* trying for view window of top index */
 		bgnd = g_hwclient;	/* default is center on client */
 		twind = FORWARD_WM_MDIGETACTIVE(g_hwclient, SendMessage);
 		if (IsWindow(twind) && WX(twind, owner))	{
@@ -820,21 +824,24 @@ void centerwindow(HWND dptr, int mode)		/* center dptr on bgnd */
 		if (!bgnd)
 			bgnd = g_hwframe;
 	}
-	SystemParametersInfo(SPI_GETWORKAREA,sizeof(RECT),&wrect,0);
+	GetWindowRect(g_hwframe, &wrect);	// bounding rect (frame)
+	GetWindowRect(bgnd, &prect);	// bgnd window rect
 	GetWindowRect(dptr,&drect);	// our window rect
-	GetWindowRect(bgnd,&prect);	// bgnd window rect
 	if (!IsWindowVisible(bgnd))	// if bgnd isn't visible
-		prect = wrect;		// set desktop as rect
+		prect = wrect;		// set frame as rect
 	pt.x = prect.left+((prect.right-prect.left)-(drect.right-drect.left))/2;
 	if (mode < 0)		/* if want positioned at bottom of background */
 		pt.y = prect.bottom-(drect.bottom-drect.top)-30;
 	else	/* centered */
 		pt.y = prect.top+((prect.bottom-prect.top)-(drect.bottom-drect.top))/2;
-	if (pt.x < wrect.left)
+	// force within frame if necessary
+	if (pt.x < wrect.left)	// if too far left
 		pt.x = wrect.left;
-	if (pt.y < wrect.top)
+	else if (pt.x + (drect.right - drect.left) > wrect.right)	// if too far right
+		pt.x = wrect.right - (drect.right - drect.left);
+	if (pt.y < wrect.top)	// if too high
 		pt.y = wrect.top;
-	else if (pt.y+(drect.bottom-drect.top) >wrect.bottom)
+	else if (pt.y+(drect.bottom-drect.top) > wrect.bottom)	// if too low
 		pt.y = wrect.bottom-(drect.bottom-drect.top);
 	SetWindowPos(dptr,NULL,pt.x,pt.y,0,0,SWP_NOSIZE|SWP_NOZORDER);
 }
@@ -1217,7 +1224,7 @@ void adjustsortfieldorder(short * fieldorder, short oldtot, short newtot)	/* exp
 		if (sort_isinfieldorder(fieldorder,oldtot < newtot ? oldtot : newtot))	/* if currently in field order */
 			sort_buildfieldorder(fieldorder,oldtot,newtot);
 		else if (newtot > oldtot)	/* if added new fields that we don't know how to use */
-			sendinfo(INFO_SORTORDER);
+			showInfo(NULL,INFO_SORTORDER);
 	}
 }
 /**********************************************************************************/

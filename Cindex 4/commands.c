@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <htmlhelp.h>
+#include "index.h"
 #include "commands.h"
 #include "errors.h"
 #include "records.h"
@@ -51,6 +52,7 @@ static COMGROUP c_com[] = {
 	IDM_EDIT_EDITRECORD,IDM_EDIT_EDITRECORD,IDM_EDIT_EDITRECORD,NULL,EVSEL|EVFSEL|WPASS,
 	IDM_EDIT_DUPLICATE,IDM_EDIT_DUPLICATE,IDM_EDIT_DUPLICATE,NULL,EVSEL|EVFSEL|WPASS,
 	IDM_EDIT_DEMOTE,IDM_EDIT_DEMOTE,IDM_EDIT_DEMOTE,NULL,EVSEL|EVFSEL|WPASS,
+	IDM_EDIT_FLIP,IDM_EDIT_FLIP,IDM_EDIT_FLIPX,NULL,EVSEL | EVFSEL | WPASS,
 	IDM_EDIT_DELETE,IDM_EDIT_DELETE,IDM_EDIT_DELETE,NULL,EVSEL|EVFSEL|ERVIEW|WPASS,
 	IDM_EDIT_TAG,IDM_EDIT_TAG,IDM_EDIT_TAG,NULL,EVSEL|EVFSEL|ERVIEW|WPASS,
 	IDM_EDIT_LABEL0,IDM_EDIT_LABEL_SWITCH,IDM_EDIT_LABEL0+FLAGLIMIT,NULL,EVSEL|EVFSEL|ERVIEW|ERSVIEW|WPASS,
@@ -105,8 +107,9 @@ static COMGROUP c_com[] = {
 	IDM_DOCUMENT_REFERENCESYNTAX,IDM_DOCUMENT_REFERENCESYNTAX,IDM_DOCUMENT_REFERENCESYNTAX,NULL,EIDLE|EVIEW|ERVIEW|ERSVIEW|WPASS,
 	IDM_DOCUMENT_FLIPWORDS,IDM_DOCUMENT_FLIPWORDS,IDM_DOCUMENT_FLIPWORDS,NULL,EIDLE|EVIEW|ERVIEW|ERSVIEW|WPASS,
 
-	IDM_TOOLS_VERIFYCROSSREFERENCES,IDM_TOOLS_VERIFYCROSSREFERENCES,IDM_TOOLS_VERIFYCROSSREFERENCES,NULL,EVIEW|WPASS,
+//	IDM_TOOLS_VERIFYCROSSREFERENCES,IDM_TOOLS_VERIFYCROSSREFERENCES,IDM_TOOLS_VERIFYCROSSREFERENCES,NULL,EVIEW|WPASS,
 	IDM_TOOLS_CHECKINDEX,IDM_TOOLS_CHECKINDEX,IDM_TOOLS_CHECKINDEX,NULL,EVIEW | WPASS,
+	IDM_TOOLS_COMPAREINDEXES,IDM_TOOLS_COMPAREINDEXES,IDM_TOOLS_COMPAREINDEXES,NULL,EVIEW | WPASS,
 	IDM_TOOLS_RECONCILEHEADINGS,IDM_TOOLS_RECONCILEHEADINGS,IDM_TOOLS_RECONCILEHEADINGS,NULL,EVIEW|WPASS,
 	IDM_TOOLS_ALTERREFERENCES,IDM_TOOLS_ALTERREFERENCES,IDM_TOOLS_ALTERREFERENCES,NULL,EVIEW|WPASS,
 	IDM_TOOLS_GENERATECROSSREFERENCES,IDM_TOOLS_GENERATECROSSREFERENCES,IDM_TOOLS_GENERATECROSSREFERENCES,NULL,EVIEW|WPASS,
@@ -153,12 +156,16 @@ static COMGROUP c_com[] = {
 	IDB_MOD_FLIPX,IDB_MOD_FLIPX,IDB_MOD_FLIPX,NULL,ERVIEW|ERSVIEW|WPASS,
 	IDB_MOD_HALFFLIP,IDB_MOD_HALFFLIP,IDB_MOD_HALFFLIP,NULL,ERVIEW|ERSVIEW|WPASS,
 	IDB_MOD_HALFFLIPX,IDB_MOD_HALFFLIPX,IDB_MOD_HALFFLIPX,NULL,ERVIEW|ERSVIEW|WPASS,
+	IDB_MOD_INVERT, IDB_MOD_INVERT, IDB_MOD_INVERT, NULL, ERVIEW | ERSVIEW | WPASS,
 	IDB_MOD_SWAPPAREN,IDB_MOD_SWAPPAREN,IDB_MOD_SWAPPAREN,NULL,ERVIEW|ERSVIEW|WPASS,
 	IDB_MOD_REVERT,IDB_MOD_REVERT,IDB_MOD_REVERT,NULL,ERVIEW|ERSVIEW|WPASS,
 	IDB_MOD_DUPNEW,IDB_MOD_DUPNEW,IDB_MOD_DUPNEW,NULL,ERVIEW|ERSVIEW|WPASS,
 	
 	IDM_MOD_INCREMENT,IDM_MOD_INCREMENT,IDM_MOD_INCREMENT,NULL,ERVIEW|ERSVIEW|WPASS,
 	IDM_MOD_DECREMENT,IDM_MOD_DECREMENT,IDM_MOD_DECREMENT,NULL,ERVIEW|ERSVIEW|WPASS,
+
+	IDM_ENDASH, IDM_ENDASH, IDM_ENDASH, NULL, ERVIEW | WPASS,
+	IDM_EMDASH, IDM_EMDASH, IDM_EMDASH, NULL, ERVIEW | WPASS,
 
 	0,0,0,NULL,0L,
 };
@@ -267,9 +274,9 @@ short com_getdates(short scope, char * first, char * last, time_c * low, time_c 
 				err = 2;
 		}
 		if (err)
-			senderr(ERR_BADDATE,WARN);
+			showError(NULL,ERR_BADDATE,WARN);
 		else if (*low >= *high)	{	/* bad range */
-			senderr(ERR_BADDATERANGE,WARN);
+			showError(NULL,ERR_BADDATERANGE,WARN);
 			err = 2;
 		}
 	}
@@ -294,7 +301,7 @@ short com_getrecrange(INDEX * FF, short scope, char *lptr, char * hptr, RECN * f
 				if (curptr = LX(FF->vwind,skip)(FF,recptr,1))	{	/* if can get get beyond */
 					*last = curptr->num; 	/* set it */
 					if (*first && sort_relpos(FF,*first,*last) >= 0)	/* if last not after first */
-						return (senderr(ERR_RECRANGERR,WARN));
+						return (showError(NULL,ERR_RECRANGERR,WARN));
 				}
 			}
 			else
@@ -353,7 +360,7 @@ void com_setbyindexstate(HWND wptr,HMENU hMenu, UINT item)		/* sets menu items b
 	INDEX * FF = getowner(wptr);
 	HMENU mh = GetMenu(g_hwframe);
 	int menuid = menu_getmid(hMenu);	
-	
+
 	if (hMenu == menu_gethandle(IDM_VIEW_GROUP))	/* if want to know about groups */
 		grp_buildmenu(FF);
 	mcr_setmenu(FALSE);		/* sets macro menus */
@@ -371,13 +378,13 @@ void com_setbyindexstate(HWND wptr,HMENU hMenu, UINT item)		/* sets menu items b
 	else if (FF->viewtype != VIEW_TEMP)	/* if not viewing temp group */
 		com_set(IDM_EDIT_SAVEGROUP,OFF);		/* can't save group */
 	if (FF->curfile)	{			/* if viewing a group */
-		com_check(IDM_VIEW_SHOWSORTED,TRUE);	/* imply sort on */
-		com_set(IDM_VIEW_SHOWSORTED, OFF);		/* disable sort switch */
+//		com_check(IDM_VIEW_SHOWSORTED,TRUE);	/* imply sort on */
+//		com_set(IDM_VIEW_SHOWSORTED, OFF);		/* disable sort switch */
 		com_set(IDM_TOOLS_COMPRESS, OFF);		/* disable squeeze */
 		com_set(IDM_TOOLS_EXPAND, OFF);		/* disable expand */
 		com_set(IDM_TOOLS_RECONCILEHEADINGS, OFF);			/* disable join */
 	}
-	else if (FF->viewtype == VIEW_NEW)	{	/* if showing new records */
+	if (FF->viewtype == VIEW_NEW)	{	/* if showing new records */
 		com_set(IDM_VIEW_SHOWSORTED, OFF);		/* disable sort switch */
 		com_check(IDM_VIEW_SHOWSORTED,FALSE);	/* imply sort off */
 		com_set(IDM_TOOLS_COMPRESS, OFF);		/* disable squeeze */
@@ -385,7 +392,7 @@ void com_setbyindexstate(HWND wptr,HMENU hMenu, UINT item)		/* sets menu items b
 		com_set(IDM_TOOLS_RECONCILEHEADINGS, OFF);			/* disable join */
 	}
 	else	{		/* if showing all records */
-		com_check(IDM_VIEW_SHOWSORTED,FF->head.sortpars.ison);	/* set sort menu */
+		com_check(IDM_VIEW_SHOWSORTED, FF->curfile ? FF->curfile->sg.ison : FF->head.sortpars.ison);	/* set sort menu */
 	}
 	if (menuid == IDPM_VIEW || menuid == IDPM_VIEWDEPTH)	{		/* if view menu */
 		CheckMenuRadioItem(mh,IDM_VIEW_FULLFORMAT,IDM_VIEW_UNFORMATTED,IDM_VIEW_FULLFORMAT+c_vform[FF->head.privpars.vmode],MF_BYCOMMAND);
@@ -428,23 +435,26 @@ void com_setbyindexstate(HWND wptr,HMENU hMenu, UINT item)		/* sets menu items b
 	if (FF->head.sortpars.fieldorder[0] == PAGEINDEX)	 {	/* if page sort  */
 		com_set(IDM_TOOLS_RECONCILEHEADINGS,OFF);
 		com_set(IDM_TOOLS_GENERATECROSSREFERENCES,OFF);
-		com_set(IDM_TOOLS_VERIFYCROSSREFERENCES,OFF);
 		com_set(IDM_TOOLS_CHECKINDEX, OFF);
 	}
+	com_set(IDM_TOOLS_COMPAREINDEXES, index_byindex(1) != NULL);	// can't compare unless second index open
 	if (FF->mf.readonly)	{			/* disable following for read-only index */
 		com_set(IDM_FILE_REVERT,OFF);
 		com_set(IDM_FILE_IMPORT,OFF);
+		com_set(IDM_EDIT_SAVEGROUP, OFF);
 		com_set(IDM_EDIT_UNDO,OFF);
 		com_set(IDM_EDIT_REDO,OFF);
 		com_set(IDM_EDIT_CUT,OFF);
 		com_set(IDM_EDIT_CLEAR,OFF);
 		com_set(IDM_EDIT_DEMOTE, OFF);
+		com_set(IDM_EDIT_FLIP, OFF);
 		com_set(IDM_EDIT_NEWRECORD,OFF);
 		com_set(IDM_EDIT_REPLACE,OFF);
 //		com_set(IDM_DOCUMENT_STYLEDSTRINGS, OFF);
 		com_set(IDM_DOCUMENT_RECORDSTRUCTURE, OFF);
 //		com_set(IDM_DOCUMENT_REFERENCESYNTAX, OFF);
 //		com_set(IDM_DOCUMENT_FLIPWORDS, OFF);
+		com_set(IDM_TOOLS_COMPAREINDEXES, OFF);
 		com_set(IDM_TOOLS_ALTERREFERENCES,OFF);
 		com_set(IDM_TOOLS_CHECKSPELLING,OFF);
 		com_set(IDM_TOOLS_RECONCILEHEADINGS,OFF);
@@ -476,7 +486,7 @@ long mc_closeall(HWND hwnd,int comid,HWND chandle,UINT notify)
 
 	EnumChildWindows(g_hwclient,closechild,(LPARAM)&okflag);
 	return (okflag);
-}
+} 
 /************************************************************************/
 static BOOL CALLBACK closechild(HWND hwnd,LPARAM okptr)
 
@@ -507,9 +517,7 @@ static INT_PTR CALLBACK aboutproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 	switch (msg)	{
 
 		case WM_INITDIALOG:
-			nstrcpy(path,GetCommandLine()+1);	/* get our path (trash leading ") */
-			endpath = nstrchr(path,'\"');		/* and trailing " */
-			*endpath = '\0';
+			GetModuleFileName(NULL, path, MAX_PATH);
 			if (vsize = GetFileVersionInfoSize(path,&vzero))	{
 				if (vdata = getmem(vsize))	{
 					if (GetFileVersionInfo(path,0,vsize,vdata))	{
@@ -616,13 +624,21 @@ void com_setdefaultbuttons(int simple)	/* sets default buttons */
 	SendMessage(g_hwtoolbar,TB_ENABLEBUTTON,IDB_VIEW_SORTALPHA,FALSE);
 	SendMessage(g_hwtoolbar,TB_ENABLEBUTTON,IDB_VIEW_SORTPAGE,FALSE);
 	SendMessage(g_hwtoolbar, TB_ENABLEBUTTON,IDB_VIEW_SORTNONE,FALSE);
+
+	// switch buttons retain color when disabled, unless unchecked
+	SendMessage(g_hwtoolbar, TB_CHECKBUTTON, IDM_VIEW_FULLFORMAT, FALSE);
+	SendMessage(g_hwtoolbar, TB_CHECKBUTTON, IDM_VIEW_DRAFTFORMAT, FALSE);
+	SendMessage(g_hwtoolbar, TB_CHECKBUTTON, IDB_VIEW_INDENTED, FALSE);
+	SendMessage(g_hwtoolbar, TB_CHECKBUTTON, IDB_VIEW_RUNIN, FALSE);
+	SendMessage(g_hwtoolbar, TB_CHECKBUTTON, IDB_VIEW_SORTALPHA, FALSE);
+	SendMessage(g_hwtoolbar, TB_CHECKBUTTON, IDB_VIEW_SORTPAGE, FALSE);
+	SendMessage(g_hwtoolbar, TB_CHECKBUTTON, IDB_VIEW_SORTNONE, FALSE);
 	com_settextmenus(NULL,OFF,OFF);
 	if (simple)	{
 		SendMessage(g_hwstatus,SB_SIMPLE,TRUE,0);	/* restore simple status window */
 		SendMessage(g_hwstatus,SB_SETTEXT,255|SBT_NOBORDERS,(LPARAM)TEXT("For help press F1 at any time"));	/* display on status line */
 	}
 }
-
 /******************************************************************************/
 void com_tbsaverestore(HWND hwtb,HWND parent, BOOL sflag, TCHAR * vname)	/* saves or retrieves tb */
 
@@ -633,14 +649,6 @@ void com_tbsaverestore(HWND hwtb,HWND parent, BOOL sflag, TCHAR * vname)	/* save
 		tbs.pszSubKey = K_TOOLBARS;
 		tbs.pszValueName = vname;
 		SendMessage(hwtb,TB_SAVERESTORE,sflag,(LPARAM)&tbs);	/* TRUE if saving */
-		if (!sflag)	{	/* if restoring */
-#if 0
-			if (parent != g_hwframe)
-				SendMessage(parent,WMM_UPDATETOOLBARS,0,0);
-			else
-				com_setdefaultbuttons(TRUE);
-#endif
-		}
 	}
 }
 /************************************************************************/
@@ -706,7 +714,6 @@ void com_pushrecent(TCHAR * newpath)		/* manages recent file list */
 		}
 	}
 }
-#if 1
 /******************************************************************************/
 void com_setrecentfiles(HMENU mh)		/* sets recent file items in file menu */
 
@@ -769,62 +776,6 @@ void com_setrecentfiles(HMENU mh)		/* sets recent file items in file menu */
 		InsertMenuItem(mh,IDM_FILE_EXIT,FALSE,&mi);
 	}
 }
-#else
-/******************************************************************************/
-void com_setrecentfiles(HMENU mh)		/* sets recent file items in file menu */
-
-{
-	MENUITEMINFO mi;
-	int icount, index, added;
-	char * tptr, tbuff[STSTRING], *pptr, *eptr, *xptr;
-	char curdir[MAX_PATH];
-
-#define M_RECENTFILE 716
-
-	/* delete existing menu items */
-	icount = GetMenuItemCount(mh);
-	memset(&mi,0,sizeof(MENUITEMINFO));
-	mi.cbSize = sizeof(MENUITEMINFO);
-	mi.fMask = MIIM_DATA;
-	index = icount-2;	/* point to item before Exit */
-	do {			/* for all our recent file items */
-		GetMenuItemInfo(mh,index,TRUE,&mi);
-		if (mi.dwItemData == M_RECENTFILE)		/* if one of our file items */
-			DeleteMenu(mh,index,MF_BYPOSITION);	/* delete it */
-	} while (mi.dwItemData == M_RECENTFILE && index--);/* while we have file items */
-
-	memset(&mi,0,sizeof(MENUITEMINFO));
-	mi.cbSize = sizeof(MENUITEMINFO);
-	mi.fMask = MIIM_ID|MIIM_TYPE|MIIM_DATA;
-	mi.fType = MFT_STRING;
-	mi.dwItemData = M_RECENTFILE;
-	GetCurrentDirectory(MAX_PATH,curdir);
-	for (added = index = 0; index < MAXRECENT; index++)	{
-		pptr = com_findrecent(index);
-		if (pptr && (tptr = strrchr(pptr,'\\')))	{	/* parse filename */
-			if (strnicmp(curdir,pptr,tptr-pptr))	{/* if not in current directory */
-				for (eptr = pptr; (xptr = strchr(eptr,'\\')) && xptr < pptr+26; eptr = xptr+1)
-					;
-				if (eptr == tptr)	/* no need to truncate */
-					sprintf(tbuff,"&%d %s",index+1,pptr);
-				else				/* truncate path */
-					sprintf(tbuff,"&%d %.*s\\... \\%s",index+1,eptr-pptr-1,pptr,++tptr);
-			}
-			else
-				sprintf(tbuff,"&%d %s",index+1,++tptr);
-			mi.dwTypeData = tbuff;
-			mi.wID = index+IDM_FILE_RECENT1;				
-			InsertMenuItem(mh,IDM_FILE_EXIT,FALSE,&mi);
-			added = TRUE;
-		}
-	}
-	if (added)	{	/* if added any */
-		mi.fMask = MIIM_TYPE|MIIM_DATA;
-		mi.fType = MFT_SEPARATOR;
-		InsertMenuItem(mh,IDM_FILE_EXIT,FALSE,&mi);
-	}
-}
-#endif
 /******************************************************************************/
 TCHAR * com_findrecent(int recentorder)		/* returns path for file in order */
 

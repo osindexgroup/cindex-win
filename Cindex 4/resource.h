@@ -109,6 +109,9 @@
 #define IDI_XMLRECORDS                  113
 #define IDI_ARCHIVE                     114
 #define IDI_ABBREV                      115
+#define IDI_STYLE                       116
+#define IDI_TPL                         117
+#define IDI_INDEX_OLD                   118
 #define IDI_STYLE_OLD                   119
 #define IDI_TPL_OLD                     120
 #define IDI_ABBREV_OLD                  121
@@ -135,7 +138,6 @@
 #define IDD_SPELL_OPTIONS               163
 #define IDD_SPELL_NEWDIC                164
 #define IDD_SPELL_EDITDIC               165
-#define IDD_VERIFY                      166
 #define IDD_RECONCILE                   167
 #define IDD_COMPRESS                    169
 #define IDD_ALTER                       170
@@ -290,23 +292,21 @@
 #define INFO_ALLFONTSUSED               360
 #define INFO_FILESTATS                  361
 #define INFO_IMPORTMARKED               362
-#define IDI_ICON2                       362
 #define INFO_SORTORDER                  363
-#define IDI_INDEX_OLD                   363
 #define INFO_FULLGROUP                  364
 #define INFO_CORRUPTINDEX               365
-#define IDI_STYLE                       365
 #define INFO_RECCONVERT                 366
-#define IDI_ICON3                       366
-#define IDI_TPL                         366
 #define INFO_NORECCONVERT               367
 #define INFO_INDEXNEEDSREPAIR           368
 #define INFO_REPAIRMARKED               369
+#define IDD_COMPARE                     369
 #define INFO_CINUPTODATE                370
 #define INFO_UPDATEAVAILABLE            371
 #define INFO_WRITERECWITHERROR          372
 #define INFO_CONVERSIONCHANGES          373
 #define INFO_NEWFROMIMPORT              374
+#define INFO_UPTODATE                   375
+#define INFO_INDEXESMATCH               376
 #define PRG_VERIFYING                   400
 #define PRG_SUMMARY                     401
 #define PRG_CHECKING                    402
@@ -517,8 +517,6 @@
 #define IDC_SPELL_EDITDELETE            1194
 #define IDC_SPELL_EDITSELALL            1195
 #define IDC_SPELL_EDITDESELALL          1196
-#define IDC_VERIFY_EXACT                1197
-#define IDC_VERIFY_MIN                  1198
 #define IDC_RECONCILE_LEVEL             1199
 #define IDC_RECONCILE_NOSPLIT           1200
 #define IDC_RECONCILE_PROTECT           1201
@@ -922,9 +920,6 @@
 #define IDC_RECONCILE_CONVERT           1733
 #define IDC_RECONCILE_REMOVE            1734
 #define IDC_RECONCILE_PRESERVE          1737
-#define IDC_VERIFY_CROSSREF             1738
-#define IDC_VERIFY_LOCATOR              1739
-#define IDC_VERIFY_LOCATORLIMIT         1740
 #define IDC_FIND_ONLYAMONG              1742
 #define IDC_FIND_NOTAMONG               1743
 #define IDC_FIND_TAGRECLEVEL            1744
@@ -999,9 +994,13 @@
 #define IDC_SPLIT_MARKRECORDS           1794
 #define IDC_FORM_L9                     1794
 #define IDC_SORT_LEFT_RIGHT             1794
+#define IDC_COMPARE_GROUPTHIS           1794
+#define IDC_CHECK_H_MODIFIED            1794
 #define IDC_FORM_L10                    1795
+#define IDC_COMPARE_GROUPBOTH           1795
 #define IDC_SPLIT_REMOVESTYLES          1796
 #define IDC_FORM_L11                    1796
+#define IDC_COMPARE_GROUPOTHER          1796
 #define IDC_FORM_L12                    1797
 #define IDC_FORM_L13                    1798
 #define IDC_SPLIT_PATTERN               1799
@@ -1011,6 +1010,7 @@
 #define IDC_SORT_SUBSTITUTE             1800
 #define IDC_SORT_SUB_ADD                1800
 #define IDC_FORM_L15                    1800
+#define IDC_COMPARE_COMPARE             1800
 #define IDC_CHECK_B_MISUSED             1801
 #define IDC_CHECK_B_PUNCTSPACE          1802
 #define IDC_CHECK_B_MISSINGSPACE        1803
@@ -1060,6 +1060,20 @@
 #define IDC_FORM_FIELDNAMES             1846
 #define IDC_FORM_TABLENAMES             1847
 #define IDC_TAG_UTF8                    1848
+#define IDC_COMPARE_INDEXLIST           1849
+#define IDC_COMPARE_                    1850
+#define IDC_COMPARE_FIELDDEPTH          1850
+#define IDC_COMPARE_LABELTHIS           1851
+#define IDC_COMPARE_DELTHIS             1852
+#define IDC_COMPARE_LABELBOTH           1853
+#define IDC_COMPARE_DELETEBOTH          1854
+#define IDC_COMPARE_LABELOTHER          1855
+#define IDC_COMPARE_IMPORTOTHER         1856
+#define IDC_COMPARE_RECORDSTHIS         1857
+#define IDC_COMPARE_RECORDSBOTH         1858
+#define IDC_COMPARE_RECORDSOTHER        1859
+#define IDC_COMPARE_MODIFY              1861
+#define IDC_COMPARE_TOPBOX              1863
 #define IDM_FILE_NEW                    40001
 #define IDM_FILE_OPEN                   40002
 #define IDM_FILE_CLOSE                  40003
@@ -1217,7 +1231,9 @@
 #define IDM_EDIT_LABEL8                 40588
 #define IDB_MOD_PROPAGATE               40590
 #define IDB_MOD_FLIP                    40598
+#define IDM_EDIT_FLIP                   40598
 #define IDB_MOD_FLIPX                   40599
+#define IDM_EDIT_FLIPX                  40599
 #define IDB_MOD_HALFFLIP                40600
 #define IDB_MOD_HALFFLIPX               40601
 #define IDB_MOD_PREV                    40603
@@ -1257,14 +1273,25 @@
 #define ID_VIEWPOP_DEMOTEHEADINGS       40694
 #define ID_VIEWPOP_REMOVEMARK           40702
 #define IDM_EDIT_REMOVEMARK             40703
+#define IDM_TOOLS_CHECK                 40706
+#define IDM_TOOLS_COMPAREINDEXES        40708
+#define IDM_CHECKINDEX                  40709
+#define ID_HELP_CHECKFORUPDATE          40712
+#define IDB_MOD_INVERT                  40713
+#define ID_VIEWPOP_FLIPHEADINGS         40718
+#define ID_MODPOP_INVERTNAME            40719
+#define IDM_EDIT_INVERT                 40720
+#define ID_EDIT_FLIPHEADINGS            40721
+#define IDM_ENDASH                      40722
+#define IDM_EMDASH                      40723
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        367
-#define _APS_NEXT_COMMAND_VALUE         40704
-#define _APS_NEXT_CONTROL_VALUE         1849
+#define _APS_NEXT_RESOURCE_VALUE        415
+#define _APS_NEXT_COMMAND_VALUE         40724
+#define _APS_NEXT_CONTROL_VALUE         1864
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

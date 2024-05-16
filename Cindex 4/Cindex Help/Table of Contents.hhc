@@ -404,6 +404,10 @@
 				<param name="Local" value="WinCin Help\web-content\base\Check_index.htm">
 				</OBJECT>
 			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Comparing indexes">
+				<param name="Local" value="WinCin Help\web-content\base\Compare_index.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
 				<param name="Name" value="Reconciling headings">
 				<param name="Local" value="WinCin Help\web-content\base\Tools_Reconciling.htm">
 				</OBJECT>

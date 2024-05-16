@@ -9,10 +9,10 @@ enum {			/* error level ids */
 
 extern short err_eflag;	/* global error flag -- TRUE after any error */
 
-short sendinfooption(TCHAR * title, const int warnno, ...);		/*  Yes,no */
-void sendinfo(const int warnno, ...);		/*  O.K. */
-short sendwarning(const int warnno, ...);	/* cancel, ok */
+short showInfoOption(HWND parent,TCHAR * title, const int warnno, ...);		/*  Yes,no */
+void showInfo(HWND parent, const int warnno, ...);		/*  O.K. */
+short showWarning(HWND parent, const int warnno, ...);		/* cancel, O.K. */
 short savewarning(const int warnno, ...);		/* discard, cancel, o.k. */
-short senderr(const int errnum, const int level, ...);
+short showError(HWND parent, const int errnum, const int level, ...);
 short senderronstatusline(const int errnum, const int level, ...);
 void senditemerr(HWND hwnd,int item);	/* flags item error and sets focus */

@@ -73,7 +73,7 @@ struct index {		/* runtime index structure */
 	GROUPHANDLE lastfile;	/* file for most recent search */
 	GROUPHANDLE curfile;	/* file used for skip, etc */
 	int groupcount;			/* holds count of number of groups */
-	RECN curfilepos;		/* index of current record in group */
+//	RECN curfilepos;		/* index of current record in group */
 	TCHAR pfspec[MAX_PATH];	/* file spec from which index read/saved */
 	TCHAR backupspec[MAX_PATH];	// path to backup file
 	MFILE mf;				// file map

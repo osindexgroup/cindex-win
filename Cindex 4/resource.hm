@@ -1,7 +1,7 @@
 // Microsoft Visual C++ generated Help ID include file.
 // Used by cindex.rc
 //
-#define HIDC_ABBREV_NAME                0x80c805fe    // IDD_ABBREV
+#define HIDC_ABBREV_NAME                0x80c80680    // IDD_ABBREV
 #define HIDC_ALTER_ADJONLY              0x80aa04c3    // IDD_ALTER
 #define HIDC_ALTER_ADJUSTMENT           0x80aa04c6    // IDD_ALTER
 #define HIDC_ALTER_ALLREFS              0x80aa04bd    // IDD_ALTER
@@ -11,11 +11,11 @@
 #define HIDC_ALTER_RANGEREF             0x80aa04be    // IDD_ALTER
 #define HIDC_ALTER_RANGESTART           0x80aa04c0    // IDD_ALTER
 #define HIDC_ALTER_REMOVE               0x80aa04c4    // IDD_ALTER
-#define HIDC_ARCHIVE_INCLUDE            0x80c705fc    // IDD_OPENARCHIVE
-#define HIDC_ARCHIVE_NEW                0x80c705fd    // IDD_OPENARCHIVE
+#define HIDC_ARCHIVE_INCLUDE            0x80c7067e    // IDD_OPENARCHIVE
+#define HIDC_ARCHIVE_NEW                0x80c7067f    // IDD_OPENARCHIVE
 #define HIDC_ASCIIC1                    0x80c305f7    // IDD_TAGS_SPECIAL
 #define HIDC_ASCIIP1                    0x80c305f6    // IDD_TAGS_SPECIAL
-#define HIDC_AUTOGEN_SEE                0x80bb0536    // IDD_AUTOGEN
+#define HIDC_AUTOGEN_SEE                0x80bb0532    // IDD_AUTOGEN
 #define HIDC_CHARTOOL_FONT              0x80d70682    // IDD_CHARTOOL
 #define HIDC_CHARTOOL_INSERT            0x80d70696    // IDD_CHARTOOL
 #define HIDC_CHARTOOL_LIST              0x80d70681    // IDD_CHARTOOL
@@ -35,6 +35,7 @@
 #define HIDC_CHECK_H_INCONSISTENTPREP   0x811a047b    // IDD_CHECK_HEADINGS
 #define HIDC_CHECK_H_INCONSISTENTPUNCT  0x811a0711    // IDD_CHECK_HEADINGS
 #define HIDC_CHECK_H_INCONSISTENTSTYLE  0x811a0710    // IDD_CHECK_HEADINGS
+#define HIDC_CHECK_H_MODIFIED           0x811a0702    // IDD_CHECK_HEADINGS
 #define HIDC_CHECK_H_ORPHANEDSUBHEAD    0x811a0714    // IDD_CHECK_HEADINGS
 #define HIDC_CHECK_R_EMPTYPAGE          0x811b0715    // IDD_CHECK_REFS
 #define HIDC_CHECK_R_EXACTMATCH         0x811b071a    // IDD_CHECK_REFS
@@ -46,6 +47,22 @@
 #define HIDC_CHECK_R_VERIFY             0x811b0718    // IDD_CHECK_REFS
 #define HIDC_CODETRANSG                 0x80d80607    // IDD_CODETRANS
 #define HIDC_CODETRANSH                 0x80d80608    // IDD_CODETRANS
+#define HIDC_COMPARE_COMPARE            0x81710708    // IDD_COMPARE
+#define HIDC_COMPARE_DELETEBOTH         0x8171073e    // IDD_COMPARE
+#define HIDC_COMPARE_DELTHIS            0x8171073c    // IDD_COMPARE
+#define HIDC_COMPARE_FIELDDEPTH         0x8171073a    // IDD_COMPARE
+#define HIDC_COMPARE_GROUPBOTH          0x81710703    // IDD_COMPARE
+#define HIDC_COMPARE_GROUPOTHER         0x81710704    // IDD_COMPARE
+#define HIDC_COMPARE_GROUPTHIS          0x81710702    // IDD_COMPARE
+#define HIDC_COMPARE_IMPORTOTHER        0x81710740    // IDD_COMPARE
+#define HIDC_COMPARE_INDEXLIST          0x81710739    // IDD_COMPARE
+#define HIDC_COMPARE_LABELBOTH          0x8171073d    // IDD_COMPARE
+#define HIDC_COMPARE_LABELOTHER         0x8171073f    // IDD_COMPARE
+#define HIDC_COMPARE_LABELTHIS          0x8171073b    // IDD_COMPARE
+#define HIDC_COMPARE_MODIFY             0x81710745    // IDD_COMPARE
+#define HIDC_COMPARE_RECORDSBOTH        0x81710742    // IDD_COMPARE
+#define HIDC_COMPARE_RECORDSOTHER       0x81710743    // IDD_COMPARE
+#define HIDC_COMPARE_RECORDSTHIS        0x81710741    // IDD_COMPARE
 #define HIDC_COMPRESS_CONSOLIDATE       0x80a904bb    // IDD_COMPRESS
 #define HIDC_COMPRESS_IGNORELABELS      0x80a906dd    // IDD_COMPRESS
 #define HIDC_COMPRESS_REMDEL            0x80a904b8    // IDD_COMPRESS
@@ -81,7 +98,7 @@
 #define HIDC_FILTER_LABEL1              0x810f06e3    // IDD_FILTERRECORDS
 #define HIDC_FILTER_ON                  0x810f06e1    // IDD_FILTERRECORDS
 #define HIDC_FINDREP_BOLD               0x80bc0537    // IDD_FIND_STYLE
-#define HIDC_FINDREP_FONT               0x80bc0608    // IDD_FIND_STYLE
+#define HIDC_FINDREP_FONT               0x80bc0536    // IDD_FIND_STYLE
 #define HIDC_FINDREP_ITALIC             0x80bc0538    // IDD_FIND_STYLE
 #define HIDC_FINDREP_NORMAL             0x80bc053b    // IDD_FIND_STYLE
 #define HIDC_FINDREP_SMALL              0x80bc053a    // IDD_FIND_STYLE
@@ -110,12 +127,12 @@
 #define HIDC_FINDSTYLE_ULINEAP          0x811c0722    // IDD_FIND_STYLE1
 #define HIDC_FINDSTYLE_ULINEIG          0x811c0721    // IDD_FIND_STYLE1
 #define HIDC_FINDSTYLE_ULINEREM         0x811c0723    // IDD_FIND_STYLE1
-#define HIDC_FIND_ALL                   0x80ac0406    // IDD_COUNT
+#define HIDC_FIND_ALL                   0x80ac0405    // IDD_COUNT
 #define HIDC_FIND_ALLDATES              0x8094040a    // IDD_REPLACE
 #define HIDC_FIND_ANDOR1                0x8093041a    // IDD_FIND
 #define HIDC_FIND_CASE1                 0x8093041e    // IDD_FIND
 #define HIDC_FIND_DATEEND               0x8093040d    // IDD_FIND
-#define HIDC_FIND_DATERANGE             0x8093040b    // IDD_REPLACE
+#define HIDC_FIND_DATERANGE             0x8094040b    // IDD_REPLACE
 #define HIDC_FIND_DATESTART             0x8093040c    // IDD_FIND
 #define HIDC_FIND_DELREC                0x80ac0412    // IDD_COUNT
 #define HIDC_FIND_DOWN                  0x80930415    // IDD_FIND
@@ -132,21 +149,21 @@
 #define HIDC_FIND_NOTAMONG              0x809306cf    // IDD_FIND
 #define HIDC_FIND_ONLYAMONG             0x809306ce    // IDD_FIND
 #define HIDC_FIND_PATTERN1              0x8093041f    // IDD_FIND
-#define HIDC_FIND_RANGE                 0x80ac0408    // IDD_COUNT
-#define HIDC_FIND_RANGEEND              0x8093040b    // IDD_COUNT
-#define HIDC_FIND_RANGESTART            0x80ac0409    // IDD_COUNT
-#define HIDC_FIND_SELECTED              0x80ac0407    // IDD_COUNT
+#define HIDC_FIND_RANGE                 0x80ac0407    // IDD_COUNT
+#define HIDC_FIND_RANGEEND              0x80ac0409    // IDD_COUNT
+#define HIDC_FIND_RANGESTART            0x80ac0408    // IDD_COUNT
+#define HIDC_FIND_SELECTED              0x80ac0406    // IDD_COUNT
 #define HIDC_FIND_STYLE1                0x80930418    // IDD_FIND
 #define HIDC_FIND_STYLESHOW1            0x80940419    // IDD_REPLACE
-#define HIDC_FIND_TAGREC                0x80ac0400    // IDD_COUNT
+#define HIDC_FIND_TAGREC                0x80ac040e    // IDD_COUNT
 #define HIDC_FIND_TAGRECLEVEL           0x809306d0    // IDD_FIND
 #define HIDC_FIND_TEXT1                 0x80930417    // IDD_FIND
 #define HIDC_FIND_UP                    0x80930414    // IDD_FIND
 #define HIDC_FIND_USERID                0x80930403    // IDD_FIND
 #define HIDC_FIND_WORD1                 0x8093041d    // IDD_FIND
-#define HIDC_FONTSIZE_LIST              0x80990466    // IDD_OTHERFONT
+#define HIDC_FONTSIZE_LIST              0x80990467    // IDD_OTHERFONT
 #define HIDC_FONTSUB_CHECK              0x80d90610    // IDD_FONTSUB
-#define HIDC_FONTSUB_LIST               0x80d9060d    // IDD_FONTSUB
+#define HIDC_FONTSUB_LIST               0x80d9060c    // IDD_FONTSUB
 #define HIDC_FONTSUB_PREFERRED          0x80d9060e    // IDD_FONTSUB
 #define HIDC_FONTSUB_SUBS               0x80d9060f    // IDD_FONTSUB
 #define HIDC_FORMWRITE_ALL              0x80ad062c    // IDD_STATISTICS
@@ -337,10 +354,10 @@
 #define HIDC_PREFS_PTEXTLABELC1         0x80f206da    // IDD_PREFS_PTEXT
 #define HIDC_PREFS_PTEXTSAMPLE          0x80f20462    // IDD_PREFS_PTEXT
 #define HIDC_PREFS_PTEXTSIZE            0x80f20461    // IDD_PREFS_PTEXT
-#define HIDC_PRINT_BULLET               0x80950486    // IDD_PRINT [PUBLISH]
-#define HIDC_PRINT_ODDEVEN              0x80950485    // IDD_PRINT [NPUBLISH]
-#define HIDC_PRINT_RECFROM              0x80950483    // IDD_PRINT [NPUBLISH]
-#define HIDC_PRINT_RECTO                0x80950484    // IDD_PRINT [NPUBLISH]
+#define HIDC_PRINT_BULLET               0x80960486    // IDD_PRINT [PUBLISH]
+#define HIDC_PRINT_ODDEVEN              0x80960485    // IDD_PRINT [NPUBLISH]
+#define HIDC_PRINT_RECFROM              0x80960483    // IDD_PRINT [NPUBLISH]
+#define HIDC_PRINT_RECTO                0x80960484    // IDD_PRINT [NPUBLISH]
 #define HIDC_RECONCILE_CONVERT          0x80a706c5    // IDD_RECONCILE
 #define HIDC_RECONCILE_LEVEL            0x80a704af    // IDD_RECONCILE
 #define HIDC_RECONCILE_NOSPLIT          0x80a704b0    // IDD_RECONCILE
@@ -416,7 +433,7 @@
 #define HIDC_SPELL_IGNOREALL            0x80a20493    // IDD_SPELL
 #define HIDC_SPELL_LANGUAGE             0x80a20495    // IDD_SPELL
 #define HIDC_SPELL_MODREC               0x80a2048b    // IDD_SPELL
-#define HIDC_SPELL_NEWDIC               0x80a404a9    // IDD_SPELL_NEWDIC
+#define HIDC_SPELL_NEWDIC               0x80a404a8    // IDD_SPELL_NEWDIC
 #define HIDC_SPELL_NEWREC               0x80a2048a    // IDD_SPELL
 #define HIDC_SPELL_OPTIONLANGUAGE       0x80a3049e    // IDD_SPELL_OPTIONS
 #define HIDC_SPELL_OPTIONS              0x80a20497    // IDD_SPELL
@@ -467,7 +484,7 @@
 #define HIDC_STYLAY_SPACING             0x80b20503    // IDD_STYLELAYOUT
 #define HIDC_STYLAY_STYLEMOD            0x80b204f4    // IDD_STYLELAYOUT
 #define HIDC_STYLAY_TAB                 0x80b204f6    // IDD_STYLELAYOUT
-#define HIDC_TAGS_EXTENSION             0x80c3060b    // IDD_TAGS_SPECIAL
+#define HIDC_TAGS_EXTENSION             0x80c3060c    // IDD_TAGS_SPECIAL
 #define HIDC_TAGS_INDIVIDUALREFS        0x80c006f0    // IDD_TAGS_STRUCT
 #define HIDC_TAGS_LEVELATTRIBUTE        0x81120701    // IDD_TAGS_XMLSTRUCT
 #define HIDC_TAGS_MAINDELETE            0x80bf0545    // IDD_TAGS_MAIN
@@ -484,15 +501,15 @@
 #define HIDC_TAG_BOLDON                 0x80c10548    // IDD_TAGS_STYLE
 #define HIDC_TAG_CROSSREF               0x80c005f4    // IDD_TAGS_STRUCT
 #define HIDC_TAG_CROSSREFEND            0x80c005f5    // IDD_TAGS_STRUCT
-#define HIDC_TAG_ENDLINE                0x80c30608    // IDD_TAGS_SPECIAL
-#define HIDC_TAG_ENDPARA                0x80c30609    // IDD_TAGS_SPECIAL
+#define HIDC_TAG_ENDLINE                0x80c30606    // IDD_TAGS_SPECIAL
+#define HIDC_TAG_ENDPARA                0x80c30607    // IDD_TAGS_SPECIAL
 #define HIDC_TAG_ITALOFF                0x80c1054b    // IDD_TAGS_STYLE
 #define HIDC_TAG_ITALON                 0x80c1054a    // IDD_TAGS_STYLE
 #define HIDC_TAG_L1E                    0x80c005e3    // IDD_TAGS_STRUCT
 #define HIDC_TAG_L1S                    0x80c005d4    // IDD_TAGS_STRUCT
 #define HIDC_TAG_PAGEREF                0x80c005f2    // IDD_TAGS_STRUCT
 #define HIDC_TAG_PAGEREFEND             0x80c005f3    // IDD_TAGS_STRUCT
-#define HIDC_TAG_SETNAME                0x80c50547    // IDD_TAG_SETNAME
+#define HIDC_TAG_SETNAME                0x80be0547    // IDD_TAG_SETNAME
 #define HIDC_TAG_SMALLOFF               0x80c1054f    // IDD_TAGS_STYLE
 #define HIDC_TAG_SMALLON                0x80c1054e    // IDD_TAGS_STYLE
 #define HIDC_TAG_STRUCTAHEAD            0x80c005d2    // IDD_TAGS_STRUCT
@@ -505,13 +522,13 @@
 #define HIDC_TAG_SUBON                  0x80c10552    // IDD_TAGS_STYLE
 #define HIDC_TAG_SUPEROFF               0x80c10551    // IDD_TAGS_STYLE
 #define HIDC_TAG_SUPERON                0x80c10550    // IDD_TAGS_STYLE
-#define HIDC_TAG_TAB                    0x80c3060a    // IDD_TAGS_SPECIAL
+#define HIDC_TAG_TAB                    0x80c30608    // IDD_TAGS_SPECIAL
 #define HIDC_TAG_ULINEOFF               0x80c1054d    // IDD_TAGS_STYLE
 #define HIDC_TAG_ULINEON                0x80c1054c    // IDD_TAGS_STYLE
 #define HIDC_TAG_UNIDECIMAL             0x80c3060d    // IDD_TAGS_SPECIAL
 #define HIDC_TAG_UNIHEXADECIMAL         0x80c3060e    // IDD_TAGS_SPECIAL
-#define HIDC_TAG_UNIPREFIX              0x80c30606    // IDD_TAGS_SPECIAL
-#define HIDC_TAG_UNISUFFIX              0x80c30607    // IDD_TAGS_SPECIAL
+#define HIDC_TAG_UNIPREFIX              0x80c30609    // IDD_TAGS_SPECIAL
+#define HIDC_TAG_UNISUFFIX              0x80c3060a    // IDD_TAGS_SPECIAL
 #define HIDC_TEXTSTYLE_AUTO             0x80b8052a    // IDD_TEXTSTYLE
 #define HIDC_TEXTSTYLE_BOLD             0x80b90523    // IDD_LOCATORSTYLE
 #define HIDC_TEXTSTYLE_ITALIC           0x80b90524    // IDD_LOCATORSTYLE
@@ -519,11 +536,6 @@
 #define HIDC_TEXTSTYLE_SMALL            0x80b90526    // IDD_LOCATORSTYLE
 #define HIDC_TEXTSTYLE_ULINE            0x80b90525    // IDD_LOCATORSTYLE
 #define HIDC_USERID                     0x80c6067d    // IDD_USERID [NPUBLISH]
-#define HIDC_VERIFY_CROSSREF            0x80a606ca    // IDD_VERIFY
-#define HIDC_VERIFY_EXACT               0x80a604ad    // IDD_VERIFY
-#define HIDC_VERIFY_LOCATOR             0x80a606cb    // IDD_VERIFY
-#define HIDC_VERIFY_LOCATORLIMIT        0x80a606cc    // IDD_VERIFY
-#define HIDC_VERIFY_MIN                 0x80a604ae    // IDD_VERIFY
 #define HIDC_WRITEUNFORM_ANSI           0x809d06ff    // IDD_WRITE_UNFORM
 #define HIDC_WRITEUNFORM_UTF8           0x809d06fe    // IDD_WRITE_UNFORM
 #define HIDC_WRITE_UNFORMAPPEND         0x809d046b    // IDD_WRITE_UNFORM

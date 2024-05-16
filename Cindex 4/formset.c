@@ -449,11 +449,11 @@ static int testmargins(MARGINCOLUMN * mcp, PAPERINFO * pi)	/* tests margin setti
 #define MINCOLWIDTH 72		/* 72 points for min printable column width */
 
 	if (pi->pheightactual - mcp->top - mcp->bottom < MINPAGEHEIGHT)	{	/* if too little height for text */
-		senderr(ERR_VERTMARGINS, WARN);
+		showError(NULL,ERR_VERTMARGINS, WARN);
 		return(IDC_MARGCOL_TOP);
 	}
 	if ((pi->pwidthactual - mcp->left - mcp->right - (mcp->ncols-1)*mcp->gutter)/mcp->ncols < MINCOLWIDTH)	{	/* if too little width for column */
-		senderr(ERR_HORIZMARGINS, WARN);
+		showError(NULL,ERR_HORIZMARGINS, WARN);
 		return(IDC_MARGCOL_LEFT);
 	}
 	return (0);
@@ -1326,12 +1326,12 @@ void fs_crossrefs(HWND hwnd)	/* sets up cross-references */
 					|| cf.mainposition >= CP_LASTSUB && FF->head.formpars.ef.cf.mainposition <= CP_FIRSTSUB
 					|| cf.subposition <= CP_FIRSTSUB && FF->head.formpars.ef.cf.subposition >= CP_LASTSUB
 					|| cf.subposition >= CP_LASTSUB && FF->head.formpars.ef.cf.subposition <= CP_FIRSTSUB)	{	/* if need resort */
-				if (sendwarning(WARN_CROSSSORT))	{
+				if (showWarning(NULL,WARN_CROSSSORT))	{
 					FF->head.formpars.ef.cf = cf;	/* set new params */
 					col_init(&FF->head.sortpars,FF);		// initialize collator
 					sort_resort(FF);		/* sort whole index anyway */
 					if (FF->curfile)
-						sort_sortgroup(FF);
+						sort_sortgroup(FF,YES);
 				}
 				else	/* abandon */
 					return;
@@ -1784,7 +1784,7 @@ static INT_PTR CALLBACK ssproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			switch (LOWORD(wParam))	{
 				case IDOK:
 					if (!recoverstring(listwnd,ssp))	{
-						senderr(ERR_NOROOM,WARN);
+						showError(hwnd,ERR_NOROOM,WARN);
 						return(TRUE);
 					}
 				case IDCANCEL:

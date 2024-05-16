@@ -226,7 +226,7 @@ int print_begin(DWORD flags, TCHAR * title, PAPERINFO * pip, HWND hwnd)	/* sets 
 		}
 	}
 	else
-		senderr(ERR_PRINTFAIL,WARN);
+		showError(NULL,ERR_PRINTFAIL,WARN);
 	if (p_dlg.hDevMode)
 		GlobalFree(p_dlg.hDevMode);
 	if (p_dlg.hDevNames)
@@ -325,46 +325,6 @@ void print_end(int pages, HWND hwnd)	/* cleans up after printing	*/
 	DeleteDC(p_dlg.hDC);
 	memset(&p_dlg,0,sizeof(p_dlg));		/* to make sure no print DC is available */
 }
-#if 0
-/******************************************************************************/
-static INT_PTR CALLBACK pabort(HDC dc, int code)	/* called during printing loop */
-
-{
-	MSG msg;
-
-	while (!p_abort && PeekMessage(&msg,NULL,0,0,PM_REMOVE))	{	/* get messages  */
-		if (!p_hwnd || !IsDialogMessage(p_hwnd,&msg))	{		/* if not for us */
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-	}
-	return (!p_abort);
-}
-
-/******************************************************************************/
-static INT_PTR CALLBACK printproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)	/* print cancel dialog proc */
-
-{
-	switch (msg)	{
-
-		case WM_INITDIALOG:
-			p_abort = FALSE;	/* clear abort */
-			p_hwnd = hwnd;		/* install our handle */
-			centerwindow(hwnd,0);
-			return TRUE;
-		case WM_DESTROY:
-			p_hwnd = NULL;
-			return TRUE;
-		case WM_COMMAND:
-			p_abort = TRUE;
-			return TRUE;
-		case WMM_PAGENUM:
-			setint(hwnd,IDC_PRINTPROGRESS_PAGE,lParam);
-			return TRUE;
-	}
-	return FALSE;
-}
-#endif
 /******************************************************************************/
 static void setpaperinfo(HGLOBAL hdm, PAPERINFO * pip)		/* sets paper info in device context */
 

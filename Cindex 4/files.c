@@ -167,7 +167,7 @@ long mc_import(HWND hwnd,int comid,HWND chandle,UINT notify)	/* imports records 
 	
 	if (GetOpenFileName(&ofn))	{	/* if want to use */
 		if (!imp_loaddata(WX(hwnd,owner),&imp,ofn.lpstrFile))
-			senderr(ERR_OPENERR,WARN,file_getname(ofn.lpstrFile));
+			showError(NULL,ERR_OPENERR,WARN,file_getname(ofn.lpstrFile));
 	}
 	return (0);
 }
@@ -190,7 +190,7 @@ static INT_PTR CALLBACK ihook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					imp = (IMPORTPARAMS *)ofp->lCustData;
 					imp->type = file_importtype(ofp->lpstrFile);
 					if (imp->type < 0) {
-						if (!sendwarning(WARN_BADFILETYPE,file_getname(ofp->lpstrFile)))	{	/* if don't want to import */
+						if (!showWarning(hwnd,WARN_BADFILETYPE,file_getname(ofp->lpstrFile)))	{	/* if don't want to import */
 							SetWindowLongPtr(hwnd,DWLP_MSGRESULT,TRUE);		/* bad file */		
 							return (TRUE);
 						}
@@ -263,7 +263,7 @@ short file_loadconfig(short noload)		/* loads configuration variables */
 						col_fixLocaleInfo(&g_prefs.sortpars);
 				}
 				else 	// bad config; will use defaults
-					sendinfo(INFO_BADCONFIG);
+					showInfo(NULL,INFO_BADCONFIG);
 				mfile_close(&mf);
 			}
 		}
@@ -293,7 +293,7 @@ void file_saveconfig(void)		/* saves configuration variables */
 			}
 			CloseHandle(fref);
 		}
-		senderr(ERR_FILESYSERR, WARN, wpath);
+		showError(NULL,ERR_FILESYSERR, WARN, wpath);
 	}
 }
 /**********************************************************************************/	
@@ -434,16 +434,16 @@ static INT_PTR CALLBACK newhook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 						break;
 					if (type == FTYPE_INDEX)	{	/* if want index */
 						if (index_byfspec(ofp->lpstrFile))	/* if already open */
-							senderr(ERR_OVERWRITEOPEN,WARN,file_getname(ofp->lpstrFile));		/* send open err */
+							showError(NULL,ERR_OVERWRITEOPEN,WARN,file_getname(ofp->lpstrFile));		/* send open err */
 #ifdef PUBLISH
 						else if (!g_admin.permitwrite)	/* if writing to index forbidden */
-							senderr(ERR_NOWRITEACCESS, WARN);	/* write access forbidden */
+							showError(NULL,ERR_NOWRITEACCESS, WARN);	/* write access forbidden */
 #endif //PUBLISH
 						else
 							break;
 					}
 					else	/* bad file type */
-						senderr(ERR_BADNEWFILERR,WARN,&ofp->lpstrFile[ofp->nFileExtension]);
+						showError(NULL,ERR_BADNEWFILERR,WARN,&ofp->lpstrFile[ofp->nFileExtension]);
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT,TRUE);		/* bad file */
 					return (TRUE);
 				case CDN_TYPECHANGE:
@@ -487,13 +487,13 @@ INDEX * file_setupindex(TCHAR *path, DWORD accessflags, DWORD createflags)	/* se
 			if (!mfile_open(&FF->mf,path,accessflags,FILE_SHARE_READ,createflags,FILE_FLAG_RANDOM_ACCESS,0))	{	// if failed to open
 				if (GetLastError() == ERROR_SHARING_VIOLATION)	{	// if already open for writing
 					if (g_admin.readaccess)	{
-						if (sendwarning(WARN_INDEXINUSE,file_getname(path)))	{
+						if (showWarning(NULL,WARN_INDEXINUSE,file_getname(path)))	{
 							accessflags = GENERIC_READ;
 							mfile_open(&FF->mf,path,accessflags,FILE_SHARE_READ|FILE_SHARE_WRITE,createflags,FILE_FLAG_RANDOM_ACCESS,0);
 						}
 					}
 					else
-						senderr(ERR_FILEALREADYOPEN,WARN,file_getname(path));
+						showError(NULL,ERR_FILEALREADYOPEN,WARN,file_getname(path));
 				}
 			}
 			if (FF->mf.fref)	{	// if ok
@@ -600,7 +600,7 @@ static LRESULT CALLBACK openhook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 								goto error;
 #ifdef PUBLISH
 								if (!g_admin.permitwrite)	{	/* if writing to index forbidden */
-									senderr(ERR_NOWRITEACCESS, WARN);	/* send message */
+									showError(NULL,ERR_NOWRITEACCESS, WARN);	/* send message */
 									SetWindowLongPtr(hwnd,DWLP_MSGRESULT,(LONG_PTR)TRUE);		/* bad file */
 									return (TRUE);
 								}
@@ -622,7 +622,7 @@ static LRESULT CALLBACK openhook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 					if (!fpath)		// if passed all files
 						return FALSE;
 error:
-					senderr(ERR_UNKNOWNFILERR,WARN,file_getname(ofp->lpstrFile));
+					showError(NULL,ERR_UNKNOWNFILERR,WARN,file_getname(ofp->lpstrFile));
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT,TRUE);		/* bad file */
 					return (TRUE);
 				case CDN_TYPECHANGE:
@@ -848,13 +848,13 @@ static int convertpath(TCHAR * path, TCHAR * newpath, int type)	// checks whethe
 
 {
 	int code = -1;
-	if (sendwarning(WARN_CONVERTINDEX,PathFindFileName(path)))	{	// if want conversion
+	if (showWarning(NULL,WARN_CONVERTINDEX,PathFindFileName(path)))	{	// if want conversion
 		nstrcpy(newpath,path);
 		PathRemoveExtension(newpath);
 		nstrcat(newpath,file_extensionfortype(type));		// NB PathAddExtension doesn't add if name looks like it has extension
 		if (!CopyFile(path,newpath,TRUE))		{	// if can't copy (file probably exists)
 			if (GetLastError() == ERROR_FILE_EXISTS) {
-				if (sendwarning(WARN_OVERWRITEINDEX,PathFindFileName(newpath)))	{	// if don't want overwrite
+				if (showWarning(NULL,WARN_OVERWRITEINDEX,PathFindFileName(newpath)))	{	// if don't want overwrite
 					if (CopyFile(path,newpath,FALSE))	// if copy now succeeds
 						code = 1;
 				}
@@ -917,13 +917,13 @@ static BOOL convertdoc(TCHAR * path)	//	 converts doc if necessary; returns path
 		if (type == FTYPE_INDEXV2 || type == FTYPE_INDEXDOS || type == FTYPE_TEMPLATEV2)	{	// if converted index
 			char warnings[500];
 			if (v3_warnings(warnings))
-				sendinfo(INFO_CONVERSIONCHANGES,toNative(warnings));
+				showInfo(NULL,INFO_CONVERSIONCHANGES,toNative(warnings));
 		}
 		nstrcpy(path,npath);
 		return YES;
 	}
 	DeleteFile(npath);			/* remove file */
-	senderr(ERR_CONVERSIONERR, WARN);
+	showError(NULL,ERR_CONVERSIONERR, WARN);
 	return NO;
 }
 /**********************************************************************************/
@@ -981,7 +981,7 @@ BOOL file_openindex(TCHAR * path, short openflags)	/* opens and sets up index */
 		index_cut(FF);
 	}
 	if (unreachedinstall)	// didn't reach install
-		senderr(ERR_OPENERR, WARN, file_getname(path));	/* error opening or reading header */
+		showError(NULL,ERR_OPENERR, WARN, file_getname(path));	/* error opening or reading header */
 	return (FALSE);
 }
 /*******************************************************************************/
@@ -997,15 +997,15 @@ static BOOL installindex(INDEX * FF, short openflags)		// installs index
 		int error = index_checkintegrity(FF, rtot);
 
 		if (FF->mf.readonly && (tdirty && !error || error > 0))	{	/* wanting readonly but dirty or damaged */
-			sendinfo(INFO_INDEXNEEDSREPAIR);		/* send info */
+			showInfo(NULL,INFO_INDEXNEEDSREPAIR);		/* send info */
 			return FALSE;
 		}
 		if (error < 0)	{		// fatal damage to header
-			senderr(ERR_FATALDAMAGE, WARN);
+			showError(NULL,ERR_FATALDAMAGE, WARN);
 			return FALSE;
 		}
 		if (error > 0) {	// record error(s)
-			if (sendwarning(WARN_DAMAGEDINDEX))	{
+			if (showWarning(NULL,WARN_DAMAGEDINDEX))	{
 				RECN mcount;
 
 				if (FF->head.rtot > rtot)	// if claim too many records
@@ -1014,21 +1014,21 @@ static BOOL installindex(INDEX * FF, short openflags)		// installs index
 				mcount = index_repair(FF);		// do repairs
 				FF->needsresort = TRUE;	// needs resort
 				if (mcount)
-					sendinfo(INFO_REPAIRMARKED,mcount);
+					showInfo(NULL,INFO_REPAIRMARKED,mcount);
 			}
 			else
 				return FALSE;
 		}
-		if (FF->head.rtot <= rtot || sendwarning(WARN_MISSINGRECORDS, rtot, FF->head.rtot) && (FF->head.rtot = rtot) && index_writehead(FF))	{
+		if (FF->head.rtot <= rtot || showWarning(NULL,WARN_MISSINGRECORDS, rtot, FF->head.rtot) && (FF->head.rtot = rtot) && index_writehead(FF))	{
 			if (tdirty)		{	/* if badly closed */
-				if (sendwarning(WARN_CORRUPTINDEX))		/* if want resort */
+				if (showWarning(NULL,WARN_CORRUPTINDEX))		/* if want resort */
 					FF->needsresort = TRUE;	// needs resort
 				else
 					FF->mf.readonly |=TRUE;	/* allow only readonly access */
 			}
 		}
 		if (!grp_checkintegrity(FF))	{	// if corrupt groups
-			if (sendwarning(WARN_DAMAGEDGROUPS))	// if want repair
+			if (showWarning(NULL,WARN_DAMAGEDGROUPS))	// if want repair
 				grp_repair(FF);
 			else
 				return FALSE;
@@ -1054,7 +1054,7 @@ static BOOL installindex(INDEX * FF, short openflags)		// installs index
 					file_saveprivatebackup(FF);
 					view_allrecords(FF->vwind);		/* display records */
 					if (FF->mf.readonly)
-						sendinfo(INFO_READONLY);
+						showInfo(NULL,INFO_READONLY);
 				}
 			}
 			return TRUE;
@@ -1125,7 +1125,7 @@ BOOL file_openarchive(TCHAR * path)	/* opens file and loads records */
 		imp.type = file_importtype(path);
 		if (imp_loaddata(FF, &imp, path)) {	// if loaded OK
 			if (!exists)	// if new index from imported records
-				sendinfo(INFO_NEWFROMIMPORT, FF->head.rtot, file_getname(path));
+				showInfo(NULL,INFO_NEWFROMIMPORT, FF->head.rtot, file_getname(path));
 		}
 	}
 	return FALSE;
@@ -1210,14 +1210,14 @@ BOOL file_openstylesheet(TCHAR * path)	 /* sets up and loads format */
 					com_settextmenus(FF,ON,ON);	/* update drop-down lists */
 				}
 				else
-					senderr(ERR_INVALSTYLESHEET,WARN);
+					showError(NULL,ERR_INVALSTYLESHEET,WARN);
 			}
 			freemem(sp);
 		}
 		CloseHandle(fid);
 	}
 	if (!ok)
-		senderr(ERR_OPENERR, WARN, file_getname(path));	/* error opening or reading stylesheet */
+		showError(NULL,ERR_OPENERR, WARN, file_getname(path));	/* error opening or reading stylesheet */
 	return (ok);
 }
 /*******************************************************************************/
@@ -1254,7 +1254,7 @@ BOOL file_opentemplate(TCHAR * path, TCHAR * createpath)		/* opens file and crea
 		freemem(hp);
 	}
 	if (!ok)
-		senderr(ERR_OPENERR, WARN, file_getname(path));	/* error opening or working with template */
+		showError(NULL,ERR_OPENERR, WARN, file_getname(path));	/* error opening or working with template */
 	return (ok);
 }
 /*******************************************************************************/
@@ -1295,7 +1295,7 @@ BOOL file_resizeindex(INDEX *FF, short newrecsize)	/* resizes open index file */
 		return (TRUE);
 	}
 	else
-		senderr(ERR_DISKFULLERR,WARN);
+		showError(NULL,ERR_DISKFULLERR,WARN);
 	return (FALSE);
 }
 /**********************************************************************/
@@ -1359,7 +1359,7 @@ INDEX * file_buildsummary(INDEX * FF)		/* builds summary index */
 			}
 		}
 		else
-			senderr(ERR_MEMERR,WARN);
+			showError(NULL,ERR_MEMERR,WARN);
 		SetCursor(ocurs);
 		index_closefile(XF);		/* clean up after error */
 		DeleteFile(path);			/* remove file */
@@ -1501,7 +1501,7 @@ BOOL file_duplicateindex(INDEX * FF, TCHAR * path)	/* copies index on to path */
 			return (TRUE);
 	}
 //	err = GetLastError();	// just use for debugging
-	senderr(ERR_WRITEERR,WARN, path);
+	showError(NULL,ERR_WRITEERR,WARN, path);
 	return (FALSE);
 }
 /**********************************************************************************/	
@@ -1538,7 +1538,7 @@ BOOL file_saveprivatebackup(INDEX *FF)	// save private backup of index
 BOOL file_revertprivatebackup(INDEX *FF)	// reverts to private backup of index
 
 {
-	if (FF->backupspec && sendwarning(WARN_REVERT))	{	// if have backup file
+	if (FF->backupspec && showWarning(NULL,WARN_REVERT))	{	// if have backup file
 		TCHAR spath[MAX_PATH], dpath[MAX_PATH];
 
 		SetFileAttributes(FF->backupspec,FILE_ATTRIBUTE_NORMAL);	// set index hidden/unhidden
@@ -1550,7 +1550,7 @@ BOOL file_revertprivatebackup(INDEX *FF)	// reverts to private backup of index
 		if (ReplaceFile(dpath,spath,NULL,REPLACEFILE_IGNORE_MERGE_ERRORS,0,0))	/* if can replace index */
 			return file_openindex(dpath,OP_VISIBLE);
 		else 
-			senderr(ERR_UNABLETOREVERT,WARN);
+			showError(NULL,ERR_UNABLETOREVERT,WARN);
 	}
 	return FALSE;
 }

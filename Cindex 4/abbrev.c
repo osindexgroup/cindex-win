@@ -394,7 +394,7 @@ static void adopaste(HWND hwnd)		/* does paste if poss */
 	if (!breaks && length+expansionused(EX(hwnd,hwed)) < ABBREVLEN-1)
 		SendMessage(EX(hwnd,hwed),WM_PASTE,0,0);
 	else
-		senderr(ERR_ABBBADPASTE,WARNNB);
+		showError(NULL,ERR_ABBBADPASTE,WARNNB);
 }
 /************************************************************************/
 static LRESULT checkdroppaste(RECALLBACK * reptr, int mode, TCHAR * string)	/* CALLBACK from riched ole; returns paste/drop error */
@@ -520,7 +520,7 @@ static BOOL recoverabbrev(HWND hwnd)	/* recovers abbrevs */
 				if (mod_gettestring(ew,tstring,NULL,MREC_SELECT) > 1)	{	/* if have an expansion */
 					char * key = fromNative(abname);
 					if (lookup(key))	{	/* if we've defined it already */
-						senderr(ERR_DUPABBREV,WARN,abname);
+						showError(hwnd,ERR_DUPABBREV,WARN,abname);
 						return (FALSE);
 					}
 					else {
@@ -593,11 +593,11 @@ static INT_PTR CALLBACK abbproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 				case IDOK:
 					getDItemText(hwnd,IDC_ABBREV_NAME,tsp,ABBNAMELEN+1);
 					if (nstrpbrk(toNative(tsp),a_prefix) || nstrpbrk(toNative(tsp),a_suffix))	{	/* if ab contains forbidden char */
-						senderr(ERR_BADABBREVERR,WARNNB);
+						showError(hwnd,ERR_BADABBREVERR,WARNNB);
 						return (TRUE);
 					}
 					else if (nptr = lookup(tsp))	{
-						if (!sendwarning(WARN_EXISTABBREV, tsp, nptr->string))
+						if (!showWarning(hwnd,WARN_EXISTABBREV, tsp, nptr->string))
 							return (TRUE);
 					}
 				case IDCANCEL:
@@ -725,51 +725,6 @@ static BOOL writeabbrevs(TCHAR * path, short force, short cleardirty)	  /* write
 	}
 	return (TRUE);
 }
-#if 0
-/******************************************************************************/
-BOOL abbrev_open(TCHAR * path, BOOL visflag)	 /* loads abbreviations from file */
-
-{
-	char sline[(ABBREVLEN+ABBNAMELEN+1)*2];	/* allow long path so we don't have to worry about encoded styles */
-	char *sptr;
-	FILE *tempfptr;
-	BOOL err;
-	unsigned long length;
-
-	err = TRUE;
-	if (abbrev_checkok()) 	{	 /* if ok clearing existing ones */
-		if (tempfptr = nfopen(path,TEXT("rb"))) 	{
-			deleteallabbrevs();
-			str_getline(sline,(ABBREVLEN+ABBNAMELEN+1)*2,tempfptr,&length);	/* get and discard key id */
-			while (str_getline(sline, (ABBREVLEN+ABBNAMELEN+1)*2, tempfptr,&length))	{	/* while strings to read */
-				sptr = strchr(sline,'\t');	/* to end of name */
-				*sptr++ = '\0';		 /* terminate first */
-				if (!entname(sline, sptr))	   /* if error entering in table */
-					break;		/* stop reading */
-			}
-			if (!ferror(tempfptr))   {	/* if ok */
-				file_saveuserpath(path,ALIS_ABBREV);	/* save path */
-#if 0
-				if (g_abbw)		{	/* if window is open */
-					builddisplay(g_abbw);	/* set up new set */
-					SetWindowText(g_abbw,file_getname(path));
-				}
-#else
-				if (visflag)	/* if want to see them */
-					abbrev_view();
-#endif
-				err = FALSE;
-			}
-			fclose(tempfptr);
-		}
-		else	{	/* can't open file */
-			senderr(ERR_ABBOPEN,WARN,path);
-			file_saveuserpath(TEXT(""),ALIS_ABBREV);	/* make sure we don't persist on abbrevs */
-		}
-	}
-	return (err);
-}
-#else
 /******************************************************************************/
 BOOL abbrev_open(TCHAR * path, BOOL visflag)	 /* loads abbreviations from file */
 
@@ -806,13 +761,12 @@ BOOL abbrev_open(TCHAR * path, BOOL visflag)	 /* loads abbreviations from file *
 			mfile_close(&mf);
 		}
 		else	{	/* can't open file */
-			senderr(ERR_ABBOPEN,WARN,path);
+			showError(NULL,ERR_ABBOPEN,WARN,path);
 			absetpath(NULL);	/* make sure we don't persist on abbrevs */
 		}
 	}
 	return (err);
 }
-#endif
 /******************************************************************************/
 BOOL abbrev_new(TCHAR * path)	 /* starts new set of abbrevs */
 

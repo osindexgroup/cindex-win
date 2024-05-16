@@ -30,9 +30,9 @@ To include the archived records in the active index, click this button.
 .topic HIDC_ARCHIVE_NEW
 To create a new index to hold the archived records, click Make a New Index.
 .topic HIDC_CODETRANSG
-To set text in \g…\G styles codes in a distinctive font, choose the font from the list.
+To set text in \gï¿½\G styles codes in a distinctive font, choose the font from the list.
 .topic HIDC_CODETRANSH
-To set text in \h…\H styles codes in a distinctive font, choose the font from the list.
+To set text in \hï¿½\H styles codes in a distinctive font, choose the font from the list.
 .topic HIDC_WRITE_UNFORMAPPEND
 To append index records to an existing file, check Append to Existing File.
 If the file you have named does not exist, Cindex creates it.
@@ -103,7 +103,7 @@ Cindex maintains a list of the text sequences used in recent searches. To re-use
 To search for text in a specified style or font, click Attributes, and specify the font and style(s) required.
 To search for the specified font and style(s), regardless of the text they belong to, provide no search text.
 .topic HIDC_FIND_STYLESHOW1
-This shows any styles (B for boldface, etc.) or font <…> specified in the search.
+This shows any styles (B for boldface, etc.) or font <ï¿½> specified in the search.
 .topic HIDC_FIND_ANDOR1
 To search for one segment of text and another or another, choose the and or or condition from this list.
 Cindex will add items to the Find dialog box so that you can specify additional search elements.
@@ -148,7 +148,7 @@ To remove the found text from records, leave Change To blank.
 To replace or change a text style or font, click Attributes, and specify the font and style(s) required.
 You can replace styles and fonts without changing text, as long as you specify no search text and no replacement text.
 .topic HIDC_REPLACE_STYLESHOW
-This shows any replacement styles (B for boldface, etc.) or font <…>.
+This shows any replacement styles (B for boldface, etc.) or font <ï¿½>.
 .topic HIDC_REPSTYLE_BOLDAP
 To apply this style when making a replacement, click the button in the Apply column.
 .topic HIDC_REPSTYLE_BOLDIG
@@ -525,7 +525,7 @@ To display above a group of entries a title that identifies the beginning of a g
 Use the % symbol to stand for the character that begins headings in the group.
 .topic HIDC_GROUPENTRIES_NUMSYM
 Choose from this list how you want Cindex to group entries that are sorted under numbers an symbols.
-Cindex groups entries whose character classes fall within a single set of square brackets […].
+Cindex groups entries whose character classes fall within a single set of square brackets [ï¿½].
 .topic HIDC_GROUPENTRIES_STYLE
 To apply a style to the title displayed above a group of entries, click Style.
 .topic HIDC_GROUPENTRIES_FONT
@@ -755,6 +755,10 @@ Finds headings that are identical except for an ending conjunction or prepositio
 Finds headings that are identical except for an ending phrase in parentheses.
 .topic HIDC_CHECK_H_ORPHANEDSUBHEAD
 Finds subheadings headings that are unique and therefore redundant.
+.topic HIDC_CHECK_H_MODIFIED
+Finds headings in which a modifying phrase might be better as a subheading.
+.topic HIDC_COMPARE_MODIFY
+Make the modifications enabled in the panel.
 .topic HIDC_CHECK_R_EMPTYPAGE
 Finds empty locator fields.
 .topic HIDC_CHECK_R_VERIFY
@@ -771,6 +775,38 @@ The maximum acceptable number of unqualified page references in an entry.
 Finds duplicate page references or overlapping page ranges.
 .topic HIDC_CHECK_R_HEADINGLEVEL
 Checks whether locators are present only on the lowest level subheadings of entries.
+.topic HIDC_COMPARE_COMPARE
+Compare the indexes.
+.topic HIDC_COMPARE_DELETEBOTH
+Delete records that match records in the other index.
+.topic HIDC_COMPARE_DELTHIS
+Delete records that are in this index but not the other.
+.topic HIDC_COMPARE_FIELDDEPTH
+Choose the field(s) to compare.
+.topic HIDC_COMPARE_GROUPBOTH
+Make a group from records that match records in the other index.
+.topic HIDC_COMPARE_GROUPOTHER
+Make a group from records imported from the other index.
+.topic HIDC_COMPARE_GROUPTHIS
+Make a group from records that are present only in this index.
+.topic HIDC_COMPARE_IMPORTOTHER
+Import records that are contained only in the other index.
+.topic HIDC_COMPARE_INDEXLIST
+Choose the comparison index.
+.topic HIDC_COMPARE_LABELBOTH
+Label records that match records in the other index.
+.topic HIDC_COMPARE_LABELOTHER
+Label records imported from the other index.
+.topic HIDC_COMPARE_LABELTHIS
+Label records that are present only in this index.
+.topic HIDC_COMPARE_MODIFY
+Make the modifications enabled in the panel.
+.topic HIDC_COMPARE_RECORDSBOTH
+The number of records that match in both indexes.
+.topic HIDC_COMPARE_RECORDSTHIS
+The number of records that are in this index but not the other.
+.topic HIDC_COMPARE_RECORDSOTHER
+The number of records that are in the other index but not this one.
 .topic HIDC_RECONCILE_LEVEL
 Choose level of heading below which Cindex may find orphaned subheadings or reconcile them.
 .topic HIDC_RECONCILE_NOSPLIT

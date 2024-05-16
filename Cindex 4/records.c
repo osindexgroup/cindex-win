@@ -58,7 +58,7 @@ int rec_writerec(INDEX * FF, RECORD * p)		/* writes record */
 {
 	if (copymappeddata(getaddress(FF,p->num),p,FF->wholerec))
 		return TRUE;
-	senderr(ERR_RECWRITEERR,WARN,1,p->num);		/* some access error */
+	showError(NULL,ERR_RECWRITEERR,WARN,1,p->num);		/* some access error */
 	return (FALSE);
 }
 /******************************************************************************/
@@ -86,12 +86,12 @@ RECORD * rec_makenew(INDEX * FF, char * rtext, RECN num)   /* forms new record *
 				return (recptr);			/* return error */
 			}
 			__except (GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION){
-				senderr(ERR_RECWRITEERR,WARN,2,num);		/* some access error */
+				showError(NULL,ERR_RECWRITEERR,WARN,2,num);		/* some access error */
 				return (NULL);
 			}
 		}
 	}	
-	senderr(ERR_INDEXFULLERR, WARN);		/* index is full */
+	showError(NULL,ERR_INDEXFULLERR, WARN);		/* index is full */
 	return (NULL);
 }
 /******************************************************************************/

@@ -356,7 +356,7 @@ void col_loadUTF8string(COLLATORTEXT * as, INDEX * FF, SORTPARAMS * sgp, char *s
 	else
 		string = sstring;
 	size = strlen(string);
-	if (flags&MATCH_CHECKPREFIX) {      /* if want prefix checks */
+	if (sgp->type != RAWSORT && flags&MATCH_CHECKPREFIX) {      /* if want prefix checks */
 		if (str_crosscheck(FF, string))		    /* if a cross reference */
 			as->crossrefvalue = FF->head.formpars.ef.cf.mainposition >= CP_LASTSUB ? 1 : -1;
 		else {

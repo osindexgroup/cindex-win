@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "strings.h"
 #include "typestuff.h"
+#include "regex.h"
 #include "util.h"
 #include "errors.h"
 
@@ -215,6 +216,48 @@ BOOL str_swapparen(char * field, char * presuf,BOOL real)	//  in-place swap of t
 		}
 	}
 	return FALSE;
+}
+/*******************************************************************************/
+BOOL str_invertname(char* source, long* offset, long* matchlength)	// in-place inversion of name
+
+{
+
+	static URegularExpression* regexsf, * regexfs;
+	URegularExpression* xf = NULL;
+	char repstring[MAXREC];
+	char* sep;
+	short mlength;
+
+	if (!regexsf) {
+		regexsf = regex_build(re_sf, 0);
+		regexfs = regex_build(re_fs, 0);
+	}
+	char* found = regex_find(regexsf, source, 0, &mlength);	// surname first
+	if (found) {
+		xf = regexsf;
+		sep = " ";
+	}
+	else {
+		found = regex_find(regexfs, source, 0, &mlength);	// forename first
+		if (found) {
+			xf = regexfs;
+			sep = ", ";
+		}
+	}
+	if (xf && regex_groupcount(xf) == 2) {
+		int length1 = 0, length2 = 0;
+		char * s2 = regex_textforgroup(xf, 2, source, &length2);
+		char * s1 = regex_textforgroup(xf, 1, source, &length1);
+		strncpy(repstring, s2, length2);
+		strcpy(repstring + length2, sep);
+		strncat(repstring, s1, length1);
+		*matchlength = strlen(repstring);
+		*offset = found - source;
+		str_shift(found + mlength, strlen(repstring) - mlength);
+		strncpy(found, repstring, strlen(repstring));
+		return YES;
+	}
+	return NO;
 }
 /**********************************************************************************/
 static void setleadcaps(char * s1, char * s2)	// switches lead chars as appropriate
@@ -617,6 +660,16 @@ short str_xcmp(register char *str1, register char *str2)	  /* compares two compo
 		if (*str1 == EOCS)	      /* if strings match at end */
 			return (0);
 	return (*str1 - *str2);	  /* return difference between chars */
+}
+/******************************************************************************/
+long str_xspn(register char* str1, register char* str2)	 // finds longest match
+
+{
+	char* base = str1;
+	for (; *str1 == *str2; str1++, str2++)	  /* while not at end of string */
+		if (*str1 == EOCS)	      /* if strings match at end */
+			return str1 - base;
+	return (str1 - base);	  // returns matching length
 }
 /******************************************************************************/
 void str_xswap(char *string, short index1, short index2)	  /* swaps two component strings */
@@ -1029,7 +1082,7 @@ int str_utextlen(char *cptr, int length)	   /* counts # of unicode chars in stri
 {
 	int ucount = 0, ccount = 0;
 
-	if (!length)
+	if (length < 0)
 		length = strlen(cptr);
 	while (ccount < length) {
 		if (iscodechar(cptr[ccount]) && cptr[ccount + 1])	// skip code chars

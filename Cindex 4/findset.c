@@ -12,6 +12,7 @@
 #include "strings.h"
 #include "util.h"
 #include "search.h"
+#include "regex.h"
 
 
 static const DWORD wh_findid[] = {
@@ -139,12 +140,10 @@ static UPATTERN pa[] = {
 	{"", "[:nd:]+","Any number"},
 	{"", "[:nd:]+-[:nd:]+","Any page range"},
 	{"", "([:p:]+)\\1","Repeated punctuation"},
-	{ "", "(?<=')[^']+(?=')|(?<=\")[^\"]+(?=\")|(?<=‘)[^‘]+(?=’)|(?<=“)[^“]+(?=”)","Text in Quotes" },		// uses pos lookbehind and lookahead
-	{ "", "(?<=\\()[^(]+(?=\\))","Text in Parentheses" },		// uses pos lookbehind and lookahead
-//	{"", "(?:[:l:]+[’' ])?[:l:][:l:]+(?:[- ][:lu:][:l:]*)?, (?:[:lu:][:l:]+|[:lu:]\\.)(?:[- ](?:[:lu:][:l:]+|[:lu:]\\.))*","Surname, Forenames(s)"},
-	{"", "((?:[:l:]+[’' ])?[:lu:][:l:]+(?:[- ][:l:][:l:]*)?), ((?:[:lu:][:l:]+|(?:[:lu:]\\.)*)(?:[- ](?:[:lu:][:l:]+|(?:[:lu:]\\.)))*)","Surname, Forenames(s)"},
-//	{"", "(?:[:lu:][:l:]+|[:lu:]\\.)(?:[- ](?:[:lu:][:l:]+|[:lu:]\\.))* (?:[:l:]+[’' ])?[:lu:][:l:]+(?:[- ][:l:][:l:]*)?","Forename(s) Surname"},
-	{"", "((?:[:lu:][:l:]+|(?:[:lu:]\\.)*)(?:[- ](?:[:lu:][:l:]+|(?:[:lu:]\\.)))*) ((?:[:l:]+[’' ])?[:lu:][:l:]+(?:[- ][:l:][:l:]*)?)","Forename(s) Surname"},
+	{"", "(?<=')[^']+(?=')|(?<=\")[^\"]+(?=\")|(?<=‘)[^‘]+(?=’)|(?<=“)[^“]+(?=”)","Text in Quotes" },		// uses pos lookbehind and lookahead
+	{"", "(?<=\\()[^(]+(?=\\))","Text in Parentheses" },		// uses pos lookbehind and lookahead
+	{"", "__placeholder__","Surname, Forenames(s)"},	// NB: placeholders
+	{"", "__placeholder__","Forename(s) Surname"},
 	{"", "^$","Empty field"},
 	{"", "",NULL},
 };
@@ -350,7 +349,7 @@ static int fcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does me
 						}
 						else{
 							grp_dispose(gh);
-							senderr(ERR_RECNOTFOUNDERR, WARN);
+							showError(hwnd,ERR_RECNOTFOUNDERR, WARN);
 						}
 					}
 					ReleaseCapture();
@@ -600,6 +599,8 @@ static BOOL finit(HWND hwnd, HWND hwndFocus, LPARAM lParam)	/* initializes dialo
 
 	if (fflist = getmem(sizeof(FFLIST)))	{	/* if can get memory for our window structure */
 		setdata(hwnd,fflist);		/* install our private data */
+		pg[0].pat[7].abbrev = re_sf;	// replace placeholders with master patterns for names
+		pg[0].pat[8].abbrev = re_fs;
 		fs_setlabelcombo(hwnd);
 		for (group = 0; group < MAXLISTS; group++)	{
 			int base = GROUPBASE+group*GROUPSIZE;
@@ -620,7 +621,6 @@ static BOOL finit(HWND hwnd, HWND hwndFocus, LPARAM lParam)	/* initializes dialo
 		fflist->heightstep = rect2.top-rect1.top;
 		GetWindowRect(hwnd,&wrect);
 		fflist->baseheight = wrect.bottom-(MAXLISTS-1)*fflist->heightstep-wrect.top;
-//		MoveWindow(hwnd,wrect.left,wrect.top,wrect.right-wrect.left,fflist->baseheight,FALSE);
 		centerwindow(hwnd,-1);
 		return (FALSE);
 	}
@@ -991,9 +991,9 @@ int fs_findnext(INDEX * FF, HWND hwnd, LISTGROUP *lg, short * offset, short * lp
 			return (TRUE);
 		}
 		else if (ffp->restart)		/* if we've had a completely failed search */
-			senderr(ERR_RECNOTFOUNDERR, WARN);
+			showError(hwnd,ERR_RECNOTFOUNDERR, WARN);
 		else	/* found something */
-			sendinfo(INFO_NOMOREREC);		/* done */
+			showInfo(hwnd,INFO_NOMOREREC);		/* done */
 		ffp->init(hwnd,FALSE,FALSE);	/* reinitialize for find or rep window */
 	}
 	return (0);

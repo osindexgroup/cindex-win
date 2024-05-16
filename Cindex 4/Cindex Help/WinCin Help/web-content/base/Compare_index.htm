@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<LINK REL = "stylesheet" TYPE = "text/css" HREF = "../styles/cinhelp.css" /> 
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252" />
+<TITLE>Comparing Indexes</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF" TEXT="#000000">
+		<h2><OBJECT TYPE="application/x-oleobject" CLASSID="clsid:1e2a7bd0-dab9-11d0-b93a-00c04fc99f9e">
+				<PARAM NAME="Keyword" VALUE="Compare" />
+			</OBJECT></h2>
+		<h2>Comparing indexes</h2>
+		<p>Cindex can compare one index with another, enabling you not only to see how they differ, but also to change the contents of the index based on the results of the comparison.</p>
+		<p>Use the <strong>Compare Indexes… </strong>command (Tools menu) to compare the active index with another that is open (the menu item is dimmed if no second index is open).</p>
+		<p>Choose the comparison index from the drop-down list, then from the <strong>Compare records on</strong> drop-down list choose how Cindex will compare records:</p>
+<ul>
+  <li><em>All fields</em>: Cindex compares headings, subheadings, and the locator.</li>
+  <li><em>Headings and subheadings only</em>: Cindex compares headings and subheadings, but ignores the contents of the locator field. </li>
+<li><em>Locator field if other fields match</em>: Cindex compares locators of records that match on all headings and subheadings; it ignores records that don’t match on headings and subheadings.</li>
+</ul>
+<p>When you click <strong>Compare</strong>, Cindex examines all records except those that are deleted or empty. When comparing records Cindex ignores any differences in labels.</p>
+		<table border="0" cellspacing="0" cellpadding="4">
+			<tr valign="top">
+				<td>
+					<p>NOTE: For the most accurate comparison both indexes should be sorted using 'simple' alphabetizing rules.</p>
+				</td>
+		  </tr>
+</table>
+                        <p>If any records differ, Cindex enlarges the panel to show summary results in three sections:</p>
+<ul>
+  <li>The top section shows how many records are in the active index but not in the other.</li>
+<li>The middle section shows how many records match (are the same in both indexes according to the comparison rule).</li>
+		<li>The bottom section shows how many records are in the other index but not the active one.</li>
+</ul><p>You can modify the active index based on the results of the comparison. Each section presents options, and you can choose any or all of those that are available:</p>
+	<ul>
+<li>To mark the identified records for deletion, check <strong>Delete</strong>.</li>
+<li>To form a group from the identified records, check <strong>Group</strong>.</li>
+<li>To label (or unlabel) the identified records, choose from the <strong>Label</strong> drop-down list.</li>
+		<li>To import the identified records from the other index (bottom section), check <strong>Import</strong>.</li>
+</ul>
+<p>Choose all the actions you want, then click <strong>Modify</strong> to make the changes.</p>
+		<table width = "100%" border="0" cellspacing="0" cellpadding="4">
+			<tr valign="top">
+				<td>Actions you trigger with <strong>Modify</strong> affect only the active index. The comparison index is not touched.</td>
+		  </tr>
+</table>
+<p>Each group created is named with the date and time of creation, prefixed by $– or $= or $+ to identify the type of comparison result that gave rise to it.</p>
+       
+<hr />
+		<b>See also<br />
+		</b><a href="Groups.htm">Groups</a><br />
+		<a href="../_Adding and Editing/Add_deletingrestoring.htm">Deleting records</a><br />
+		<a href="../_Adding and Editing/Add_labeling.htm">Labeling records</a>
+</BODY>
+</HTML>

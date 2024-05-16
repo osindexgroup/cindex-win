@@ -37,7 +37,7 @@ struct numstruct {		/* control struct for records to be resorted */
 };
 
 void sort_resort(INDEX * FF);        /* completely resort index by current sort rules */
-void sort_sortgroup(INDEX * FF);		/* sorts group */
+void sort_sortgroup(INDEX* FF, short on);		/* sorts group */
 struct numstruct * sort_setuplist(INDEX * FF);   /* sets up sort list */
 void sort_addtolist(struct numstruct * nptr, RECN num);   /* adds record to list for resorting */
 void sort_resortlist(INDEX * FF, struct numstruct * nptr);	/* replaces nodes for records in list */
@@ -54,6 +54,7 @@ RECORD * sort_recordforviewindex(INDEX * FF, RECN rindex);	// gets record for re
 RECORD * sort_jump(INDEX * FF, float position);		/* moves to record at ordered posn target */
 float sort_findpos(INDEX * FF, RECN target);		/* finds ordinal position in index */
 short sort_relpos(INDEX * FF, RECN t1, RECN t2);		/* finds relative positions of recs in index */
+RECORD* sort_bestmatch(INDEX* FF, char* target);	/* finds best matching record */
 BOOL sort_isinfieldorder(short * fieldorder, short maxfields);	/* returns TRUE if straight field order for text fields */
 void sort_buildfieldorder(short * fieldorder, short oldlimit, short limit);	/* builds straight text field order */
 void sort_squeeze(INDEX * FF, short flags);		/* squeezes index */

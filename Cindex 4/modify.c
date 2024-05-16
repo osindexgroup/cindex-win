@@ -296,19 +296,20 @@ static void msize(HWND hwnd, UINT state, int cx, int cy);	/* sizes */
 static void mcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify);	/* does menu tasks */
 static void msetfocus(HWND hwnd, HWND oldfocus);	/* gets focus shift message */
 static int mnotify(HWND hwnd, int id, NMHDR * hdr);	/* does notification tasks */
+static void dodashes(HWND hwnd, BOOL emdash);
 static BOOL doeditkey(HWND hwnd, UINT msg,WPARAM wParam, LPARAM lParam );	/* sets menus */
 static int checkdeletions(HWND hwnd, int code, int rangeonly);	/* permits/forbids deletion */
 static void delpartfield(HWND ew, CHARRANGE * sr, int direction);	/* deletes to start or end of field */
 static void doprompts(HWND hwnd);	/* sets up prompts */
 static void setbasetoolbar(HWND hwnd);	/* updates all toobar buttons */
 static void dobuttons(HWND hwnd, int set);	/* does style buttons */
+static BOOL isvalidcommand(HWND hwnd, int commandID);	// checks accelerators that belong to buttons
 static void checkpromptpos(HWND hwnd);		/* checks/adjusts scrolled position of prompts */
 static int getprevtext(HWND hwnd, short keyindex);	/* loads identified field from previous record */
 static void doprevnext(HWND wptr, BOOL mod, BOOL next);	/* enters record and moves forward/backward */
 static void loadfields(HWND wptr, char * rtext, RECN rnum);		/* loads text for editing */
 static void settestring(HWND wptr, char * tstring, FONTMAP * fmp, int selflag);	/* builds TE text from xstring */
 static short enterrecord(HWND wptr);		/* enters new/modified record */
-//static char * recoverstyle(char * sptr, CHARFORMAT2 * newsptr, CHARFORMAT2 * oldsptr, FONTMAP * fmp, CHARFORMAT2 * dfptr);	/* generates record string from style el */
 static short entryerr(HWND hwnd, const int errnum, ...);
 static short checkerrors(HWND wptr, char * rtext);	/* checks record */
 static short checkfield(unsigned char * source, short *alarms);		/* checks record field */
@@ -324,6 +325,7 @@ static void displaycount(HWND hwnd);		/* displays char count info */
 static void enclosetext(HWND hwnd, char c1, char c2);	/* encloses selection in chars */
 static int countbreaks(HWND ew,CHARRANGE * cr);		/* counts field breaks in selection */
 static void flipfield(HWND hwnd, int mode);	/* flips field */
+static void invertname(HWND hwnd);	// inverts name
 static void swapparens(HWND hwnd);	// swaps contents of parens
 static void incdec(HWND hwnd, int mode);	// increments/decrements page number
 static BOOL extendref(HWND hwnd);	// adds upper element of range as lower+1
@@ -342,7 +344,6 @@ static void copyfontmap(FONTMAP * to,FONTMAP * from);
 void mod_settext(INDEX *FF, char * text, RECN rnum, HWND behind)	/* loads new text for editing */
 
 {
-#ifndef READER
 	RECORD * recptr;
 
 	if (!FF->mf.readonly && (FF->rwind || mod_setwindow(FF, rnum == NEWREC)))	{	/* if have edit window */
@@ -364,7 +365,6 @@ void mod_settext(INDEX *FF, char * text, RECN rnum, HWND behind)	/* loads new te
 			}
 		}
 	}
-#endif //!READER
 }
 /**********************************************************************************/
 void mod_selectfield(HWND hwnd, int field)	// selects specified field in record
@@ -437,9 +437,6 @@ LRESULT CALLBACK mod_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WMM_UPDATESTATUS:
 			drawstatstring(hwnd);	/* force update of status line */
 			return 0;
-//		case WMM_UPDATETOOLBARS:
-//			mupdatetoolbars(hwnd);
-//			return (0);
 	}
 	return (DefWindowProc(hwnd,msg,wParam,lParam));
 }
@@ -455,31 +452,6 @@ static void mcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does m
 			case EN_UPDATE:
 			// use EN_UPDATE because all changes happen before redisplay	
 				if (mfp->doingpastedrop) {		// true when doing paste/drop
-#if 0
-					if (mfp->lastpastechar) {	// check/remove unwanted chars on end of drop/paste
-						CHARRANGE cr;
-						TEXTRANGE tr;
-						TCHAR buff[2];
-
-						SendMessage(hwndCtl, EM_EXGETSEL, 0, (LPARAM)&cr);	// get selection info (position at end of paste/drop)
-						tr.chrg = cr;
-						tr.lpstrText = buff;
-
-						do {
-							tr.chrg.cpMin = tr.chrg.cpMax - 1;	// char to left of current pos
-							SendMessage(mfp->hwed, EM_GETTEXTRANGE, 0, (LPARAM)&tr);
-						} while (*buff != mfp->lastpastechar && --tr.chrg.cpMax > mfp->currentselection.cpMin);
-						if (tr.chrg.cpMax < cr.cpMax) {	// if need to discard characters
-							int oldmask = SendMessage(hwndCtl, EM_SETEVENTMASK, 0, ENM_NONE);	/* turn off selchange/update events */
-
-							cr.cpMin = tr.chrg.cpMax;	// set to remove unwanted chars
-							SendMessage(hwndCtl, EM_EXSETSEL, 0, (LPARAM)&cr);	// set selection info
-							SendMessage(hwndCtl, WM_CLEAR, 0, 0);	// clear last char
-							SendMessage(hwndCtl, EM_SETEVENTMASK, 0, oldmask);	/* turn on events */
-						}
-						mfp->lastpastechar = 0;
-					}
-#endif
 					mfp->doingpastedrop = FALSE;
 					normalizetext(hwnd);
 				}
@@ -507,6 +479,8 @@ static void mcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does m
 		}
 	}
 	else {
+		if (codeNotify == 1 && !isvalidcommand(hwnd, id)) 	// if from accelerator and invalid
+			return;
 		switch (id)	{
 			case IDM_EDIT_UNDO:
 				SendMessage(mfp->hwed,EM_UNDO,0,0);
@@ -558,6 +532,10 @@ static void mcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does m
 			case IDM_EDIT_NEWABBREV:
 				abbrev_makenew(hwnd);
 				return;
+			case IDM_ENDASH:
+			case IDM_EMDASH:
+				dodashes(hwnd, id == IDM_EMDASH);
+				return;
 			case IDM_EDIT_SWAPPARENS:
 			case IDB_MOD_SWAPPAREN:
 				swapparens(hwnd);
@@ -574,6 +552,10 @@ static void mcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does m
 				return;
 			case IDB_MOD_BRACKETS:
 				enclosetext(hwnd,OBRACKET,CBRACKET);
+				return;
+			case IDM_EDIT_INVERT:
+			case IDB_MOD_INVERT:
+				invertname(hwnd);
 				return;
 			case IDB_MOD_FLIP:
 			case IDB_MOD_FLIPX:
@@ -655,18 +637,14 @@ static int mnotify(HWND hwnd, int id, NMHDR * hdr)	/* does notification tasks */
 			}
 			dobuttons(hwnd, BUTTONS_SELECT);
 			checkpromptpos(hwnd);	/* check for prompt alignment */
-#if 0
-			if (!mfp->protectedSelection)	// if not a change within completion selection
-				mfp->completingSelection = FALSE;
-			else
-				mfp->protectedSelection = FALSE;
-#endif
 			return TRUE;
 		case EN_MSGFILTER:
 			switch (((MSGFILTER *)hdr)->msg)	{
 				case WM_CHAR:
 				case WM_KEYDOWN:
 					return (doeditkey(hwnd,((MSGFILTER *)hdr)->msg,((MSGFILTER *)hdr)->wParam,((MSGFILTER *)hdr)->lParam));
+				case WM_RBUTTONUP:
+					return TRUE;		// never pass to richedit, so selection doesn't change when showing popup
 				case WM_MOUSEWHEEL:
 					mouseloc.x = LOWORD(((MSGFILTER *)hdr)->lParam);
 					mouseloc.y = HIWORD(((MSGFILTER *)hdr)->lParam);
@@ -717,6 +695,20 @@ static int mnotify(HWND hwnd, int id, NMHDR * hdr)	/* does notification tasks */
 			return 0;
 	}
 	return FORWARD_WM_NOTIFY(hwnd,id,hdr, DefWindowProc);
+}
+/************************************************************************/
+static void dodashes(HWND hwnd, BOOL emdash)
+
+{
+	MFLIST* mfp = getdata(hwnd);
+	HWND ew = mfp->hwed;
+	TCHAR * string;
+
+	if (emdash)
+		string = TEXT("—");	// em-dash
+	else
+		string = TEXT("–");	// en-dash
+	SendMessage(ew, EM_REPLACESEL, TRUE, (LPARAM)string);
 }
 /************************************************************************/
 static BOOL doeditkey(HWND hwnd, UINT msg,WPARAM wParam, LPARAM lParam )	/* handles keys */
@@ -809,28 +801,6 @@ static BOOL doeditkey(HWND hwnd, UINT msg,WPARAM wParam, LPARAM lParam )	/* hand
 					mod_close(hwnd,MREC_ALWAYSACCEPT);
 					return TRUE;
 				}
-#if 0
-				if (cr.cpMin == cr.cpMax)	/* if no range */
-					getabbrev(hwnd);		/* expand any abbreviation */
-//				else if (g_prefs.gen.autoextend && mfp->recnum > FF->head.rtot && (rightchar == RETURN || !rightchar) && curfield == findfield(hwnd, ENDFIELD))	{
-				else if (mfp->completingSelection && (rightchar == RETURN || !rightchar))	{
-					cr.cpMin = cr.cpMax;
-					SendMessage(ew,EM_EXSETSEL,0,(LPARAM)&cr);	// set selection to end of line
-				}
-				lindex = SendMessage(ew,EM_LINEFROMCHAR,(WPARAM)-1,0);	/* get line of selection pt */
-				if (lindex >= mfp->protectindex || mfp->fcount == FF->head.indexpars.maxfields)	/* if can't break */
-					return (TRUE);		/* would make too many fields */
-				SendMessage(ew,EM_EXGETSEL,0,(LPARAM)&cr);	// get current selection (might have expanded abbrev)
-				if (leftchar == SPACE)	// if should catch space
-					cr.cpMin--;		// expand selection
-				if (rightchar == SPACE)		// if should catch space
-					cr.cpMax++;
-				SendMessage(ew,EM_EXSETSEL,0,(LPARAM)&cr);	// set selection to end of line
-				if (!cr.cpMin || rightchar == RETURN || leftchar == RETURN)	{	/* if would be making a clean new field */
-					mod_dostyle(ew,&mfp->df,IDM_STYLE_REGULAR);		/* set style to plain */
-					setinfont(hwnd,FF->head.fm[0].name);	/* and default font */
-				}
-#else
 				if (mfp->completingSelection && (rightchar == RETURN || !rightchar))	{
 					cr.cpMin = cr.cpMax;
 					SendMessage(ew,EM_EXSETSEL,0,(LPARAM)&cr);	// set selection to end of line
@@ -850,7 +820,6 @@ static BOOL doeditkey(HWND hwnd, UINT msg,WPARAM wParam, LPARAM lParam )	/* hand
 				if (!cr.cpMin || rightchar == RETURN || leftchar == RETURN)		/* if would be making a clean new field */
 					SendMessage(ew,EM_SETCHARFORMAT,SCF_SELECTION,(LPARAM)&mfp->df);	// set default format
 				SendMessage(ew,EM_EXSETSEL,0,(LPARAM)&cr);	// set selection to end of line
-#endif
 				return FALSE;
 			case VK_INSERT:
 				if (GetKeyState(VK_CONTROL) >= 0 && GetKeyState(VK_SHIFT) >= 0)	{
@@ -954,7 +923,7 @@ static BOOL doeditkey(HWND hwnd, UINT msg,WPARAM wParam, LPARAM lParam )	/* hand
 					}
 					else if (g_prefs.gen.autoignorecase && !str_texticmp(baseptr,s2[0].str) || !strncmp(baseptr,s2[0].str,strlen(baseptr)))	{/* if match on last text field */
 						*baseptr = '\0';	/* terminate lead to cross-ref */
-						cx.cpMin += str_utextlen(s1[s1count].str,0);		/* offset start by length of cross-ref lead */
+						cx.cpMin += str_utextlen(s1[s1count].str,-1);		/* offset start by length of cross-ref lead */
 						sourcefield = 0;
 					}
 					if (sourcefield >= 0)	{		/* if matched field */
@@ -993,7 +962,7 @@ static BOOL doeditkey(HWND hwnd, UINT msg,WPARAM wParam, LPARAM lParam )	/* hand
 							cx.cpMax--;	// stop before newline
 						else if (isCrossref) {
 							*baseptr = '\0';
-							cx.cpMin += str_utextlen(s1[s1count].str, 0);		/* offset start by length of cross-ref lead */
+							cx.cpMin += str_utextlen(s1[s1count].str,-1);		/* offset start by length of cross-ref lead */
 						}
 						Edit_SetSel(ew, cx.cpMin, cx.cpMax);
 						mfp->compf.dwMask = mfp->df.dwMask;		// set mode for *replacing* styles
@@ -1245,17 +1214,18 @@ static BOOL mcreate(HWND hwnd,LPCREATESTRUCT cs)	/* initializes text window */
 
 		style = WS_CHILD|WS_VISIBLE|ES_MULTILINE|ES_RIGHT|WS_DISABLED; 
 		mfp->hwpr = CreateWindowEx(0,RICHEDIT_CLASS,NULL,style,0,0,0,0,hwnd,(HMENU)IDM_PROMPT,g_hinst,0);
+//		mfp->hwpr = CreateWindowEx(0, MSFTEDIT_CLASS, NULL, style, 0, 0, 0, 0, hwnd, (HMENU)IDM_PROMPT, g_hinst, 0);
 		SendMessage(mfp->hwpr,EM_SETBKGNDCOLOR,FALSE,GetSysColor(COLOR_BTNFACE));
 		mfp->df.dwEffects = 0;			/* bold is char style */
 		SendMessage(mfp->hwpr,EM_SETSEL,(WPARAM)-1,-1);	/* set insertion pt to end */
 		SendMessage(mfp->hwpr,EM_SETCHARFORMAT,0,(LPARAM)&mfp->df);	/* set default character formatting */
 
 		style = WS_VSCROLL|WS_CHILD|WS_VISIBLE|ES_MULTILINE|ES_AUTOVSCROLL|ES_DISABLENOSCROLL|ES_SAVESEL;
-		mfp->hwed = CreateWindowEx(WS_EX_CLIENTEDGE,RICHEDIT_CLASS,NULL,style,0,0,0,0,hwnd,(HMENU)IDM_EDIT,g_hinst,0);
+		mfp->hwed = CreateWindowEx(WS_EX_CLIENTEDGE, RICHEDIT_CLASS, NULL, style, 0, 0, 0, 0, hwnd, (HMENU)IDM_EDIT, g_hinst, 0);
+//		mfp->hwed = CreateWindowEx(WS_EX_CLIENTEDGE, MSFTEDIT_CLASS,NULL,style,0,0,0,0,hwnd,(HMENU)IDM_EDIT,g_hinst,0);
 		SendMessage(mfp->hwed, EM_SETLIMITTEXT,FF->head.indexpars.recsize*2,0);
 		SendMessage(mfp->hwed,EM_SETSEL,(WPARAM)-1,-1);	/* set insertion pt to end */
 		SendMessage(mfp->hwed, EM_SETEDITSTYLE, SES_XLTCRCRLFTOCR, SES_XLTCRCRLFTOCR);	// translate all cr/lf to cr
-//		SendMessage(mfp->hwed,EM_SETEDITSTYLE,SES_XLTCRCRLFTOCR| SES_SMARTDRAGDROP,SES_XLTCRCRLFTOCR| SES_SMARTDRAGDROP);	// translate all cr/lf to cr
 		// default lang options:
 		SendMessage(mfp->hwed,EM_SETLANGOPTIONS,0,(LPARAM)(IMF_AUTOFONT|IMF_DUALFONT|IMF_AUTOKEYBOARD));	
 
@@ -1288,20 +1258,7 @@ static BOOL mcreate(HWND hwnd,LPCREATESTRUCT cs)	/* initializes text window */
 		configurestatusbar(mfp->hwst, STAT_NPARTS, statwidths);
 		SendMessage(g_hwstatus, WM_SETFONT, (WPARAM)CreateFontIndirect(&getconfigdpi(hwnd)->lfStatusFont), MAKELPARAM(FALSE, 0));
 		SendMessage(mfp->hwst,SB_SETTEXT,7,(LPARAM)TEXT("INS"));	/* status */
-#if 0
-		mfp->hwtb = CreateToolbarEx(hwnd,TBSTYLE_TOOLTIPS|TBSTYLE_ALTDRAG|
-			WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS|CCS_TOP|CCS_NODIVIDER|CCS_ADJUSTABLE,
-			IDM_TOOL,
-			MB_MTOTAL,
-			g_hinst,
-			IDR_MODTOOLS,
-			tbb,
-			TBSTANDARDSIZE,
-			0,0,0,0,
-			sizeof(TBBUTTON));
-#else
 		mfp->hwtb =createtoolbar(hwnd);
-#endif
 
 		if (!reg_getkeyvalue(K_TOOLBARS,M_TBREGISTERD,NULL,NULL))	/* if don't have a default setting */
 			com_tbsaverestore(mfp->hwtb,hwnd,TRUE, M_TBREGISTERD);	/* save it */
@@ -1593,22 +1550,22 @@ static LRESULT getcontextmenu(RECALLBACK * reptr)	/* does context menu */
 {
 	HMENU mh;
 	HMENU mhs;
-	HWND ew;
-	CHARRANGE cr;
-	int style;
 	TCHAR name[LF_FACESIZE];
-	FONTMAP *fmp;
 
 	if (mh = LoadMenu(g_hinst,MAKEINTRESOURCE(IDR_POPUPS)))	{
 		if (mhs = GetSubMenu(mh,0))	{		/* if can get submenu */
-			ew = MX(reptr->hwnd,hwed);
-			fmp = WX(reptr->hwnd,owner)->head.fm;
+			HWND ew = MX(reptr->hwnd, hwed);
+			FONTMAP* fmp = WX(reptr->hwnd, owner)->head.fm;
+			CHARRANGE cr;
+			int style = getstyleflags(ew, NULL, name);
+			int breaks = countbreaks(ew, NULL);
 			SendMessage(ew,EM_EXGETSEL,0,(LPARAM)&cr);	/* get selection info */
 			EnableMenuItem(mh,IDM_EDIT_CUT,cr.cpMax > cr.cpMin ? MF_BYCOMMAND|MF_ENABLED : MF_BYCOMMAND|MF_GRAYED);
 			EnableMenuItem(mh,IDM_EDIT_COPY,cr.cpMax > cr.cpMin ? MF_BYCOMMAND|MF_ENABLED : MF_BYCOMMAND|MF_GRAYED);
 			EnableMenuItem(mh,IDM_EDIT_PASTE,SendMessage(ew,EM_CANPASTE,0,0) ? MF_BYCOMMAND|MF_ENABLED : MF_BYCOMMAND|MF_GRAYED);
-			EnableMenuItem(mh,IDM_EDIT_NEWABBREV,cr.cpMax > cr.cpMin && !countbreaks(ew,NULL) ? MF_BYCOMMAND|MF_ENABLED : MF_BYCOMMAND|MF_GRAYED);
-			style = getstyleflags(ew,NULL,name);
+			EnableMenuItem(mh, IDM_EDIT_SWAPPARENS, !breaks ? MF_BYCOMMAND | MF_ENABLED : MF_BYCOMMAND | MF_GRAYED);
+			EnableMenuItem(mh, IDM_EDIT_INVERT, !breaks ? MF_BYCOMMAND | MF_ENABLED : MF_BYCOMMAND | MF_GRAYED);
+			EnableMenuItem(mh,IDM_EDIT_NEWABBREV,cr.cpMax > cr.cpMin && !breaks ? MF_BYCOMMAND|MF_ENABLED : MF_BYCOMMAND|MF_GRAYED);
 			CheckMenuItem(mh,IDM_FONT_DEFAULT, *name && !strcmp(fmp[0].name,fromNative(name)) ? MF_BYCOMMAND|MF_CHECKED : MF_BYCOMMAND|MF_UNCHECKED);	/* set it */
 			CheckMenuItem(mh,IDM_STYLE_BOLD, style&FX_BOLD ? MF_BYCOMMAND|MF_CHECKED : MF_BYCOMMAND|MF_UNCHECKED);	/* set it */
 			CheckMenuItem(mh,IDM_STYLE_ITALIC, style&FX_ITAL ? MF_BYCOMMAND|MF_CHECKED : MF_BYCOMMAND|MF_UNCHECKED);	/* set it */
@@ -1657,7 +1614,6 @@ BOOL mod_close(HWND hwnd,int check)		/* closes modify window */
 		SetFocus(FF->vwind);
 		if (redisplay)
 			view_redisplay(FF,0,VD_CUR|VD_RESET);	/* redisplay whole screen, perhaps changed */
-//		SendMessage(FF->vwind,WMM_UPDATETOOLBARS,0,0);		// get toolbars reset for absence of record window
 		return TRUE;
 	}
 	return FALSE;
@@ -1798,6 +1754,7 @@ static void dobuttons(HWND hwnd, int set)		/* checks/sets sets some buttons */
 		SendMessage(tb,TB_ENABLEBUTTON,IDB_MOD_PREV,FALSE);
 		SendMessage(tb,TB_ENABLEBUTTON,IDB_MOD_NEXT,FALSE);
 		SendMessage(tb,TB_ENABLEBUTTON,IDB_MOD_DUPNEW,FALSE);
+		SendMessage(tb, TB_ENABLEBUTTON, IDB_MOD_INVERT, FALSE);
 	}
 	else {
 		MFLIST * mfp = getdata(hwnd);
@@ -1844,9 +1801,29 @@ static void dobuttons(HWND hwnd, int set)		/* checks/sets sets some buttons */
 		SendMessage(tb,TB_ENABLEBUTTON,IDB_MOD_FLIP,enable);
 		SendMessage(tb,TB_ENABLEBUTTON,IDB_MOD_HALFFLIP,enable);
 		SendMessage(tb,TB_ENABLEBUTTON,IDB_MOD_SWAPPAREN,enable);
+		SendMessage(tb, TB_ENABLEBUTTON, IDB_MOD_INVERT, enable);
 		SendMessage(tb,TB_ENABLEBUTTON,IDB_MOD_REVERT,SendMessage(ew,EM_GETMODIFY,0,0));	/* can revert */
 		SendMessage(mfp->hwtb,TB_ENABLEBUTTON,IDB_MOD_DUPNEW,!(!SendMessage(ew,EM_GETMODIFY,0,0) && mfp->recnum == FF->head.rtot+1));/* no duplicate if already a duplicate */
 	}
+}
+/******************************************************************************/
+static BOOL isvalidcommand(HWND hwnd, int commandID)	// checks accelerators that belong to buttons
+
+{
+	HWND tb = MX(hwnd, hwtb);
+	TBBUTTONINFO binfo;
+	int bindex;
+
+	binfo.cbSize = sizeof(TBBUTTONINFO);
+	binfo.dwMask = TBIF_COMMAND| TBIF_STATE;
+	bindex = SendMessage(tb, TB_GETBUTTONINFO, commandID, (LPARAM) &binfo);
+	if (bindex >= 0) {		// it's a real button
+		if (!(binfo.fsState & TBSTATE_ENABLED)) {	// if disabled
+			// beep ?
+			return NO;	// can't do command
+		}
+	}
+	return YES;
 }
 /******************************************************************************/
 static int getstyleflags(HWND ew, CHARFORMAT2 * cfp, TCHAR * fname)		// gets styles at selection or from specified char format
@@ -2003,6 +1980,8 @@ static void loadfields(HWND wptr, char * rtext, RECN rnum)		/* loads text for ed
 	mfp->propstate = g_prefs.gen.propagate;		/* fix inijtial state of propagation */
 	settestring(wptr,mfp->rstring, FF->head.fm,FALSE);	// set up text and context
 	mfp->startfield = mfp->endfield = 0;	// set start and end fields to 0
+	SendMessage(mfp->hwed, EM_SETSEL, 0, 1);	// twiddle selection to force notification that sets up field info
+	SendMessage(mfp->hwed, EM_SETSEL, 0, 0);
 	memset(&mfp->alarms,0,sizeof(mfp->alarms));		/* clear alarm fields */
 	drawstatstring(wptr);	/* force update of status line */
 }
@@ -2101,35 +2080,13 @@ static void settestring(HWND wptr, char * rtext, FONTMAP * fmp, int selflag)	/* 
 	*(tptr-2) = '\0';		/* terminate string */
 	SendMessage(ew,EM_REPLACESEL,TRUE,(LPARAM)tstring);	/* add residual text (permit undo) */
 	if (!selflag)	{	// if replacing all text
-//		SendMessage(ew,EM_SETSEL,0,0);			/* set to start */
 		rec.cr.cpMin = rec.cr.cpMax = 0;		// set to start
 		SendMessage(ew,EM_SCROLLCARET,0,0);		/* force into view */
 		SendMessage(ew,EM_SETMODIFY,FALSE,0);	/* mark unmodified */
 		SendMessage(ew,EM_EMPTYUNDOBUFFER,0,0);	/* clear undo */
 	}
-	else	{	// selection to restore is current insertion pt
-#if 0
-		CHARRANGE tcr = rec.cr;
-		GETTEXTEX gtx;
-		SETTEXTEX stx;
-		TCHAR tstring[MAXREC*2];
-
-		SendMessage(ew,EM_EXGETSEL,0,(LPARAM)&tcr);	// get current selection
-		tcr.cpMin = rec.cr.cpMin;			// set start to original
-		SendMessage(ew,EM_EXSETSEL,0,(LPARAM)&tcr);	// set selection to span replacement
-		gtx.cb = MAXREC*2;
-		gtx.flags = GT_SELECTION;
-		gtx.codepage = 1200;
-		gtx.lpDefaultChar = NULL;
-		gtx.lpUsedDefChar = NULL;
-		SendMessage(ew,EM_GETTEXTEX,(WPARAM)&gtx,(LPARAM)tstring);	// set selection to span replacement
-		mfp->itd->lpVtbl->Undo(mfp->itd,tomResume,NULL);	// enable undo
-		stx.flags = ST_DEFAULT;
-		stx.codepage = 1200;
-		SendMessage(ew,EM_SETTEXTEX,(WPARAM)&stx,(LPARAM)tstring);	// set selection to span replacement
-#endif
+	else	// selection to restore is current insertion pt
 		SendMessage(ew,EM_EXGETSEL,0,(LPARAM)&rec.cr);	// set selection to restore
-	}
 	restorerecontext(ew,&rec);
 	SendMessage(wptr,WM_COMMAND,MAKELONG(IDM_EDIT,EN_CHANGE),(LPARAM)ew);	// flag change to force cleanup
 }
@@ -2161,7 +2118,7 @@ static BOOL canabandon(HWND hwnd)		// returns true if can abandon record
 		mod_gettestring(mfp->hwed, mfp->revstring, mfp->fm, FALSE);	/* temp copy of retrieved record text */
 		fcount = rec_strip(FF,mfp->revstring);	/* strip/pad empty fields */
 		if (fcount < FF->head.indexpars.minfields)	{	/* if for any reason too few fields */
-			senderr (ERR_INTERNALERR, WARN, "Lost Headings");
+			showError(NULL,ERR_INTERNALERR, WARN, "Lost Headings");
 			return (TRUE);	// abandon record
 		}
 		mfp->difflag = str_xcmp(mfp->revstring, mfp->rstring);		/* could be the same even though dirty */
@@ -2284,19 +2241,11 @@ static short checkerrors(HWND wptr, char * rtext)	/* checks record */
 			err = entryerr(mfp->hwst, ERR_TOOMANYCHARFIELD);
 			break;
 		}
-#if 0
-		if (*fiptr->matchtext && !re_exec(field[findex].str, &mfp->regex[findex == fcount-1 ? PAGEINDEX : findex][0])
-			&& (g_prefs.gen.templatealarm == AL_REQUIRED || g_prefs.gen.templatealarm == AL_WARN && !mfp->alarms[A_TEMPLATE]++))	{	/* if bad pattern match */
-			err = entryerr(mfp->hwst, ERR_BADPATTERNFIELD);
-			break;
-		}
-#else
 		if (*fiptr->matchtext && !regex_find(mfp->regex[findex == fcount-1 ? PAGEINDEX : findex],field[findex].str,0,NULL)
 			&& (g_prefs.gen.templatealarm == AL_REQUIRED || g_prefs.gen.templatealarm == AL_WARN && !mfp->alarms[A_TEMPLATE]++))	{	/* if bad pattern match */
 			err = entryerr(mfp->hwst, ERR_BADPATTERNFIELD);
 			break;
 		}
-#endif
 		if (err = checkfield(field[findex].str,mfp->alarms))	{	/* flag error */
 			if (err == KEEPCS || err == ESCS)
 				entryerr(mfp->hwst, ERR_BADCODEFIELD,err == KEEPCS ? '~' : '\\');
@@ -2314,7 +2263,6 @@ static short checkerrors(HWND wptr, char * rtext)	/* checks record */
 				}
 			}
 			if (!err)	{		/* check page field */
-#if 1
 				findex = fcount-1;
 				if (str_xfindcross(FF,rtext,FALSE))	{
 					char * estring;
@@ -2330,16 +2278,6 @@ static short checkerrors(HWND wptr, char * rtext)	/* checks record */
 				}
 				else			/* need to clear errors in case err flag set and we're actually ignoring */
 					err = 0;
-#else
-				if (!str_xfindcross(FF,rtext,FALSE) && (!*field[fcount-1].str || ref_isinrange(FF,field[fcount-1].str, g_nullstr, g_nullstr,&err))
-					&& (g_prefs.gen.pagealarm == AL_REQUIRED 	/* check missing page only on key */
-					|| g_prefs.gen.pagealarm == AL_WARN && !mfp->alarms[A_PAGE]++))	{	/* if missing page needs flagging */
-					err = entryerr(mfp->hwst, *field[fcount-1].str ? err : ERR_EMPTYPAGEFIELD);		/* bad/missing refs */
-					findex = fcount-1;
-				}
-				else			/* need to clear errors in case err flag set and we're actually ignoring */
-					err = 0;
-#endif
 			}
 		}
 		if (!err)	{	/* if ok */
@@ -2378,7 +2316,6 @@ static void findfieldlimits(HWND hwnd, int index, CHARRANGE * cr)	/* finds field
 			cr->cpMax = SendMessage(mfp->hwed,EM_LINEINDEX,lcount,0);
 	}
 }
-
 /****************************************************************************/
 static int findfield(HWND hwnd, int charpos)	/* finds field in which char lies */
 
@@ -2562,8 +2499,7 @@ short mod_dostyle(HWND ew, CHARFORMAT2 *df, int style)	/* sets style on selected
 		case IDM_STYLE_SMALLCAPS:
 			if (cf.dwMask&CFM_SMALLCAPS && cf.dwEffects&CFE_SMALLCAPS)	{	/* if continuous */
 				cf.dwEffects = 0;
-//				if (!cf.yOffset)	/* if not a super/sub */
-					cf.yHeight = df->yHeight;
+				cf.yHeight = df->yHeight;
 			}
 			else {
 				cf.dwEffects = CFE_SMALLCAPS;
@@ -2571,32 +2507,6 @@ short mod_dostyle(HWND ew, CHARFORMAT2 *df, int style)	/* sets style on selected
 			}
 			cf.dwMask = CFM_SMALLCAPS|CFM_SIZE;
 			break;
-#if 0
-		case IDM_STYLE_SUPER:
-			if (cf.dwMask&CFM_OFFSET && cf.yOffset == step)	{	/* if continuous on */
-				cf.yOffset = 0;		/* toggle off */
-				if (!(cf.dwEffects&CFE_SMALLCAPS))	/* if not small caps */
-					cf.yHeight = df->yHeight;
-			}
-			else {
-				cf.yOffset = step;
-				cf.yHeight = smallc;	/* turn on */
-			}
-			cf.dwMask = CFM_OFFSET|CFM_SIZE;
-			break;
-		case IDM_STYLE_SUB:
-			if (cf.dwMask&CFM_OFFSET && cf.yOffset == -step)	{	/* if continuous on */
-				cf.yOffset = 0;
-				if (!(cf.dwEffects&CFE_SMALLCAPS))	/* if not small caps */
-					cf.yHeight = df->yHeight;	/* toggle off */
-			}
-			else {
-				cf.yOffset = -step;
-				cf.yHeight = smallc;	/* turn on */
-			}
-			cf.dwMask = CFM_OFFSET|CFM_SIZE;
-			break;
-#else
 		case IDM_STYLE_SUPER:
 			cf.dwEffects = (cf.dwMask&CFM_SUPERSCRIPT && cf.dwEffects&CFE_SUPERSCRIPT) ? 0 : CFE_SUPERSCRIPT;
 			cf.dwMask = CFM_SUPERSCRIPT;
@@ -2605,7 +2515,6 @@ short mod_dostyle(HWND ew, CHARFORMAT2 *df, int style)	/* sets style on selected
 			cf.dwEffects = (cf.dwMask&CFM_SUBSCRIPT && cf.dwEffects&CFE_SUBSCRIPT) ? 0 : CFE_SUBSCRIPT;
 			cf.dwMask = CFM_SUBSCRIPT;
 			break;
-#endif
 		case IDM_STYLE_INITIALCAPS:
 			for (count = 0; count < length; count++)	{
 				if (!count && !ct.cpMin || base[count-1] == SPACE || base[count-1] == RETURN)
@@ -2760,44 +2669,53 @@ static void enclosetext(HWND hwnd, char c1, char c2)	/* encloses selection in ch
 
 {
 	if (MX(hwnd,totlen) < WX(hwnd,owner)->head.indexpars.recsize-2)	{	/* if have room */
-#if 0
-		TCHAR tstring[MAXREC];
-		HWND ew = MX(hwnd,hwed);
-		RECONTEXT rec;
-
-		saverecontext(ew,&rec);
-		SendMessage(ew,EM_GETSELTEXT,0,(LPARAM)(tstring+1));	// set sel at end
-		tstring[0] = c1;
-		tstring[rec.cr.cpMax-rec.cr.cpMin+1] = c2;
-		tstring[rec.cr.cpMax-rec.cr.cpMin+2] = '\0';
-		SendMessage(ew,EM_REPLACESEL,TRUE,(LPARAM)tstring);
-		rec.cr.cpMax += 2;
-		restorerecontext(ew,&rec);
-#else
 		MFLIST * mfp = getdata(hwnd);
 		char tstring[MAXREC];
 		char * tptr; /* insertion point */
 
-//		mfp->itd->lpVtbl->Undo(mfp->itd,tomSuspend,NULL);
-#if 0
-		if (c1 == '{') {
-			CHARRANGE cr;
-			SendMessage(mfp->hwed, EM_EXGETSEL, 0, (LPARAM)&cr);
-			if (mod_getcharatpos(mfp->hwed, cr.cpMax - 1) == SPACE /* && mod_getcharatpos(mfp->hwed, LEFTCHAR) != SPACE */) {
-				cr.cpMax -= 1;
-				SendMessage(mfp->hwed, EM_EXSETSEL, 0, (LPARAM)&cr);	// exclude terminal space
-			}
-		}
-#endif
 		tstring[0] = c1;
 		mod_gettestring(mfp->hwed, tstring+1,mfp->fm, MREC_SELECT|MREC_NOTRIM);	/* recover text */
 		tptr = tstring+strlen(tstring); /* insertion point */
 		str_xshift(tptr,1);				/* make 1 char gap */
 		*tptr = c2;
-//		mfp->itd->lpVtbl->Undo(mfp->itd,tomResume,NULL);
 		settestring(hwnd, tstring, mfp->fm, TRUE);	/* adds text */
-#endif
 	}
+}
+/**********************************************************************************/
+static void invertname(HWND hwnd)	// inverts name
+
+{
+	MFLIST* mfp = getdata(hwnd);
+	INDEX* FF = getowner(hwnd);
+	int pageindex = mfp->fcount - 1;
+	int curfield = mfp->startfield;
+	CHARRANGE fr,sr;
+	char tstring[MAXREC];
+	RECONTEXT rec;
+
+	long offset, matchlength;
+
+	saverecontext(mfp->hwed, &rec);
+	findfieldlimits(hwnd, curfield, &fr);	/* find bounds of field */
+	SendMessage(mfp->hwed, EM_EXGETSEL, 0, (LPARAM)&sr);	/* get selection info */
+	if (sr.cpMax == sr.cpMin) {	// if have no selection, do field from right of cursor
+		sr.cpMin = sr.cpMin;
+		sr.cpMax = fr.cpMax;
+	}
+	if (sr.cpMax == fr.cpMax)	// if selection includes end of field
+		sr.cpMax -= 1;	// drop newline
+	SendMessage(mfp->hwed, EM_SETSEL, sr.cpMin, sr.cpMax);	// set selction
+	copyfontmap(mfp->fm, FF->head.fm);
+	mod_gettestring(mfp->hwed, tstring, mfp->fm, MREC_SELECT);	/* recover text */
+	if (str_invertname(tstring, &offset, &matchlength)) {
+		long uoffset = str_utextlen(tstring, offset);
+		long ulength = str_utextlen(tstring + offset, matchlength);
+		*(tstring + strlen(tstring)+1) = EOCS;	// make compound string
+		settestring(hwnd, tstring, FF->head.fm, TRUE);	// replace selected text
+		rec.cr.cpMin = sr.cpMin+uoffset;	// select original start position
+		rec.cr.cpMax = rec.cr.cpMin+ulength;	// select original start position
+	}
+	restorerecontext(mfp->hwed, &rec);
 }
 /**********************************************************************************/
 static void flipfield(HWND hwnd, int mode)	/* flips field */
@@ -2891,7 +2809,6 @@ static void incdec(HWND hwnd, int mode)	// increments/decrements page number
 			SendMessage(ew,EM_REPLACESEL,TRUE,(LPARAM)toNative(base+strlen(base)+1));	// replace it
 			if (endflag)	// if original selection covered changed locator
 				rec.cr.cpMax = rec.cr.cpMax = -1;
-
 		}
 	}
 	else

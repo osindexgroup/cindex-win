@@ -119,6 +119,7 @@ void grp_installtemp(INDEX * FF, GROUPHANDLE gh)	/* installs temporary group */
 	if (FF->lastfile)
 		grp_dispose(FF->lastfile);
 	FF->lastfile = gh;
+	FF->lastfile->curpos = 0;
 }
 /******************************************************************************/
 BOOL grp_make(INDEX * FF, GROUPHANDLE gh, char *name, short oflag)	// adds group to file
@@ -126,7 +127,7 @@ BOOL grp_make(INDEX * FF, GROUPHANDLE gh, char *name, short oflag)	// adds group
 {
 	int baseoffset;
 	if (gfind(FF, name))	{	/* if can find existing group */
-		if (oflag || sendwarning(WARN_DUPGROUPWARNING, name))
+		if (oflag || showWarning(NULL,WARN_DUPGROUPWARNING, name))
 			gremove(FF,name);	/* remove it */
 		else
 			return(FALSE);
@@ -139,7 +140,7 @@ BOOL grp_make(INDEX * FF, GROUPHANDLE gh, char *name, short oflag)	// adds group
 		memcpy((char *)FF->gbase+baseoffset,gh,groupsize(gh));	// appended to file
 		return(TRUE);
 	}
-	senderr(ERR_GROUPCREATEERR, WARN, name);
+	showError(NULL,ERR_GROUPCREATEERR, WARN, name);
 	return (FALSE);
 }
 /******************************************************************************/
@@ -151,6 +152,7 @@ BOOL grp_install(INDEX * FF, char *name)	/* opens & installs group  */
 	if (gh = grp_open(FF,name))	{	/* if can open it */
 		grp_closecurrent(FF);		/* discard any active group */
 		FF->curfile = gh;	/* set current file */
+		FF->curfile->curpos = 0;
 		return (FALSE);
 	}
 	return (TRUE);
@@ -161,7 +163,7 @@ void grp_closecurrent(INDEX * FF)		/* closes current group */
 {
 	if (FF->curfile && FF->curfile != FF->lastfile)	/* if using a group */
 		grp_dispose(FF->curfile);	/* get rid of it */
-	FF->curfilepos = 0;			/* make sure we invalidate file pos */
+//	FF->curfilepos = 0;			/* make sure we invalidate file pos */
 	FF->curfile = NULL;
 }
 /******************************************************************************/
@@ -171,24 +173,14 @@ void grp_dispose(GROUPHANDLE gh)		/* discards group  */
 	free(gh);
 }
 /******************************************************************************/
-RECN grp_getstats(INDEX * FF, GROUPHANDLE gh, COUNTPARAMS * csptr)		/* gets stats on group */
+BOOL grp_addrecord(GROUPHANDLE gh, RECORD* recptr)
 
 {
-	GROUPHANDLE oldcfile;
-	RECN oldcfilepos;
-	
-	memset(csptr,0, sizeof(COUNTPARAMS));
-	if (gh->rectot)	{
-		oldcfile = FF->curfile;		/* save any active group */
-		oldcfilepos = FF->curfilepos;	/* and its current position */
-		FF->curfile = gh;			/* set our group in temporarily */
-		FF->curfilepos = 0;			/* and zero index */
-		csptr->firstrec = gh->recbase[0];
-		search_count(FF,csptr,SF_OFF);
-		FF->curfile = oldcfile;		/* restore any old group */
-		FF->curfilepos = oldcfilepos;	/* and its position */
+	if (gh->rectot < gh->limit || gresize(&gh, GROUPMAXSIZE)) {
+		gh->recbase[gh->rectot++] = recptr->num;	/* write record number */
+		return YES;
 	}
-	return gh->rectot;
+	return NO;
 }
 /******************************************************************************/
 RECN grp_buildfromcheck(INDEX * FF, GROUPHANDLE * gh)	// builds group for syntax errors
@@ -306,7 +298,7 @@ void grp_revise(INDEX * FF, GROUPHANDLE *gh)	/* rebuilds group  */
 	gp->tstamp = time(NULL);
 	gp->gflags |= GF_REVISED;
 	FF->curfile = gp;
-	sort_sortgroup(FF);		/* sort and save it */
+//	sort_sortgroup(FF, gp->lg.sortmode);		/* sort and save it */
 	FF->curfile = tcfile;	/* restore any active group */
 	*gh = gp;		/* set revised handle */
 }
@@ -423,7 +415,7 @@ static BOOL gresize(GROUPHANDLE *gp,RECN newrecs)	/* changes size or reports err
 		return (TRUE);
 	}
 	else
-		sendinfo(INFO_FULLGROUP);
+		showInfo(NULL,INFO_FULLGROUP);
 	return (FALSE);
 }
 /******************************************************************************/

@@ -284,7 +284,7 @@ static void scommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does m
 				break;
 			case IDC_SPELL_ADD:
 				if ((titem = ComboBox_GetCurSel(GetDlgItem(hwnd,IDC_SPELL_DICTIONARY))) < 1)		{	/* if no dic in use */
-					if (!sendwarning(WARN_NODIC))	/* if don't want new */
+					if (!showWarning(hwnd,WARN_NODIC))	/* if don't want new */
 						break;
 					titem = newdic(hwnd);	/* make dict if poss */
 				}
@@ -334,7 +334,7 @@ static BOOL sinit(HWND hwnd, HWND hwndFocus, LPARAM lParam)	/* initializes dialo
 			return (TRUE);
 		}
 		else
-			senderr(ERR_SPELLNODBERR,WARN);
+			showError(hwnd,ERR_SPELLNODBERR,WARN);
 		freedata(hwnd);		/* window now has nothing */
 	}
 	DestroyWindow(hwnd);
@@ -572,7 +572,7 @@ BOOL spellcontinue(INDEX * FF, HWND hwnd, RECORD * recptr, char * sptr, SFLIST *
 			return TRUE;
 		}
 		else
-			sendinfo(INFO_NOMOREREC);	/* done */
+			showInfo(hwnd,INFO_NOMOREREC);	/* done */
 	}
 	return (FALSE);
 }
@@ -788,7 +788,7 @@ static INT_PTR CALLBACK dnameproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 							openuserdic(getdata(g_spellw),namestr);	/* opens current user dic if poss */
 						}
 						else	{
-							senderr(ERR_SPELLDICEXISTERR,WARN,namestr);
+							showError(hwnd,ERR_SPELLDICEXISTERR,WARN,namestr);
 							selectitext(hwnd,IDC_SPELL_NEWDIC);
 							break;
 						}
@@ -1007,7 +1007,7 @@ static INT_PTR CALLBACK optionproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 						enableitem(hwnd,IDC_SPELL_OPTIONSEDITPD);	/* enable edit button */
 					break;
 				case IDC_SPELL_OPTIONSPDDELETE:	/* delete pd */
-					if (sendwarning(WARN_DELETEDIC))	{
+					if (showWarning(hwnd,WARN_DELETEDIC))	{
 						GetWindowText(GetDlgItem(hwnd,IDC_SPELL_OPTIONSPD),tstring,STSTRING);
 						if (!nstrcmp(getdefaultdic(USERDIC),tstring))	{	/* if currently active one */
 							hspell_closepd();	// close any open dic

@@ -241,10 +241,8 @@ void edit_switchtag(HWND hwnd,int newlabel)	/* tags/untags records */
 				rec_stamp(FF,trptr);
 		} while ((trptr = sort_skip(FF,trptr,1)) && trptr->num != lastnum);
 		SendMessage(g_hwtoolbar,TB_CHECKBUTTON,IDM_EDIT_TAG,newlabel > 0);	/* set button -- might have come from menu */
-		if (FF->head.privpars.vmode != VM_FULL)	/* if draft */
-			view_updatestatus(FF->vwind,FALSE);	/* redisplay */
-		else if (g_prefs.gen.showlabel)			/* if fully formatted */
-			view_resetrec(FF,LX(FF->vwind,sel).first);	/* reset from first record */
+		if (FF->head.privpars.vmode != VM_FULL || g_prefs.gen.showlabel)	// if not full format, or want showing label
+			view_redisplay(FF, 0, VD_CUR | VD_TOP);		/* redisplay to show/hide */
 	}
 }
 /**********************************************************************************/
@@ -325,7 +323,7 @@ short edit_duplicate(HWND hwnd)	/* duplicates record(s) */
 					SetCursor(ocurs);
 				}
 				else
-					senderr(ERR_DISKFULLERR,WARN);		/* not enough disk space */
+					showError(NULL,ERR_DISKFULLERR,WARN);		/* not enough disk space */
 			}
 		}
 	}
@@ -358,7 +356,7 @@ void edit_demote(HWND hwnd)	// demotes headings
 				maxfields = fcount;
 		} while ((trptr = sort_skip(FF, trptr, 1)) && trptr->num != lastnum);
 		if (maxfields > FF->head.indexpars.maxfields) {	/* if need to increase field limit */
-			if (sendwarning(WARN_DEMOTEFIELD, maxfields)) {
+			if (showWarning(NULL,WARN_DEMOTEFIELD, maxfields)) {
 				int oldmaxfieldcount = FF->head.indexpars.maxfields;
 				FF->head.indexpars.maxfields = maxfields;
 				adjustsortfieldorder(FF->head.sortpars.fieldorder, oldmaxfieldcount, FF->head.indexpars.maxfields);
@@ -369,7 +367,7 @@ void edit_demote(HWND hwnd)	// demotes headings
 		maxlength = maxlength + pgap + 10;
 		maxlength -= maxlength % 10;			// rounded up to nearest 10 above original maxlength + gap
 		if (maxlength > FF->head.indexpars.recsize) {	/* if need record enlargement */
-			if (!sendwarning(WARN_DEMOTEENLARGE, maxlength - FF->head.indexpars.recsize) || !file_resizeindex(FF, maxlength))	// if don't want or can't do
+			if (!showWarning(NULL,WARN_DEMOTEENLARGE, maxlength - FF->head.indexpars.recsize) || !file_resizeindex(FF, maxlength))	// if don't want or can't do
 				return;
 		}
 		struct numstruct * slptr = sort_setuplist(FF);
@@ -385,6 +383,33 @@ void edit_demote(HWND hwnd)	// demotes headings
 		trptr = rec_getrec(FF, firstnum);
 		mod_settext(FF, trptr->rtext, trptr->num, NULL);
 		mod_selectfield(FF->rwind, 0);
+	}
+}
+/**********************************************************************************/
+void edit_flip(HWND hwnd, int shiftstate)	// flips heading and field below
+
+{
+	INDEX* FF = getowner(hwnd);
+	LFLIST* lfp = getdata(hwnd);
+	RECN lastnum = view_getsellimit(hwnd);	// record beyond end of selection
+	RECN firstnum = lfp->sel.first;		// and first selected
+	RECORD* trptr;
+	BOOL altstate = g_prefs.gen.smartflip && !shiftstate || !g_prefs.gen.smartflip && shiftstate;
+
+	if (trptr = rec_getrec(FF, firstnum)) {	
+		struct numstruct* slptr = sort_setuplist(FF);
+		char fs[MAXREC];
+		do {
+			str_xcpy(fs, trptr->rtext);
+			BOOL pageMode = str_xcount(fs) == 2;
+			char * smartlist = pageMode ? FF->head.refpars.crosstart : FF->head.flipwords;
+			str_flip(fs, smartlist, altstate,NO,pageMode);
+			memcpy(trptr->rtext, fs,str_xlen(fs));	// copy the string up to EOCS
+			sort_addtolist(slptr, trptr->num);
+			rec_stamp(FF, trptr);
+		} while ((trptr = sort_skip(FF, trptr, 1)) && trptr->num != lastnum);
+		sort_resortlist(FF, slptr);
+		view_resetrec(FF, firstnum);	/* reset from first record */
 	}
 }
 #ifdef PUBLISH
@@ -1013,7 +1038,7 @@ static INT_PTR CALLBACK eadminproc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 							GetDlgItemText(hwnd,IDC_PPREFS_ADM_PWD1,string1,FSSTRING);
 							GetDlgItemText(hwnd,IDC_PPREFS_ADM_PWD2,string2,FSSTRING);
 							if (nstrcmp(string1,string2))	{	/* if passwd error */
-								senderr(ERR_BADPASS,WARN);
+								showError(NULL,ERR_BADPASS,WARN);
 								SetFocus(GetDlgItem(hwnd,IDC_PPREFS_ADM_PWD1));
 								SetWindowLongPtr(hwnd,DWLP_MSGRESULT,(LONG_PTR)TRUE);
 							}

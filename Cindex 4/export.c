@@ -261,7 +261,7 @@ short exp_export(HWND wptr)		/* exports index */
 				if (grp_buildfromcheck(FF,&gh))	{
 					grp_installtemp(FF,gh);
 					SendMessage(FF->vwind,WM_COMMAND,IDM_VIEW_TEMPORARYGROUP,0);	/* display group */
-					senderr(ERR_RECORDSYNTAXERR,WARN,ef.ofn.lpstrFile);
+					showError(NULL,ERR_RECORDSYNTAXERR,WARN,ef.ofn.lpstrFile);
 					return 0;
 				}
 				grp_dispose(gh);
@@ -271,7 +271,7 @@ short exp_export(HWND wptr)		/* exports index */
 		else	/* format text of some sort */
 			ok = formexport_write(FF,&ef,typesetters[ef.type]);
 		if (!ok)
-			senderr(ERR_WRITEERR,WARN,ef.ofn.lpstrFile);
+			showError(NULL,ERR_WRITEERR,WARN,ef.ofn.lpstrFile);
 		SetCursor(ocurs);
 	}
 	return (0);
@@ -314,13 +314,13 @@ static INT_PTR CALLBACK exporthook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			switch (((LPOFNOTIFY)lParam)->hdr.code)	{
 				case CDN_FILEOK:
 					if (!reconcilefiletype(parent,ofp))	{	// if doesn't have extension to match type
-						if (!sendwarning(WARN_BADEXTENSION,ofp->lpstrFile))	{	// if cancel
+						if (!showWarning(hwnd,WARN_BADEXTENSION,ofp->lpstrFile))	{	// if cancel
 							SetWindowLongPtr(hwnd, DWLP_MSGRESULT,TRUE);
 							return (TRUE);
 						}
 					}
 					if (ef->type == E_NATIVE && index_byfspec(ofp->lpstrFile))	{	/* if overwriting existing file */
-						senderr(ERR_OVERWRITEOPEN,WARN,file_getname(ofp->lpstrFile));	/* always save extended info */
+						showError(NULL,ERR_OVERWRITEOPEN,WARN,file_getname(ofp->lpstrFile));	/* always save extended info */
 						SetWindowLongPtr(hwnd, DWLP_MSGRESULT,TRUE);
 						return (TRUE);
 					}
@@ -568,7 +568,7 @@ static INT_PTR CALLBACK setfoptions(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						if (getlong(hwnd,IDC_FORMWRITE_PEND,&tnum))		/* if not empty */
 							tef.exp.lastpage = tnum;
 						if (tef.exp.firstpage > tef.exp.lastpage)	{
-							senderr(ERR_INVALPAGERANGE,WARN);
+							showError(NULL,ERR_INVALPAGERANGE,WARN);
 							selectitext(hwnd,IDC_FORMWRITE_PEND);
 							return(TRUE);
 						}
@@ -756,9 +756,9 @@ short exp_rawexport(INDEX * FF, struct expfile * ef)	/* opens & writes raw expor
 		if (mfile_resize(&mf,wfptr-mf.base) && mfile_close(&mf))	{
 			ok = TRUE;
 			if (ef->exp.errorcount)
-				sendinfo(INFO_WRITERECWITHERROR,ef->exp.records,file_getname(ef->ofn.lpstrFile),ef->exp.longest,ef->exp.errorcount);
+				showInfo(NULL,INFO_WRITERECWITHERROR,ef->exp.records,file_getname(ef->ofn.lpstrFile),ef->exp.longest,ef->exp.errorcount);
 			else
-				sendinfo(INFO_WRITEREC,ef->exp.records,file_getname(ef->ofn.lpstrFile),ef->exp.longest);
+				showInfo(NULL,INFO_WRITEREC,ef->exp.records,file_getname(ef->ofn.lpstrFile),ef->exp.longest);
 		}
 	}
 	return (ok);

@@ -2,12 +2,12 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Cindex"
-#define MyAppVersion "4.3"
+#define MyAppVersion "4.0"
 #define MyAppEdition "Standard Edition"
-#define MyAppPublisher "CINDEX"
-#define MyAppURL "https://www.example.com"
+#define MyAppPublisher "OpenCindex"
+#define MyAppURL "https://www.opencindex.com"
 #define MyAppExeName "cindex.exe"
-#define FileVersion "4.3.0"
+#define FileVersion "4.4"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -24,6 +24,11 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName} {#MyAppVersion}
 DefaultGroupName={#MyAppName} {#MyAppVersion}
+;DefaultDirName={pf}\{#MyAppPublisher}
+;DefaultGroupName={#MyAppPublisher}
+
+;UsePreviousAppDir=no
+
 AllowNoIcons=yes
 OutputBaseFilename=CindexSetup
 Compression=lzma
@@ -34,10 +39,10 @@ SolidCompression=yes
 UsePreviousUserInfo=no
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
-MinVersion=6.1
+MinVersion=10.0
 ;SignTool=cindexSignTool $f
 VersionInfoVersion={#FileVersion}
-SetupIconFile=icon/cindex.ico
+;SetupIconFile=icon/cindex.ico
 DisableDirPage=no
 AlwaysShowDirOnReadyPage=yes
 
@@ -65,6 +70,7 @@ Source: "inno\$UCP Tagged Text.cstg"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\$Standard Tags.cxtg"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\Cindex 4 Release Notes.pdf"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\Cindex 4 Guide.pdf"; DestDir: "{app}"; Flags: ignoreversion
+Source: "inno\Cindex 4.4 Release Notes (Windows).pdf"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\Cindex.chm"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\en_US.aff"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\en_US.dic"; DestDir: "{app}"; Flags: ignoreversion
@@ -75,7 +81,6 @@ Source: "inno\icuuc58.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\libexpat.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\libhunspell.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\libiconv.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "inno\WinSparkle.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\msvcp140.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\vcruntime140.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "inno\notices.rtf"; DestDir: "{app}"; Flags: ignoreversion
@@ -87,9 +92,12 @@ Source: "inno\macrex_translations.txt"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{group}\{#MyAppName} {#MyAppVersion}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\{#MyAppName} {#MyAppVersion} Release Notes"; Filename: "{app}\Cindex 4 Release Notes.pdf"
-Name: "{group}\{#MyAppName} {#MyAppVersion} Guide"; Filename: "{app}\Cindex 4 Guide.pdf"
+Name: "{group}\{#MyAppName} {#FileVersion}"; Filename: "{app}\{#MyAppExeName}"
+;Name: "{group}\{#MyAppName} {#MyAppVersion} Release Notes"; Filename: "{app}\Cindex 4 Release Notes.pdf"
+;Name: "{group}\{#MyAppName} {#MyAppVersion} Guide"; Filename: "{app}\Cindex 4 Guide.pdf"
+Name: "{group}\{#MyAppName} 4.4 Release Notes"; Filename: "{app}\Cindex 4.4 Release Notes (Windows).pdf"
+Name: "{group}\{#MyAppName} 4 Release Notes"; Filename: "{app}\Cindex 4 Release Notes.pdf"
+Name: "{group}\{#MyAppName} 4 Guide"; Filename: "{app}\Cindex 4 Guide.pdf"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\{#MyAppName} {#MyAppVersion}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 

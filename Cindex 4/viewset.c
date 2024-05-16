@@ -264,11 +264,19 @@ static void ldosortonoff(HWND hwnd)	/* sets sort on or off */
 
 {
 	INDEX * FF = getowner(hwnd);
+	char newstate;
 	
-	com_check(IDM_VIEW_SHOWSORTED,FF->head.sortpars.ison ^= 1);
+	if (FF->curfile) {
+		sort_sortgroup(FF, FF->curfile->sg.ison ^= 1);		// on/off change on group requires resort
+		newstate = FF->curfile->sg.ison;
+	}
+	else {
+		FF->head.sortpars.ison ^= 1;
+		newstate = FF->head.sortpars.ison;
+	}
+	com_check(IDM_VIEW_SHOWSORTED,newstate);
 	view_clearselect(hwnd);			 /* clears selection */
 	view_redisplay(FF,0,VD_TOP);
-	view_setstatus(FF->vwind);		/* set title (forces display of sort status) */
 	ldoviewbuttons(FF);	/* set buttons */
 }
 /*******************************************************************************/
@@ -335,11 +343,10 @@ static void lswitchsort(HWND hwnd, int alpha)	/* switches between alpha & page s
 				sg->fieldorder[count] = !count ? PAGEINDEX : count - 1;
 		}
 		if (FF->curfile)
-			sort_sortgroup(FF);
+			sort_sortgroup(FF,YES);
 		else
 			sort_resort(FF);
 		view_redisplay(FF, 0, VD_CUR | VD_RESET);	/* force reset of display pars */
-		view_setstatus(hwnd);
 		ldoviewbuttons(FF);		// for benfit of API server
 	}
 }
@@ -361,7 +368,7 @@ static void ldosize(HWND hwnd,HWND cb,UINT notify)	/* sets font size */
 				_itoa(FF->head.privpars.size,tbuff1,10);
 				SetWindowText(cb,toNative(tbuff1));
 				if (newsize <0 || *eptr)	{		/* if a bad number */
-					senderr(ERR_BADNUMERR,WARNNB,tbuff);
+					showError(NULL,ERR_BADNUMERR,WARNNB,tbuff);
 					SetFocus(cb);
 				}
 			}
@@ -437,9 +444,6 @@ LRESULT CALLBACK view_proc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		HANDLE_MSG(hwnd,WM_COMMAND,lcommand);
 		HANDLE_MSG(hwnd,WM_MOUSEWHEEL,ldowheel);
 		HANDLE_MSG(hwnd,WM_CONTEXTMENU,ldocontextmenu);
-//		case WMM_UPDATETOOLBARS:
-//			lupdatetoolbar(hwnd);
-//			return (0);
 	}
 	return (DefWindowProc(hwnd,msg,wParam,lParam));
 }
@@ -487,6 +491,10 @@ static void lcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does m
 			return;
 		case IDM_EDIT_DEMOTE:
 			edit_demote(hwnd);
+			return;
+		case IDM_EDIT_FLIP:
+		case IDM_EDIT_FLIPX:
+			edit_flip(hwnd, id-IDM_EDIT_FLIP);
 			return;
 		case IDM_EDIT_REMOVEMARK:
 			edit_removemark(hwnd);
@@ -584,6 +592,9 @@ static void lcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does m
 			return;			
 		case IDM_TOOLS_CHECKINDEX:
 			ts_checkindex(hwnd);
+			return;
+		case IDM_TOOLS_COMPAREINDEXES:
+			ts_compare(hwnd);
 			return;
 		case IDM_TOOLS_RECONCILEHEADINGS:
 			ts_reconcile(hwnd);
@@ -683,6 +694,7 @@ static void ldocontextmenu(HWND hwnd, HWND hwndContext, UINT xpos, UINT ypos)	/*
 		EnableMenuItem(mhs,IDM_EDIT_EDITRECORD,MF_BYCOMMAND|state);
 		EnableMenuItem(mhs,IDM_EDIT_REMOVEMARK, MF_BYCOMMAND | state);
 		EnableMenuItem(mhs,IDM_EDIT_DEMOTE, MF_BYCOMMAND | state);
+		EnableMenuItem(mhs, IDM_EDIT_FLIP, MF_BYCOMMAND | state);
 		EnableMenuItem(mhs,IDM_EDIT_DUPLICATE,MF_BYCOMMAND|state);
 		EnableMenuItem(mhs,IDM_EDIT_DELETE,MF_BYCOMMAND|state);
 		EnableMenuItem(mhs,IDM_EDIT_TAG,MF_BYCOMMAND|state);
@@ -725,6 +737,7 @@ static void ldoviewbuttons(INDEX * FF)	/* sets menus */
 {
 	if (!FF->rwind)	{	// if no record entry window open
 		short fieldindex;
+		SORTPARAMS  sg = FF->curfile ? FF->curfile->sg : FF->head.sortpars;
 
 		SendMessage(g_hwtoolbar,TB_ENABLEBUTTON,IDM_VIEW_FULLFORMAT,TRUE);	/* enable these */
 		SendMessage(g_hwtoolbar,TB_ENABLEBUTTON,IDM_VIEW_DRAFTFORMAT,TRUE);
@@ -740,10 +753,9 @@ static void ldoviewbuttons(INDEX * FF)	/* sets menus */
 		SendMessage(g_hwtoolbar,TB_ENABLEBUTTON,IDB_VIEW_SORTALPHA,!FF->mf.readonly);	/* set button */
 		SendMessage(g_hwtoolbar,TB_ENABLEBUTTON,IDB_VIEW_SORTPAGE,!FF->mf.readonly);	/* set button */
 		SendMessage(g_hwtoolbar, TB_ENABLEBUTTON, IDB_VIEW_SORTNONE, TRUE);	/* set button */
-		fieldindex = FF->curfile ? FF->curfile->sg.fieldorder[0] : FF->head.sortpars.fieldorder[0];
-		SendMessage(g_hwtoolbar,TB_CHECKBUTTON,IDB_VIEW_SORTALPHA,fieldindex != PAGEINDEX && FF->head.sortpars.ison);
-		SendMessage(g_hwtoolbar,TB_CHECKBUTTON,IDB_VIEW_SORTPAGE,fieldindex == PAGEINDEX && FF->head.sortpars.ison);
-		SendMessage(g_hwtoolbar, TB_CHECKBUTTON, IDB_VIEW_SORTNONE, !FF->head.sortpars.ison);
+		SendMessage(g_hwtoolbar,TB_CHECKBUTTON,IDB_VIEW_SORTALPHA, sg.fieldorder[0] != PAGEINDEX && sg.ison);
+		SendMessage(g_hwtoolbar,TB_CHECKBUTTON,IDB_VIEW_SORTPAGE, sg.fieldorder[0] == PAGEINDEX && sg.ison);
+		SendMessage(g_hwtoolbar, TB_CHECKBUTTON, IDB_VIEW_SORTNONE, !sg.ison);
 	}
 }
 /******************************************************************************/
@@ -877,15 +889,13 @@ short view_close(HWND hwnd)		/* closes index */
 			SendMessage(g_repw,WM_COMMAND,IDCANCEL,0);	// clean up and hide
 			RX(g_repw,lastindex) = NULL;
 		}
-#if !READER		// if not Reader
 		sset_closeifused(FF);	/* close spell window if we control it */
-#endif
 		if (LX(hwnd,savetimer))		/* if have save timer */
 			KillTimer(hwnd,LX(hwnd,savetimer));		/* kill it */
 		if ((iindex = index_findindex(FF)) >= 0)	{	/* if index exists (might not after resize) */
 			file_disposesummary(FF);
 			if (index_close(FF))	{/* discard index */
-				senderr(ERR_INDEXCLOSERR,WARN,FF->pfspec);
+				showError(NULL,ERR_INDEXCLOSERR,WARN,FF->pfspec);
 				return (FALSE);		/* error discarding */
 			}
 		}
@@ -1225,7 +1235,7 @@ static void lprint(HWND hwnd)		/* forms & prints text pages */
 		formimages(hwnd,p_dlg.hDC, FALSE);
 		print_end(FF->pf.pageout, hwnd);
 		if (!FF->pf.pageout)	/* if did no pages */
-			sendinfo(INFO_LASTPAGE,FF->pf.lastpage);
+			showInfo(NULL,INFO_LASTPAGE,FF->pf.lastpage);
 	}
 }
 /******************************************************************************/
@@ -1267,8 +1277,6 @@ static void formimages(HWND hwnd, HDC pdc, BOOL silent)	/* forms text pages; pri
 		if (silent)
 			ocurs = SetCursor(g_waitcurs);
 		for (contlines = foffset = FF->nostats = 0, p_err = pcount = 1; rnum && pcount <= FF->pf.last && !p_abort && p_err > 0; pcount++)	{		/* for all records */
-//			if (!silent)
-//				SendMessage(p_hwnd,WMM_PAGENUM,0,pcount);
 			lmargin = FF->head.formpars.pf.mc.reflect && (pcount+FF->pf.pagenum)&1 ? FF->head.formpars.pf.mc.right : FF->head.formpars.pf.mc.left;
 			lfp->drect = baserect;		/* reset drawing rect to first column */
 			OffsetRect(&lfp->drect,lmargin,FF->head.formpars.pf.mc.top);		/* positions page rect for margins */
@@ -1412,7 +1420,6 @@ void view_changedisplaysize(HWND hwnd)		/* sets up after page/margin change */
 static void resetdisplay(INDEX * FF)	/* resets display */
 
 {	
-	view_setstatus(FF->vwind);		/* set title */
 	view_clearselect(FF->vwind);	/* clears selection */
 	view_redisplay(FF,0,VD_TOP|VD_RESET|VD_IMMEDIATE);
 	ldoviewbuttons(FF);	/* set buttons */
@@ -1528,7 +1535,7 @@ void view_resetrec(INDEX * FF, RECN rnum)		/* redisplays record that's on screen
 			view_selectrec(FF,recptr->num,VD_MIDDLE,-1,-1);
 		return;
 	}
-	senderr(ERR_INTERNALERR,WARN,"no record reset");
+	showError(NULL,ERR_INTERNALERR,WARN,"no record reset");
 }
 /*********************************************************************************/
 void view_redisplay(INDEX * FF, RECN rnum, short flags)	/*  redisplays view window */
@@ -1612,6 +1619,7 @@ void view_redisplay(INDEX * FF, RECN rnum, short flags)	/*  redisplays view wind
 		lfp->fillEnabled = FALSE;	// disable counting consumed records
 		setscrollrange(FF->vwind);		/* check/set scroll range */
 		InvalidateRect(hwnd,NULL,TRUE);
+		view_setstatus(FF->vwind);		// update status display
 	}
 }
 /*******************************************************************************/
@@ -1657,19 +1665,20 @@ void view_setstatus(HWND hwnd)	/* sets window title and status */
 	char tstring[STSTRING];
 	int sflag;
 	TCHAR sortstring[100];
+	SORTPARAMS* sgp = NULL;
 
 	switch (FF->viewtype)	{
 		case VIEW_ALL:
 			sprintf(tstring, "All Records (%ld)",FF->head.rtot);
-			sflag = FF->head.sortpars.ison;
+			sgp = &FF->head.sortpars;
 			break;
 		case VIEW_GROUP:
 			sprintf(tstring, "Group \"%s\" (%ld of %ld)",FF->curfile->gname, FF->curfile->rectot,FF->head.rtot);
-			sflag = FF->curfile->lg.sortmode;
+			sgp = &FF->curfile->sg;
 			break;
 		case VIEW_TEMP:
 			sprintf(tstring, "Temporary Group (%ld of %ld)",FF->lastfile->rectot,FF->head.rtot);
-			sflag = FF->lastfile->lg.sortmode;
+			sgp = &FF->lastfile->sg;
 			break;
 		case VIEW_NEW:
 			sprintf(tstring, "New Records (%ld of %ld)",FF->head.rtot-FF->startnum,FF->head.rtot);
@@ -1679,19 +1688,12 @@ void view_setstatus(HWND hwnd)	/* sets window title and status */
 	SendMessage(g_hwstatus,SB_SETTEXT,STATSEG_RECTOT|0,(LPARAM)toNative(tstring));
 	sprintf(tstring,"%ld New", FF->head.rtot-FF->startnum);
 	SendMessage(g_hwstatus,SB_SETTEXT,STATSEG_NEW|0,(LPARAM)toNative(tstring));
-#if 0
-	if (iswordsort(FF->head.sortpars.type))
-		sortstring = TEXT("Sorted (Word)");
-	else if (islettersort(FF->head.sortpars.type))
-		sortstring = TEXT("Sorted (Letter)");
-	else
-		sortstring = TEXT("Sorted (Simple)");
-#else
-	if (sflag)
-		wsprintf(sortstring,TEXT("Sorted (%s)"),cl_sorttypes[FF->head.sortpars.type]);
+	if (sgp && sgp->ison) {
+		TCHAR * fs = sgp->fieldorder[0] == PAGEINDEX ? TEXT("Sorted (%S [By Locator]) ") : TEXT("Sorted (%S)");
+		wsprintf(sortstring, fs, cl_sorttypes[FF->head.sortpars.type]);
+	}
 	else
 		nstrcpy(sortstring,TEXT("Unsorted"));
-#endif
 	SendMessage(g_hwstatus,SB_SETTEXT,STATSEG_SORT|0,(LPARAM)sortstring);
 	SendMessage(g_hwstatus,SB_SETTEXT,STATSEG_SEARCH|0,(LPARAM)toNative(LX(hwnd,searchstring)));
 	SendMessage(g_hwstatus,SB_SIMPLE,FALSE,0);	/* restore multi-part status window */

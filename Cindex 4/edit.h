@@ -4,6 +4,7 @@ void edit_switchtag(HWND wptr,int tagid);	/* tags/untags records records */
 void edit_removemark(HWND hwnd);		// removes marks from records
 short edit_duplicate(HWND wptr);	/* duplicates record(s) */
 void edit_demote(HWND hwnd);	// demotes headings
+void edit_flip(HWND hwnd, int mode);	// flips heading and subheading
 void edit_preferences(void);	/* sets preferences */
 void edit_savegroup(HWND wptr);	/* makes permanent group from temp */
 void edit_managegroups(HWND hwnd);	/* manages groups */

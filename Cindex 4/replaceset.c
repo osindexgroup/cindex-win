@@ -196,16 +196,6 @@ static int rcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does me
 					changed = TRUE;				/* nothing doing */
 				break;
 			case IDC_FIND_FINDSTOP:
-#if 0
-				if (!rfp->nptr)	{		/* if no outstanding replacements (if showing Reset) */
-					fs_reset(hwnd,lg,FALSE);
-					memset(&rfp->ra,0,sizeof(rfp->ra));		/* clear replace attrib structure */
-					initreplace(hwnd,FALSE,FALSE);	/* set up for new find */
-					rfp->scope = COMR_ALL;
-					rfp->dateflag = FALSE;	/* all dates */
-					break;
-				}
-#else
 				cleanuprep(hwnd);
 				fs_reset(hwnd,lg,FALSE);
 				memset(&rfp->ra,0,sizeof(rfp->ra));		/* clear replace attrib structure */
@@ -213,7 +203,6 @@ static int rcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does me
 				rfp->scope = COMR_ALL;
 				rfp->dateflag = FALSE;	/* all dates */
 				break;
-#endif
 			case IDCANCEL:
 				rclose(hwnd);
 				if (rfp->target)	/* if have target */
@@ -248,9 +237,9 @@ static int rcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does me
 					cleanuprep(hwnd);		/* resort */
 					SetCursor(ocurs);
 					if (rfp->markcount)	/* if some marked records */
-						sendinfo(INFO_REPLACEMARKED,rfp->repcount,rfp->markcount);
+						showInfo(hwnd,INFO_REPLACEMARKED,rfp->repcount,rfp->markcount);
 					else	
-						sendinfo(INFO_REPLACECOUNT,rfp->repcount);
+						showInfo(hwnd,INFO_REPLACECOUNT,rfp->repcount);
 					changed = TRUE;
 				}
 				break;
@@ -290,11 +279,9 @@ static int rcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does me
 					protect = TRUE;		/* stops init selection of text */
 					rfp->dateflag = TRUE;
 				}
-#if 1
 				else if (codeNotify == EN_KILLFOCUS) {
 					checkdate(hwnd, id);
 				}
-#endif
 				break;
 			case IDC_FIND_ONLYAMONG:
 			case IDC_FIND_NOTAMONG:
@@ -600,25 +587,11 @@ static short rclose(HWND hwnd)		/* closes replace window */
 {
 	HWND nhw;
 
-#if 0
 	cleanuprep(hwnd);
-	freedata(hwnd);		/* window now has nothing */
-	g_repw = g_mdlg = NULL;
-	DestroyWindow(hwnd);	/* destroy it */
-#else
-	cleanuprep(hwnd);
-#if 0
-	if (g_mdlg == hwnd)	/* if active window (active might be Find) */
-		g_mdlg = NULL;
-#endif
 	nhw = GetWindow(hwnd,GW_HWNDPREV);	/* see if window on top */
 	if (hwnd == GetWindow(nhw,GW_OWNER))	/* if we have one, it's style */
 		SendMessage(nhw,WM_CLOSE,0,0);	/* close it */
 	ShowWindow(hwnd,SW_HIDE);	/* hide it */
-#if 0
-	RX(hwnd,lastindex) = NULL;	/* no last index */
-#endif
-#endif
 	return (0);
 }
 /******************************************************************************/
@@ -688,53 +661,6 @@ static void setallbuttons(HWND hwnd)	/* sets all buttons */
 		enableitem(hwnd,IDC_REPLACE_REP);
 	}
 }
-#if 0
-/******************************************************************************/
-struct numstruct * rep_setup(INDEX * FF, LISTGROUP * lg, REPLACEGROUP * rg, REPLACEATTRIBUTES *rap, char * replace)	/* sets up structures */
-
-{
-	char *tptr, c;
-	
-	memset(rg,0,sizeof(REPLACEGROUP));	/* initialize */
-	strcpy(rg->sourcestring, replace);	/* replacement string. We'll tinker with it */
-	rg->regex = lg->lsarray[0].regex;
-	rg->ra = *rap;		/* copy text attributes */
-	if ((rg->ra.onstyle || rg->ra.offstyle || rg->ra.fontchange) && !*lg->lsarray[0].string)	{	/* if replacing style or font & no search target */
-		rg->reptot = 1;		/* mark one replacement */
-		rg->rep[0].index = '&'-'1';	/* set replacement to whatever's matched */
-	}
-	else {	/* some actual text/pattern being replaced */
-		for (tptr = rg->sourcestring; *tptr && rg->reptot < SREPLIM; rg->reptot++)	{	/* extract parts of substitution string */
-			for (rg->rep[rg->reptot].start = tptr; *tptr; tptr++)	{ /* while in string */
-				if (lg->lsarray[0].patflag && *tptr == ESCCHR)	{	/* if pattern & escape with following char */
-					if (isdigit(c = *(tptr+1)) && c != '0' || c == '&') {	/* if special replacement	*/
-						if (!rg->rep[rg->reptot].len)	 {	/* if haven't been building an ordinary string */
-//							if ((rg->rep[rg->reptot].index = c - '1') >= lg->lsarray[0].expcount && c != '&')	 { /* put in index; if not that many subexpressions */
-							if ((rg->rep[rg->reptot].index = c - '1') >= regex_groupcount(lg->lsarray[0].regex) && c != '&')	 { /* put in index; if not that many subexpressions */
-								senderr(ERR_BADREPERR, WARN);
-								return (NULL);
-							}
-							tptr += 2;	/* now points to char beyond string designator */
-							if (*tptr == '+' || *tptr == '-')		  /* if want case change */
-								rg->rep[rg->reptot].flag = *tptr++ == '+' ? 1 : -1;	  /* put in flag and skip over sign */
-							rg->rep[rg->reptot].start = NULL;		/* indicates a special replacement */
-						}
-						break;	/* force up one component */
-					}
-					else {
-						if (!*(tptr+1))		/* if dangling \ on end of line */
-							continue;		/* will ignore */
-						memmove(tptr, tptr+1, strlen(tptr));	/* shift over esc char */
-					}
-				}
-				rg->rep[rg->reptot].len++;		/* count one char in replacement string */
-			}
-		}
-	}
-	rg->maxlen = FF->head.indexpars.recsize-1;
-    return (sort_setuplist(FF));		/* if can set up sort list */
-}
-#else
 /******************************************************************************/
 struct numstruct * rep_setup(INDEX * FF, LISTGROUP * lg, REPLACEGROUP * rg, REPLACEATTRIBUTES *rap, char * replace)	/* sets up structures */
 
@@ -759,7 +685,7 @@ struct numstruct * rep_setup(INDEX * FF, LISTGROUP * lg, REPLACEGROUP * rg, REPL
 							if (c == '&')
 								c = '0';	// capture group 0 is whole string
 							if ((rg->rep[rg->reptot].index = c - '0') > regex_groupcount(lg->lsarray[0].regex))	 { /* put in index; if not that many subexpressions */
-								senderr(ERR_BADREPERR, WARN);
+								showError(NULL,ERR_BADREPERR, WARN);
 								return (NULL);
 							}
 							tptr += 2;	/* now points to char beyond string designator */
@@ -782,7 +708,6 @@ struct numstruct * rep_setup(INDEX * FF, LISTGROUP * lg, REPLACEGROUP * rg, REPL
 	rg->maxlen = FF->head.indexpars.recsize-1;
     return sort_setuplist(FF);		/* if can set up sort list */
 }
-#endif
 /******************************************************************************/
 static short cleanuprep(HWND hwnd)	/* cleans up after finishing replacements */
 

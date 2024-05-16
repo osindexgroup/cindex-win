@@ -74,6 +74,8 @@ enum errorTypes {	// item tags are shift size +1
 
 	CE_CROSSERR = 1 << 21,
 
+	CE_QUERYMODIFYINGPHRASE = 1 << 22
+
 };
 
 typedef struct {
@@ -85,6 +87,42 @@ typedef struct {
 	CHECKERROR ** errors;
 } CHECKPARAMS;
 
+enum {
+	OP_COMPARE = 0,
+	OP_MODIFY = 1,
+};
+
+enum {
+	MATCH_ALL = -1,
+	MATCH_TEXT,
+	MATCH_LOCATOR
+};
+
+typedef struct {
+	int op;		// operation
+	INDEX* XF;	// other index
+	int textMode;
+	int deleteThis;
+	int deleteBoth;
+	int importOther;
+	int groupThis;
+	int groupBoth;
+	int groupOther;
+	int labelThis;
+	int labelBoth;
+	int labelImport;
+	long longestImport;
+	long deepestImport;
+	RECN inThis;
+	RECN inBoth;
+	RECN inOther;
+	GROUPHANDLE gHandleThis;
+	GROUPHANDLE gHandleBoth;
+	GROUPHANDLE gHandleOther;
+} COMPAREPARAMS;
+
+
 RECN tool_join (INDEX * FF, JOINPARAMS *js);	 /* joins fields of records that have redundant subheadings */
 RECN tool_explode(INDEX * FF, SPLITPARAMS *sp);	 // explodes headings by separating entities
 void tool_check(INDEX * FF, CHECKPARAMS *cp);	 // makes comprehensive checks on entries
+void tool_compare(INDEX* FF, COMPAREPARAMS* cp);	// compares records in two indexes

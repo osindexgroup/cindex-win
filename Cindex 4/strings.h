@@ -3,6 +3,7 @@
 #define str_xlen(A)	((char *)memchr(A,EOCS,ULONG_MAX)-((A)))
 #define str_xshift(source,count) memmove((source)+(short)(count),source,str_xlen(source)+1)
 #define str_shift(source,count) memmove((source)+(short)(count),source,strlen(source)+1)
+#define str_stripcodes(A) str_textcpy((A),(A))
 
 enum	{			/* compound string search flags */
 	CCASE = 1, 		/* case sensitivity for compound string search */
@@ -33,6 +34,7 @@ TCHAR * str_uxatindex(TCHAR * list, int index);	/* finds string at indexed posit
 char * str_extend(char * string);		/* converts string to extended string */
 void str_flip(char * fields, char * presuf, BOOL smart, BOOL half, BOOL page);	// flips fields
 BOOL str_swapparen(char * field, char * presuf, BOOL real);	//  in-place swap of text in parens and outside
+BOOL str_invertname(char* source, long* offset, long* matchlength);	// in-place inversion of name
 CSTATE str_codesatposition(char * string, int offset, int * span, char stylemask, char fontmask);	// returns net code value at offset
 char * str_spanforcodes(char * base, char style, char font, char forbiddenstyle, char forbiddenfont, short * span);	// returns position and span of specified style/font
 BOOL str_containscodes(char * base, char style, char  font, short span);	// returns position and span of specified style/font
@@ -46,6 +48,7 @@ char *str_xlast(char * text);    /* returns pointer to start of last field */
 char * str_xcpy(register char *to, register char *from);	/* copies extended string */
 void str_xswap(char *string, short index1, short index2);	  /* swaps two component strings */
 short str_xcmp(register char *str1, register char *str2);	  /* compares two compound strings */
+long str_xspn(register char* str1, register char* str2);	 // finds longest match
 char *str_xfind(char *source, char *target, unsigned short scase, unsigned short maxlen, unsigned short * actuallen);	   /* finds substring in compound string */
 short str_seecheck(INDEX * FF,char *str);        /* checks string to see if begins with 'see' */
 //char *str_skipbrackets(char *sptr);		/* skips to closing bracket */

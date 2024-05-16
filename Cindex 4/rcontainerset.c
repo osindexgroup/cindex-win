@@ -73,7 +73,6 @@ LRESULT CALLBACK rcontainer_proc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 			view_showgroup(hwnd,(char *)lParam);
 			return (0);
 		case WM_INITMENUPOPUP:
-//		case WMM_UPDATETOOLBARS:
 		case WM_KEYDOWN:
 		case WM_CHAR:
 		case WM_HOTKEY:
@@ -177,7 +176,6 @@ static void cactivate(HWND hwnd, BOOL fActive, HWND hwndActivate, HWND hwndDeact
 
 {
 	if (hwnd == hwndActivate)	{	/* if being activated */
-//		SendMessage(activeclient(hwnd),WMM_UPDATETOOLBARS,0,0);
 		if (getowner(hwnd)->cwind == hwndDeactivate)	// if from view window
 			setmdiactive(hwnd,FALSE);		// clear discard first click
 	}

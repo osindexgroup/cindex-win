@@ -451,7 +451,7 @@ TCHAR * form_buildentry(INDEX * FF, RECORD * recptr, ENTRYINFO* esp)	/* builds e
 	short curcount, hlevel, lastlevel, runlevel, prcount, crcount, stoplevel;
 	short sprlevel, hidelevel,clevel;
 	int requiredlevel, labellevel, reccount;
-	short puncttype;
+	short puncttype = 0;
 	unichar leadchar;
 	ENTRYFORMAT *efp;
 	FIELDFORMAT *fp;
@@ -1072,7 +1072,6 @@ static int buildrefs(INDEX * FF, char * tbuff, RECORD ** xptr, char * epos, shor
 	}
 	else
 err:	
-//		senderr(ERR_LONGENTRYERR,WARN,firstptr->num);
 		senderronstatusline(ERR_LONGENTRYERR,WARN,firstptr->num);
 return (tpos-tbuff);
 }
@@ -1247,7 +1246,6 @@ static short parserefs(char * tempbuff, char * pptr, char ** ptrarray, char sepc
 		}
 	}
 	if (*pptr)	/* if overflow */
-//		senderr(ERR_TOOMANYREFS,WARN,f_entrybuff);
 		senderronstatusline(ERR_TOOMANYREFS,WARN,f_entrybuff);
 	return (count);
 }

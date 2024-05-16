@@ -32,15 +32,6 @@ static const DWORD wh_recid[] = {
 	0,0
 };
 
-static const DWORD wh_verid[] = {
-	IDC_VERIFY_CROSSREF,HIDC_VERIFY_CROSSREF,
-	IDC_VERIFY_EXACT, HIDC_VERIFY_EXACT,
-	IDC_VERIFY_MIN, HIDC_VERIFY_MIN,
-	IDC_VERIFY_LOCATOR,HIDC_VERIFY_LOCATOR,
-	IDC_VERIFY_LOCATORLIMIT,HIDC_VERIFY_LOCATORLIMIT,
-	0,0
-};
-
 static const DWORD wh_manageid[] = {
 	IDC_MANAGECROSS_GENERATE, HIDC_MANAGECROSS_GENERATE,
 	IDC_MANAGECROSS_CONVERT, HIDC_MANAGECROSS_CONVERT,
@@ -127,6 +118,7 @@ static const DWORD wh_checkid[] = {
 	IDC_CHECK_H_INCONSISTENTPREP,HIDC_CHECK_H_INCONSISTENTPREP,
 	IDC_CHECK_H_INCONSISTENTPAREN,HIDC_CHECK_H_INCONSISTENTPAREN,
 	IDC_CHECK_H_ORPHANEDSUBHEAD,HIDC_CHECK_H_ORPHANEDSUBHEAD,
+	IDC_CHECK_H_MODIFIED,HIDC_CHECK_H_MODIFIED,
 
 	IDC_CHECK_R_EMPTYPAGE,HIDC_CHECK_R_EMPTYPAGE,
 	IDC_CHECK_R_VERIFY,HIDC_CHECK_R_VERIFY,
@@ -138,6 +130,28 @@ static const DWORD wh_checkid[] = {
 	IDC_CHECK_R_HEADINGLEVEL,HIDC_CHECK_R_HEADINGLEVEL,
 	0,0
 };
+
+static const DWORD wh_compareid[] = {
+	IDC_COMPARE_INDEXLIST, HIDC_COMPARE_INDEXLIST,
+	IDC_COMPARE_FIELDDEPTH, HIDC_COMPARE_FIELDDEPTH,
+	IDC_COMPARE_RECORDSTHIS, HIDC_COMPARE_RECORDSTHIS,
+	IDC_COMPARE_RECORDSBOTH, HIDC_COMPARE_RECORDSBOTH,
+	IDC_COMPARE_RECORDSOTHER, HIDC_COMPARE_RECORDSOTHER,
+	IDC_COMPARE_DELTHIS, HIDC_COMPARE_DELTHIS,
+	IDC_COMPARE_DELETEBOTH, HIDC_COMPARE_DELETEBOTH,
+	IDC_COMPARE_IMPORTOTHER, HIDC_COMPARE_IMPORTOTHER,
+	IDC_COMPARE_GROUPTHIS, HIDC_COMPARE_GROUPTHIS,
+	IDC_COMPARE_GROUPBOTH, HIDC_COMPARE_GROUPBOTH,
+	IDC_COMPARE_GROUPOTHER, HIDC_COMPARE_GROUPOTHER,
+	IDC_COMPARE_LABELTHIS, HIDC_COMPARE_LABELTHIS,
+	IDC_COMPARE_LABELBOTH, HIDC_COMPARE_LABELBOTH,
+	IDC_COMPARE_LABELOTHER, HIDC_COMPARE_LABELOTHER,
+	IDC_COMPARE_COMPARE, HIDC_COMPARE_COMPARE,
+	IDC_COMPARE_MODIFY, HIDC_COMPARE_MODIFY,
+	0,0
+};
+
+
 static const DWORD wh_splitid[] = {
 	IDC_SPLIT_PATTERN,HIDC_SPLIT_PATTERN,
 	IDC_SPLIT_USERPATTERN,HIDC_SPLIT_USERPATTERN,
@@ -196,6 +210,10 @@ static INT_PTR CALLBACK adjproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 static INT_PTR CALLBACK cbasicproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static INT_PTR CALLBACK cheadingproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static INT_PTR CALLBACK crefproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK compareproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+static void setlabelcombo(HWND cb, BOOL add);		// set label combo box
+static void setParamsWithOp(HWND hwnd, COMPAREPARAMS* parp, int op);
+static void enableOpItems(HWND hwnd, COMPAREPARAMS* parp, int enabled);
 static INT_PTR CALLBACK splitproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static INT_PTR CALLBACK countproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static INT_PTR CALLBACK statsproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -264,47 +282,10 @@ static INT_PTR CALLBACK recproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 					tjn.nosplit = (short)isitemchecked(hwnd,IDC_RECONCILE_NOSPLIT);
 					tjn.protectnames = (short)isitemchecked(hwnd,IDC_RECONCILE_PROTECT);
 					tjn.orphanaction = findgroupcheck(hwnd,IDC_RECONCILE_CONVERT,IDC_RECONCILE_REMOVE)-IDC_RECONCILE_CONVERT;
-#if 0
-					if (!reconcilemode)	{// if want only orphan display
-						tjn.orphanaction = OR_PRESERVE;	// preserve orphans
-						tjn.nosplit = TRUE;		// don't split
-					}
-					tjn.orphans = malloc(ORPHANARRAYBLOCK*sizeof(int));
-#endif
 					tjn.orphancount = 0;
 					SetCursor(g_waitcurs);		/* set to watch */
 					if (count = tool_join(FF, &tjn))
-						senderr(ERR_RECMARKERR,WARN, count);   /* give message */
-#if 0
-					if (!reconcilemode) {
-						if (tjn.orphancount)	{
-							TCHAR string[MAXREC];
-
-							if (setwindow(FF,"Orphaned Subheadings",0,_reconcileheader,TEXT("base\\Tools_reconciling.htm")))	{
-//								int digits = numdigits(FF->head.rtot);
-								int index;
-//								int curpos, selstart,selend,line;
-
-								for (index = 0; index < tjn.orphancount; index++) {
-									RECORD * curptr = rec_getrec(FF,tjn.orphans[index]);	// get record
-									if (curptr) {
-										int fcount = str_xcount(curptr->rtext);
-
-//										u_sprintf(string, "%*ld\t%s...", digits, curptr->num, curptr->rtext);
-										u_sprintf(string,"\t%u\t%s...",curptr->num,curptr->rtext);
-										fixleadspace(string);	// provides fixed leading space
-										txt_append(FF->twind,string,NULL);
-										txt_appendctext(FF->twind,toNative(str_xatindex(curptr->rtext,fcount-2)));
-										txt_append(FF->twind,TEXT("\r"),NULL);
-									}
-								}
-							}
-						}
-						else
-							; // no orphaned subheadings
-					}
-					free(tjn.orphans);
-#endif
+						showError(NULL,ERR_RECMARKERR,WARN, count);   /* give message */
 				case IDCANCEL:
 					EndDialog(hwnd,LOWORD(wParam) == IDOK ? TRUE : FALSE);
 					return TRUE;
@@ -363,12 +344,11 @@ static INT_PTR CALLBACK manageproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 						}
 						if (newrecs = search_convertcross(FF,ccount))	{	// if added records
 							view_redisplay(FF,0,VD_TOP);
-							sendinfo(INFO_RECCONVERT,newrecs);
+							showInfo(NULL,INFO_RECCONVERT,newrecs);
 						}
 						else
-							sendinfo(INFO_NORECCONVERT);
+							showInfo(NULL,INFO_NORECCONVERT);
 					}
-					view_setstatus(FF->vwind);	// force update of status display (new recs)
 				case IDCANCEL:
 					EndDialog(hwnd,LOWORD(wParam) == IDOK ? TRUE : FALSE);
 					return TRUE;
@@ -414,13 +394,13 @@ void ts_autogen(HWND hwnd)	/* generates auto cross-references */
 				index_close(XF);
 			if (rcount)	{		/* if generated any records */
 				if (ag.skipcount)	
-					sendinfo(INFO_RECGENSKIPINFO,rcount,ag.skipcount,ag.maxneed);
+					showInfo(NULL,INFO_RECGENSKIPINFO,rcount,ag.skipcount,ag.maxneed);
 				else
-					sendinfo(INFO_RECGENNUMINFO,rcount);
+					showInfo(NULL,INFO_RECGENNUMINFO,rcount);
 				view_allrecords(hwnd);		/* redisplay */
 			}
 			else
-				sendinfo(INFO_NONGENNUMINFO);
+				showInfo(NULL,INFO_NONGENNUMINFO);
 		}
 	}
 }
@@ -454,143 +434,6 @@ static INT_PTR CALLBACK autohook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 			;
 	}
 	return (FALSE);
-}
-/*******************************************************************************/
-void ts_verify(HWND hwnd)	/* verifies cross-refs */
-
-{
-	if (DialogBoxParam(g_hinst,MAKEINTRESOURCE(IDD_VERIFY),hwnd,verproc,(LPARAM)WX(hwnd,owner)))
-		view_redisplay(WX(hwnd,owner),0,VD_TOP);
-}
-/******************************************************************************/
-static INT_PTR CALLBACK verproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-
-{
-	INDEX * FF = getdata(hwnd);
-	int errtot = 0;
-
-	RECN digits;
-	RECORD * recptr;
-	int count, crosscount, rcount;
-	VERIFYGROUP tvg;
-	char trec[MAXREC];
-	TCHAR tbuff[MAXREC];
-
-	static char * v_err[] = 	{	/* verification error tags */
-		"",
-		"Too Few",
-		"Circular",
-		"Missing",
-		"Case/Accent"
-	};
-	BOOL docross,dopage;
-	short pagelimit;
-	unsigned char delstat;
-
-	switch (msg)	{
-		case WM_INITDIALOG:
-			setdata(hwnd,(void *)lParam);	/* set data */
-			centerwindow(hwnd,1);
-			setint(hwnd,IDC_VERIFY_MIN,g_prefs.hidden.crossminmatch ? g_prefs.hidden.crossminmatch : 1);
-			setint(hwnd,IDC_VERIFY_LOCATORLIMIT,g_prefs.hidden.pagemaxcount ? g_prefs.hidden.pagemaxcount : 7);
-			checkitem(hwnd,IDC_VERIFY_CROSSREF,TRUE);
-			checkitem(hwnd,IDC_VERIFY_LOCATOR,TRUE);
-			SetFocus(GetDlgItem(hwnd,IDC_VERIFY_MIN));	/* set focus to text */
-			return FALSE;
-		case WM_COMMAND:
-			switch (LOWORD(wParam))	{
-				case IDOK:
-					digits = numdigits(FF->head.rtot);
-					docross = isitemchecked(hwnd,IDC_VERIFY_CROSSREF);
-					dopage = isitemchecked(hwnd,IDC_VERIFY_LOCATOR);
-					
-					if (dopage && (!getshort(hwnd,IDC_VERIFY_LOCATORLIMIT, &pagelimit) || pagelimit < 1))
-						break;
-					memset(&tvg,0,sizeof(tvg));
-					if (!getshort(hwnd,IDC_VERIFY_MIN, &tvg.lowlim) || tvg.lowlim < 1)	{	/* if don't have character */
-						senditemerr(hwnd,IDC_VERIFY_MIN);
-						break;
-					}
-					tvg.fullflag = (short)isitemchecked(hwnd,IDC_VERIFY_EXACT);
-					tvg.t1 = trec;	/* set ptr to temp string */
-					tvg.locatoronly = FF->head.refpars.clocatoronly;	// set as necess for locator field only
-					delstat = FF->head.privpars.hidedelete;
-					FF->head.privpars.hidedelete = TRUE;
-//					sort_setfilter(FF,SF_HIDEDELETEONLY);
-					if (docross) {
-						for (rcount = 0, recptr = sort_top(FF); recptr && !iscancelled(NULL); recptr = sort_skip(FF,recptr,1)) {	   /* for all records */
-							showprogress(PRG_VERIFYING,FF->head.rtot,rcount++);
-							if (!recptr->isdel && (crosscount = search_verify(FF,recptr->rtext,&tvg)))	{	/* if have cross-ref */
-								for (count = 0; count < crosscount; count++)	{
-									if (tvg.cr[count].error || tvg.eflags&V_TYPEERR)	{
-										if (setwindow(FF, "Reference Check",errtot,_verifyheader,TEXT("base\\Checkrefs.htm")))	{	/* if have window */
-											char testring[MAXREC];
-											u_sprintf(tbuff, "%*ld\t%s\t%s\t",digits,recptr->num,v_err[tvg.cr[count].error], tvg.eflags&V_TYPEERR ? "X/XA" : "");
-											fixleadspace(tbuff);	// provides fixed leading space
-											txt_append(FF->twind,tbuff,NULL);
-//											u_sprintf(tbuff,"%.*s [from %s]\r", tvg.cr[count].length,recptr->rtext+tvg.cr[count].offset, recptr->rtext);
-											sprintf(testring,"%.*s [from %s]\r", tvg.cr[count].length,recptr->rtext+tvg.cr[count].offset, recptr->rtext);
-											txt_appendctext(FF->twind,toNative(testring));
-											errtot++;
-										}
-										else
-											;	/* some breakout on no window */
-									}
-								}
-							}
-						}
-					}
-					if (dopage) {
-						char vmode = FF->head.privpars.vmode; 
-						short runlevel = FF->head.formpars.ef.runlevel;
-							
-						FF->head.privpars.vmode = VM_FULL;	// force into full form, full indented
-						FF->head.formpars.ef.runlevel = 0;
-						for (recptr = sort_top(FF); recptr; recptr = form_skip(FF, recptr,1)) {	   /* for all records */
-							ENTRYINFO es;
-							
-							FF->singlerefcount = 0;		// for net count of locators
-							form_buildentry(FF, recptr, &es);
-							if (FF->singlerefcount > pagelimit) {
-								if (setwindow(FF, "Reference Check",errtot,_verifyheader,TEXT("base\\Crossref_verify.htm")))	{	/* if have window */
-									u_sprintf(tbuff,"%*ld\tLocator\t[%d]\t",digits,recptr->num, FF->singlerefcount);
-									fixleadspace(tbuff);	// provides fixed leading space
-									txt_append(FF->twind,tbuff,NULL);
-									u_sprintf(tbuff,"%S\r",toNative(recptr->rtext));
-									txt_appendctext(FF->twind,tbuff);
-									errtot++;
-								}
-								else
-									;
-							}
-						}
-						FF->head.privpars.vmode = vmode;
-						FF->head.formpars.ef.runlevel = runlevel;
-					}
-					FF->head.privpars.hidedelete = delstat;
-//					sort_setfilter(FF,SF_VIEWDEFAULT);
-					showprogress(0,0,0);	  /* kill message */
-					if (errtot)	{		/* set up to select first error */
-						int curpos, selstart,selend,line;
-
-						SendMessage(EX(FF->twind,hwed),EM_SETEVENTMASK,0,ENM_SELCHANGE|ENM_KEYEVENTS|ENM_MOUSEEVENTS);	/* set event mask */		
-						curpos = Edit_LineIndex(EX(FF->twind, hwed),0);
-						txt_findpara(EX(FF->twind, hwed),curpos,&selstart,&selend,&line,TRUE);
-						vdisplayrecord(FF->twind,line,FALSE);
-					}
-					else if (docross || dopage)		// if actually did a check
-						sendinfo(INFO_VERIFYOK);
-					getshort(hwnd,IDC_VERIFY_MIN,&g_prefs.hidden.crossminmatch);
-					getshort(hwnd,IDC_VERIFY_LOCATORLIMIT,&g_prefs.hidden.pagemaxcount);
-				case IDCANCEL:
-					EndDialog(hwnd,LOWORD(wParam) == IDOK ? TRUE : FALSE);
-					return TRUE;
-			}
-			break;
-		case WM_HELP:
-			return (dodialoghelp(hwnd,TEXT("base\\Checkrefs.htm"),(HELPINFO *)lParam,wh_verid));
-	}
-	return FALSE;
 }
 /*******************************************************************************/
 static HWND setwindow(INDEX * FF, char * titlestring, int errtot,HEADERITEM * hitems, TCHAR * chelp)	/* sets up verify window */
@@ -714,7 +557,7 @@ void ts_adjustrefs(HWND hwnd)	/* adjusts references */
 	memset(&tadj, 0, sizeof(struct adjstruct));
 	if (DialogBoxParam(g_hinst,MAKEINTRESOURCE(IDD_ALTER),g_hwframe,adjproc,(LPARAM)&tadj))	{
 		if (ecount = ref_adjust(WX(hwnd,owner), &tadj))
-			senderr(ERR_RECMARKERR,WARN, ecount);          /* give message */
+			showError(NULL,ERR_RECMARKERR,WARN, ecount);          /* give message */
 		if (tadj.regex)
 			uregex_close(tadj.regex);
 		view_redisplay(WX(hwnd,owner),0,VD_CUR);
@@ -743,7 +586,7 @@ static INT_PTR CALLBACK adjproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 				case IDOK:
 					if (getDItemText(hwnd,IDC_ALTER_PATTERN,tstring,STSTRING))	{	// if want regex
 						if (!(ajp->regex = regex_build(tstring,0)))	{	/* if bad expression */
-							senderr(ERR_BADEXPERR,WARN,tstring);
+							showError(hwnd,ERR_BADEXPERR,WARN,tstring);
 							selectitext(hwnd,IDC_ALTER_PATTERN);
 							break;
 						}
@@ -755,7 +598,7 @@ static INT_PTR CALLBACK adjproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 					ajp->hold = isitemchecked(hwnd,IDC_ALTER_HOLDHIGHER);
 					ajp->cut = findgroupcheck(hwnd,IDC_ALTER_ADJONLY,IDC_ALTER_REMOVE)-IDC_ALTER_ADJONLY;
 					if (ajp->cut && !ajp->low && !ajp->high)	{	/* if haven't specified at least one end of range to cut */
-						senderr(ERR_NOLOCATORRANGE,WARN);
+						showError(hwnd,ERR_NOLOCATORRANGE,WARN);
 						selectitext(hwnd,IDC_ALTER_RANGESTART);
 						break;
 					}
@@ -764,18 +607,18 @@ static INT_PTR CALLBACK adjproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 					if (!ajp->high)
 						ajp->high = LONG_MAX;
 					if (ajp->low > ajp->high)	{
-						senderr(ERR_REFORDERERR,WARN);
+						showError(hwnd,ERR_REFORDERERR,WARN);
 						selectitext(hwnd,IDC_ALTER_RANGESTART);
 						break;
 					}
 					if (!getlong(hwnd,IDC_ALTER_ADJUSTMENT,&ajp->shift) && !ajp->cut)	{ /* if no adjustment and not cutting */
 						getDItemText(hwnd,IDC_ALTER_ADJUSTMENT,tstring,STSTRING);
-						senderr(ERR_BADNUMERR,WARN,tstring);
+						showError(hwnd,ERR_BADNUMERR,WARN,tstring);
 						selectitext(hwnd,IDC_ALTER_ADJUSTMENT);
 						break;
 					}
 					if (ajp->shift+ajp->low < 1)	{	/* if would potentially remove refs */
-						if (!sendwarning(WARN_NEGADJUST, ajp->low, -ajp->shift))
+						if (!showWarning(hwnd,WARN_NEGADJUST, ajp->low, -ajp->shift))
 							break;
 					}
 				case IDCANCEL:
@@ -843,7 +686,9 @@ void ts_checkindex(HWND hwnd)	// checks index
 		"Overlapping page references",
 		"Locator not at lowest heading",
 
-		"Invalid cross reference"
+		"Invalid cross reference",
+		"Modifying phrase could be subheading"
+
 	};
 
 	static CHECKPARAMS defaults = {
@@ -1037,6 +882,7 @@ static INT_PTR CALLBACK cheadingproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 			checkitem(hwnd, IDC_CHECK_H_INCONSISTENTPREP, *rKeyPtr++);
 			checkitem(hwnd, IDC_CHECK_H_INCONSISTENTPAREN, *rKeyPtr++);
 			checkitem(hwnd, IDC_CHECK_H_ORPHANEDSUBHEAD, *rKeyPtr++);
+			checkitem(hwnd, IDC_CHECK_H_MODIFIED, chp->reportKeys[22]);
 			ComboBox_SetCurSel(GetDlgItem(hwnd, IDC_CHECK_H_ORPHANDEPTH), chp->jng.firstfield);
 		}
 		return (TRUE);
@@ -1053,6 +899,7 @@ static INT_PTR CALLBACK cheadingproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 			*rKeyPtr++ = isitemchecked(hwnd, IDC_CHECK_H_INCONSISTENTPREP);
 			*rKeyPtr++ = isitemchecked(hwnd, IDC_CHECK_H_INCONSISTENTPAREN);
 			*rKeyPtr++ = isitemchecked(hwnd, IDC_CHECK_H_ORPHANEDSUBHEAD);
+			chp->reportKeys[22] = isitemchecked(hwnd, IDC_CHECK_H_MODIFIED);
 			chp->jng.firstfield = ComboBox_GetCurSel(GetDlgItem(hwnd, IDC_CHECK_H_ORPHANDEPTH));	/* get field index */
 			SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FALSE);
 			return (TRUE);		/* check our results; SetwindowLong TRUE to hold page; FALSE to free */
@@ -1137,6 +984,212 @@ static INT_PTR CALLBACK crefproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 	return (FALSE);
 }
 /*******************************************************************************/
+void ts_compare(HWND hwnd)	// compares records
+
+{
+	DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_COMPARE), g_hwframe, compareproc, (LPARAM)WX(hwnd, owner));
+}
+/******************************************************************************/
+static INT_PTR CALLBACK compareproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+
+{
+	INDEX* FF;	
+	static COMPAREPARAMS params;	// needs to be static to preserve state
+	static RECT wrect;
+	TCHAR label[FSSTRING];
+	WORD sender, message;
+
+	FF = getdata(hwnd);
+	switch (msg) {
+
+	case WM_INITDIALOG:
+		if (FF = setdata(hwnd, (void*)lParam)) {	/* set data */
+			INDEX* xf = NULL;
+			HWND cbb = GetDlgItem(hwnd, IDC_COMPARE_INDEXLIST);
+			HWND cbr = GetDlgItem(hwnd, IDC_COMPARE_FIELDDEPTH);
+			RECT brect;
+
+			for (int iindex = 0; xf = index_byindex(iindex); iindex++) {
+				if (xf != NULL && nstrcmp(xf->iname,FF->iname))
+					ComboBox_AddString(cbb, xf->iname);
+			}
+			ComboBox_SetCurSel(cbb, 0);
+			ComboBox_AddString(cbr, TEXT("All fields"));
+			ComboBox_AddString(cbr, TEXT("Headings and subheadings only"));
+			ComboBox_AddString(cbr, TEXT("Locator field if other fields match"));
+			ComboBox_SetCurSel(cbr, 0);
+			setlabelcombo(GetDlgItem(hwnd, IDC_COMPARE_LABELTHIS),YES);
+			setlabelcombo(GetDlgItem(hwnd, IDC_COMPARE_LABELBOTH),YES);
+			setlabelcombo(GetDlgItem(hwnd, IDC_COMPARE_LABELOTHER),NO);
+			enableOpItems(hwnd, &params,NO);
+			centerwindow(hwnd, 1);
+			GetWindowRect(hwnd, &wrect);
+			GetWindowRect(GetDlgItem(hwnd, IDC_COMPARE_TOPBOX), &brect);
+			MoveWindow(hwnd,wrect.left,wrect.top,wrect.right-wrect.left,brect.top-wrect.top,TRUE);
+		}
+		return FALSE;
+	case WM_COMMAND:
+		sender = LOWORD(wParam);
+		message = HIWORD(wParam);
+		switch (sender) {
+			case IDC_COMPARE_COMPARE:
+				memset(&params, 0, sizeof(COMPAREPARAMS));		/* clear structure */
+				setParamsWithOp(hwnd,&params, OP_COMPARE);
+				tool_compare(FF, &params);
+				if (params.inThis || params.inOther) {	// if not identical
+					u_sprintf(label, params.inThis > 1 ? "%d records" : "%d record", params.inThis);
+					SetWindowText(GetDlgItem(hwnd, IDC_COMPARE_RECORDSTHIS), label);
+					u_sprintf(label, params.inBoth > 1 ? "%d records" : "%d record", params.inBoth);
+					SetWindowText(GetDlgItem(hwnd, IDC_COMPARE_RECORDSBOTH), label);
+					u_sprintf(label, params.inOther > 1 ? "%d records" : "%d record", params.inOther);
+					SetWindowText(GetDlgItem(hwnd, IDC_COMPARE_RECORDSOTHER), label);
+					enableOpItems(hwnd, &params, YES);
+					MoveWindow(hwnd, wrect.left, wrect.top, wrect.right - wrect.left, wrect.bottom - wrect.top, TRUE);
+					return (FALSE);
+				}
+				else {
+					EndDialog(hwnd, FALSE);
+					showInfo(NULL, INFO_INDEXESMATCH);
+					return TRUE;
+				}
+			case IDC_COMPARE_MODIFY:
+				if (params.importOther) {
+					if (params.deepestImport > FF->head.indexpars.maxfields) {	/* if need to increase field limit */
+						if (showWarning(hwnd,WARN_RECFIELDNUMWARN, params.deepestImport)) {
+							int oldmaxfieldcount = FF->head.indexpars.maxfields;
+
+							FF->head.indexpars.maxfields = params.deepestImport;
+							adjustsortfieldorder(FF->head.sortpars.fieldorder, oldmaxfieldcount, FF->head.indexpars.maxfields);
+						}
+						else
+							return FALSE;
+					}
+					if (params.longestImport > FF->head.indexpars.recsize) {	/* if need record enlargement */
+						if (!showWarning(hwnd,WARN_RECENLARGESIZE, params.longestImport - FF->head.indexpars.recsize) ||	/* if don't want resize */
+							!file_resizeindex(FF, params.longestImport))	// or can't
+							return FALSE;		/* can't do it */
+					}
+					if (!index_setworkingsize(FF, params.inOther))
+						return FALSE;		// some error return;
+				}
+				setParamsWithOp(hwnd, &params, OP_MODIFY);
+				tool_compare(FF, &params);
+				index_flush(FF);
+				grp_buildmenu(FF);
+				view_allrecords(FF->vwind);
+			case IDCANCEL:
+				EndDialog(hwnd, FALSE);
+				return TRUE;
+			case IDC_COMPARE_INDEXLIST:
+			case IDC_COMPARE_FIELDDEPTH:
+				if (message == CBN_SELCHANGE) {
+					enableOpItems(hwnd, &params, NO);		// reset for new comparison
+					return TRUE;
+				}
+			default:
+				if (message == BN_CLICKED || message == CBN_SELCHANGE) {
+					BOOL mok = FALSE;
+					if (sender == IDC_COMPARE_IMPORTOTHER)
+						enableOpItems(hwnd, &params, YES);		// do enables for import items
+					mok |= isitemchecked(hwnd, IDC_COMPARE_DELTHIS) || isitemchecked(hwnd, IDC_COMPARE_GROUPTHIS)
+						|| isitemchecked(hwnd, IDC_COMPARE_DELETEBOTH) || isitemchecked(hwnd, IDC_COMPARE_GROUPBOTH)
+						|| isitemchecked(hwnd, IDC_COMPARE_IMPORTOTHER) || isitemchecked(hwnd, IDC_COMPARE_GROUPOTHER);
+					mok |= ComboBox_GetCurSel(GetDlgItem(hwnd, IDC_COMPARE_LABELTHIS)) > 0
+						|| ComboBox_GetCurSel(GetDlgItem(hwnd, IDC_COMPARE_LABELBOTH)) > 0;
+					setitemenable(hwnd, IDC_COMPARE_MODIFY, mok);
+					return TRUE;
+				}
+		}
+		break;
+	case WM_HELP:
+		return (dodialoghelp(hwnd, TEXT("base\\Compare_index.htm"), (HELPINFO*)lParam, wh_compareid));
+	}
+	return FALSE;
+}
+/******************************************************************************/
+static void setlabelcombo(HWND cb, BOOL add)		// set label combo box
+
+{
+	int count;
+
+	for (count = 0; count < FLAGLIMIT; count++) {	/* build boolean menus */
+		TCHAR text[10];
+		u_sprintf(text, count ? "%d" : "None", count);
+		ComboBox_AddString(cb, text);
+	}
+	if (add) {
+		ComboBox_InsertString(cb, 0, TEXT("As Is"));
+	}
+	ComboBox_SetCurSel(cb, 0);
+}
+/*******************************************************************************/
+static void setParamsWithOp(HWND hwnd, COMPAREPARAMS* parp, int op)
+{
+
+	TCHAR text[200];
+
+	ComboBox_GetText(GetDlgItem(hwnd, IDC_COMPARE_INDEXLIST),text,200);
+	parp->XF = index_byname(text);
+	parp->op = op;
+	parp->textMode = ComboBox_GetCurSel(GetDlgItem(hwnd, IDC_COMPARE_FIELDDEPTH))-1;
+	parp->deleteThis = isitemchecked(hwnd, IDC_COMPARE_DELTHIS);
+	parp->groupThis = isitemchecked(hwnd, IDC_COMPARE_GROUPTHIS);
+	parp->labelThis = ComboBox_GetCurSel(GetDlgItem(hwnd, IDC_COMPARE_LABELTHIS))-1;
+
+	parp->deleteBoth = isitemchecked(hwnd, IDC_COMPARE_DELETEBOTH);
+	parp->groupBoth = isitemchecked(hwnd, IDC_COMPARE_GROUPBOTH);
+	parp->labelBoth = ComboBox_GetCurSel(GetDlgItem(hwnd, IDC_COMPARE_LABELBOTH))-1;
+
+	parp->importOther = isitemchecked(hwnd, IDC_COMPARE_IMPORTOTHER);
+	parp->groupOther = isitemchecked(hwnd, IDC_COMPARE_GROUPOTHER);
+	parp->labelImport = ComboBox_GetCurSel(GetDlgItem(hwnd, IDC_COMPARE_LABELOTHER));
+}
+/*******************************************************************************/
+static void enableOpItems(HWND hwnd, COMPAREPARAMS * parp, int enabled)
+{
+
+	if (!enabled) {
+		setitemenable(hwnd, IDC_COMPARE_MODIFY, 0);
+		checkitem(hwnd, IDC_COMPARE_DELTHIS, 0);
+		checkitem(hwnd, IDC_COMPARE_GROUPTHIS, 0);
+		ComboBox_SetCurSel(GetDlgItem(hwnd, IDC_COMPARE_LABELTHIS), 0);
+
+		checkitem(hwnd, IDC_COMPARE_DELETEBOTH, 0);
+		checkitem(hwnd, IDC_COMPARE_GROUPBOTH, 0);
+		ComboBox_SetCurSel(GetDlgItem(hwnd, IDC_COMPARE_LABELBOTH), 0);
+
+		checkitem(hwnd, IDC_COMPARE_IMPORTOTHER, 0);
+		checkitem(hwnd, IDC_COMPARE_GROUPOTHER, 0);
+		ComboBox_SetCurSel(GetDlgItem(hwnd, IDC_COMPARE_LABELOTHER), 0);
+		SetWindowText(GetDlgItem(hwnd, IDCANCEL), L"Cancel");
+		SetWindowText(GetDlgItem(hwnd, IDC_COMPARE_RECORDSTHIS), L"— records");
+		SetWindowText(GetDlgItem(hwnd, IDC_COMPARE_RECORDSBOTH), L"— records");
+		SetWindowText(GetDlgItem(hwnd, IDC_COMPARE_RECORDSOTHER), L"— records");
+	}
+	else
+		SetWindowText(GetDlgItem(hwnd, IDCANCEL), L"Done");
+	setitemenable(hwnd, IDC_COMPARE_COMPARE,!enabled);
+	setitemenable(hwnd, IDC_COMPARE_DELTHIS, enabled && parp->inThis > 0);
+	setitemenable(hwnd, IDC_COMPARE_GROUPTHIS, enabled && parp->inThis > 0);
+	setitemenable(hwnd, IDC_COMPARE_LABELTHIS, enabled && parp->inThis > 0);
+
+	setitemenable(hwnd, IDC_COMPARE_DELETEBOTH, enabled && parp->inBoth > 0);
+	setitemenable(hwnd, IDC_COMPARE_GROUPBOTH, enabled && parp->inBoth > 0);
+	setitemenable(hwnd, IDC_COMPARE_LABELBOTH, enabled && parp->inBoth > 0);
+
+	setitemenable(hwnd, IDC_COMPARE_IMPORTOTHER, enabled && parp->inOther > 0);
+	if (isitemchecked(hwnd, IDC_COMPARE_IMPORTOTHER)) {
+		setitemenable(hwnd, IDC_COMPARE_GROUPOTHER, TRUE);
+		setitemenable(hwnd, IDC_COMPARE_LABELOTHER, TRUE);
+	}
+	else {
+		checkitem(hwnd, IDC_COMPARE_GROUPOTHER, 0);
+		ComboBox_SetCurSel(GetDlgItem(hwnd, IDC_COMPARE_LABELOTHER), 0);
+		setitemenable(hwnd, IDC_COMPARE_LABELOTHER, FALSE);
+		setitemenable(hwnd, IDC_COMPARE_GROUPOTHER, FALSE);
+	}
+}
+/*******************************************************************************/
 void ts_splitheadings(HWND hwnd)	// splits headings
 
 {
@@ -1163,9 +1216,9 @@ void ts_splitheadings(HWND hwnd)	// splits headings
 				}
 			}
 		}
-		else if (sendwarning(WARN_SPLIT)) {
+		else if (showWarning(NULL,WARN_SPLIT)) {
 			tool_explode(FF, &params);
-			sendinfo(INFO_SPLITRECORDS, params.gencount, params.modcount, params.markcount);
+			showInfo(NULL,INFO_SPLITRECORDS, params.gencount, params.modcount, params.markcount);
 			view_redisplay(FF, 0, VD_CUR);
 		}
 	}
@@ -1277,7 +1330,7 @@ static INT_PTR CALLBACK countproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 					getDItemText(hwnd,IDC_COUNT_PAGESTART,cc.firstref,FSSTRING);
 					getDItemText(hwnd,IDC_COUNT_PAGEEND,cc.lastref,FSSTRING);
 					if (*cc.lastref && !*cc.firstref || ref_match(FF,cc.firstref, cc.lastref, FF->head.sortpars.partorder, PMEXACT|PMSENSE) > 0)	{
-						senderr(*cc.firstref ? ERR_INVALPAGERANGE : ERR_INVALLOCATORRANGE,WARN);
+						showError(hwnd,*cc.firstref ? ERR_INVALPAGERANGE : ERR_INVALLOCATORRANGE,WARN);
 						selectitext(hwnd,*cc.firstref ? IDC_COUNT_PAGEEND : IDC_COUNT_PAGESTART);
 						return (TRUE);
 					}
@@ -1301,40 +1354,6 @@ static INT_PTR CALLBACK countproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 					totalrec = search_count(FF,&cc,SF_VIEWDEFAULT);	/* get count */
 					hwed = GetDlgItem(hwnd,IDC_COUNT_RESULT);
 					Edit_SetText(hwed,TEXT(""));		/* clear out the control (from any previous passes) */
-#if 0
-					sprintf(string1,"%ld Records", totalrec);
-//					SendMessage(hwed,EM_REPLACESEL,FALSE,(LPARAM)string1);
-					appendString(hwed,string1);
-					ref1 = strtol(cc.firstref,&e1ptr,10);
-					ref2 = strtol(cc.lastref,&e2ptr,10);
-					if (!*e1ptr && !*e2ptr && ref1 && ref2)	{	/* if decent arabic range */
-						sprintf(string1," (%01.1f per page)", (float)totalrec/(ref2+1-ref1));
-//						SendMessage(hwed,EM_REPLACESEL,FALSE,(LPARAM)string1);
-						appendString(hwed,string1);
-					}
-					if (totalrec)	{	/* if any info to display */
-//						sprintf(string1,"\t\t(%ld modified, %ld deleted, %ld marked, %ld generated, %ld labeled)\r\n",
-//							cc.modified, cc.deleted, cc.marked, cc.generated, cc.labeled);
-						sprintf(string1,"\r\nModified: %ld;  Deleted: %ld;  Marked: %ld;  Generated: %ld;  Labeled: [1:%ld, 2:%ld, 3:%ld, 4:%ld, 5:%ld, 6:%ld, 7:%ld]\r\n",
-							cc.modified, cc.deleted, cc.marked, cc.generated, cc.labeled[1],cc.labeled[2],cc.labeled[3],cc.labeled[4],cc.labeled[5],cc.labeled[6],cc.labeled[7]);
-//						SendMessage(hwed,EM_REPLACESEL,FALSE,(LPARAM)string1);
-						appendString(hwed,string1);
-						sprintf(string1,"Deepest (#%ld) contains %u levels\tLongest (#%ld) contains %u characters\r\n\r\n",
-							 cc.deeprec, cc.deepest-1, cc.longrec, cc.longest);		 /* print number */
-//						SendMessage(hwed,EM_REPLACESEL,FALSE,(LPARAM)string1);
-						appendString(hwed,string1);
-						for (i = colcount = 0; cc.leads[i].total && i < COUNTTABSIZE; i++) {		/* for whole table */
-//							if (cc.leads[i])	{	/* if an entry */
-								sprintf(string1,"%c %ld\t", cc.leads[i].lead, cc.leads[i].total);
-//								SendMessage(hwed,EM_REPLACESEL,FALSE,(LPARAM)string1);
-								appendString(hwed,string1);
-								colcount++;
-								if (!(colcount %= 10))	/* if at end of line */
-									SendMessage(hwed,EM_REPLACESEL,FALSE,(LPARAM)TEXT("\r\n"));
-//							}
-						}
-					}
-#else
 					u_sprintf(us,"%ld Records", totalrec);
 					SendMessage(hwed,EM_REPLACESEL,FALSE,(LPARAM)us);
 					ref1 = strtol(cc.firstref,&e1ptr,10);
@@ -1358,7 +1377,6 @@ static INT_PTR CALLBACK countproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 								SendMessage(hwed,EM_REPLACESEL,FALSE,(LPARAM)TEXT("\r\n"));
 						}
 					}
-#endif
 					return (FALSE);
 				case IDC_GENERIC_DONE:
 				case IDCANCEL:
@@ -1420,7 +1438,7 @@ static INT_PTR CALLBACK statsproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 						if (getlong(hwnd,IDC_FORMWRITE_PEND,&tnum))		/* if not empty */
 							FF->pf.last = tnum;
 						if (FF->pf.first > FF->pf.last)	{
-							senderr(ERR_INVALPAGERANGE,WARN);
+							showError(hwnd,ERR_INVALPAGERANGE,WARN);
 							selectitext(hwnd,IDC_FORMWRITE_PEND);
 							return(TRUE);
 						}
@@ -1563,7 +1581,7 @@ static INT_PTR CALLBACK fsubproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 						else if (type_available(fromNative(sptr)))		/* else if have a sub font */
 							strcpy(sbp->fm[row].name,fromNative(sptr));		// set it
 						else {
-							senderr(ERR_FONTBADSUB,WARN,pptr);
+							showError(hwnd,ERR_FONTBADSUB,WARN,pptr);
 							ListBox_SetCurSel(hwl,row);
 							SendMessage(hwnd,WM_COMMAND,MAKELONG(IDC_FONTSUB_LIST,LBN_SELCHANGE),(LPARAM)hwl);	/* force display update */
 							return (TRUE);
@@ -1606,25 +1624,15 @@ static INT_PTR CALLBACK fsubproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 					}
 					return (TRUE);
 				case IDC_FONTSUB_CHECK:
-//					ocurs = SetCursor(g_waitcurs);
-//					if (!type_scanfonts(sbp->FF,farray))	{	/* if not all used */
-//						SetCursor(ocurs);
-//						if (sendwarning(WARN_FONTGAPS))		{
-//							ocurs = SetCursor(g_waitcurs);
-							type_adjustfonts(sbp->FF,sbp->farray);	/* consolidate */
-							ListBox_ResetContent(hwl);
-							for (row = 0; *sbp->fm[row].pname; row++)	{	/* for all fonts we're using */
-								nstrcpy(cstring,toNative(sbp->fm[row].pname));	// copy preferred because of double call to toNative()
-								setrowstring(hwl,row,cstring,toNative(sbp->fm[row].name));	/* build list */
-							}
-							ListBox_SetCurSel(hwl,0);
-							disableitem(hwnd,IDCANCEL);
-							disableitem(hwnd, IDC_FONTSUB_CHECK);
-//						}
-//					}
-//					else
-//						sendinfo(INFO_ALLFONTSUSED);
-//					SetCursor(ocurs);
+					type_adjustfonts(sbp->FF,sbp->farray);	/* consolidate */
+					ListBox_ResetContent(hwl);
+					for (row = 0; *sbp->fm[row].pname; row++)	{	/* for all fonts we're using */
+						nstrcpy(cstring,toNative(sbp->fm[row].pname));	// copy preferred because of double call to toNative()
+						setrowstring(hwl,row,cstring,toNative(sbp->fm[row].name));	/* build list */
+					}
+					ListBox_SetCurSel(hwl,0);
+					disableitem(hwnd,IDCANCEL);
+					disableitem(hwnd, IDC_FONTSUB_CHECK);
 					return (TRUE);
 			}
 			break;

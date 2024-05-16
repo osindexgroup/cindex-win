@@ -7,6 +7,7 @@ enum {				/* group flags */
 	GF_COMBINE = 4, 	/* formed from some combination of groups */
 	GF_LINKED = 16,		/* linked */
 	GF_REVISED = 32,	/* revised */
+	GF_IMPORT = 64		// formed from import
 };
 
 #define GROUPMAXSIZE 10000		// unit in which group size is incremented
@@ -26,7 +27,7 @@ BOOL grp_make(INDEX * FF, GROUPHANDLE gh, char *name, short oflag);	// adds grou
 BOOL grp_install(INDEX * FF, char *name);	/* opens & checks & installs group  */
 void grp_closecurrent(INDEX * FF);		/* closes current group */
 void grp_dispose(GROUPHANDLE gh);		/* discards group  */
-RECN grp_getstats(INDEX * FF, GROUPHANDLE gh, COUNTPARAMS * csptr);		/* gets stats on group */
+BOOL grp_addrecord(GROUPHANDLE gh, RECORD* recptr);
 RECN grp_buildfromcheck(INDEX * FF, GROUPHANDLE * gh);	// builds group for syntax errors
 RECN grp_buildfromsearch(INDEX * FF, GROUPHANDLE *gh);	/* adds search hits to group file  */
 RECN grp_buildfromrange(INDEX * FF, GROUPHANDLE *gh, RECN first, RECN last, short stype);	/* makes group from selection or numerical range */

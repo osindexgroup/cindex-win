@@ -101,7 +101,7 @@ static void hkcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does 
 				newkey = (short)SendMessage(GetDlgItem(hwnd,IDC_HOTKEY1+count),HKM_GETHOTKEY,0,0);
 				for (tcount = 0; tcount < count; tcount++)	{		/* check for duplicate keys */
 					if (pp->hotkeys[tcount] == newkey)	{	/* if duplicate */
-						senderr(ERR_DUPKEY,WARN);
+						showError(hwnd,ERR_DUPKEY,WARN);
 						SetFocus(GetDlgItem(hwnd,IDC_HOTKEY1+count));
 						return;
 					}
@@ -109,7 +109,7 @@ static void hkcommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)	/* does 
 				pp->hotkeys[count] = newkey;
 				length = mod_gettestring(GetDlgItem(hwnd,IDC_HOTKEYTEXT1+count),tstring,NULL,MREC_NOTRIM|MREC_SINGLE|MREC_NOITD);
 				if (sptr-dstring+length+1 >= STSTRING){	// if string too long
-					senderr(ERR_NOROOM,WARN);
+					showError(hwnd,ERR_NOROOM,WARN);
 					return;
 				}
 				strcpy(sptr,tstring);

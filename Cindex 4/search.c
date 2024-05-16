@@ -395,7 +395,7 @@ short search_setupfind(INDEX * FF, LISTGROUP * lg, short *field)	/* completes fi
 		if (lg->lsarray[count].patflag)	{		/* if need regex */
 				lg->lsarray[count].regex = regex_build(lg->lsarray[count].string,lg->lsarray[count].caseflag ? 0: UREGEX_CASE_INSENSITIVE);
 				if (!lg->lsarray[count].regex)	{
-					senderr(ERR_BADEXPERR, WARN,lg->lsarray[count].string);
+					showError(g_mdlg,ERR_BADEXPERR, WARN,lg->lsarray[count].string);
 					*field = count;
 					return FALSE;
 				}
@@ -408,7 +408,7 @@ short search_setupfind(INDEX * FF, LISTGROUP * lg, short *field)	/* completes fi
 					ref_expandfromsource(FF,lg->lsarray[count].ref2ptr,lg->lsarray[count].auxptr);	// build second ref to right number of segments
 //					NSLog(@"%s, %s",lg->lsarray[count].auxptr, lg->lsarray[count].ref2ptr);
 					if (*lg->lsarray[count].ref2ptr && ref_match(FF,lg->lsarray[count].auxptr,lg->lsarray[count].ref2ptr,FF->head.sortpars.partorder,FALSE) >= 0)	{
-						senderr(ERR_REFORDERERR, WARN);
+						showError(g_mdlg,ERR_REFORDERERR, WARN);
 						*field = count;
 						return (FALSE);
 					}

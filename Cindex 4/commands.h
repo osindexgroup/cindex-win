@@ -38,8 +38,6 @@ enum {	/* window messages */
 	WMM_SETGROUP = WM_USER+1,
 	WMM_UPDATESTATUS,
 	WMM_GETCURREC,
-
-	WMM_PAGENUM			/* sends page number to print dialog */
 };
 
 struct recentlist {

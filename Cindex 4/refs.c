@@ -75,7 +75,7 @@ static short typeref(INDEX * FF, char *sptr)	/* identifies ref segment, returns 
 	
 	if (*sptr)   {    /* if not empty string */
 		tptr = FF->head.sortpars.reftab;		/* set base of priority table */
-		if (isdigit(*sptr) && tptr[ARAB] != INVALID)      /* if arabic numeral && valid */
+		if (isdigit((unsigned char)*sptr) && tptr[ARAB] != INVALID)      /* if arabic numeral && valid */
 			return (ARAB);     /* identify */
 		else {
 			if (tptr[ROMAN] != INVALID)		{   /* if legit roman */

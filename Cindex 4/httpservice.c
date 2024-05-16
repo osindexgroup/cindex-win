@@ -7,141 +7,153 @@
 #include "json.h"
 #include "registry.h"
 
-static time_t get_time(char * tstring);
+static char* fileVersion();
+static BOOL parseJson(char* string, DWORD size);
+static BOOL runupdate(TCHAR* URL, BOOL close);	// opens browser to load, then optionally close Cindex
+
+/****************************************************************/
+BOOL http_connect(BOOL silent)		// checks for available update
+
+{
+#ifdef PUBLISH
+	TCHAR* path = L"/.well-known/cinwinpub.json";
+#else
+	TCHAR* path = L"/.well-known/cinwin.json";
+#endif
+
+	BOOL bResults = TRUE;
+	BOOL result = FALSE;
+	time_t lastcheck = 0;
+	time_t now = time(NULL);
+	DWORD size = sizeof(time_t);
+
+	reg_getkeyvalue(K_GENERAL, MESSAGECHECK, &lastcheck, &size);	// retrieve last check date
+
+	if (!silent || g_prefs.gen.autoupdate && now > lastcheck + 86400 * 1) {	// if checks enabled, do daily
+		DWORD dwSize = 0;
+		DWORD dwDownloaded = 0;
+		LPSTR pszOutBuffer;
+		HINTERNET  hSession = NULL, hConnect = NULL, hRequest = NULL;
+
+		// Use WinHttpOpen to obtain a session handle.
+		hSession = WinHttpOpen(L"Cindex/4.0",
+			WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
+		// Specify an HTTP server.
+		if (hSession)
+			hConnect = WinHttpConnect(hSession, L"opencindex.com", INTERNET_DEFAULT_HTTPS_PORT, 0);
+		// Create an HTTP request handle.
+		if (hConnect)
+			hRequest = WinHttpOpenRequest(hConnect, L"GET", path,
+				NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
+		// Send a request.
+		if (hRequest)
+			bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
+		// End the request.
+		if (bResults)
+			bResults = WinHttpReceiveResponse(hRequest, NULL);
+		if (bResults) {
+			do {		// until data done
+				dwSize = 0;
+				if (WinHttpQueryDataAvailable(hRequest, &dwSize)) {	// Check for available data.
+					pszOutBuffer = (LPSTR)calloc(dwSize + 1, 1);
+					if (WinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwDownloaded)) {	// when fully read
+						if (dwSize) {	// if have data
+							BOOL hasupDate = parseJson(pszOutBuffer, dwSize);
+							if (!hasupDate && !silent)	// if no update, and user asked
+								showInfo(g_hwframe,INFO_UPTODATE);
+						}
+					}
+					free(pszOutBuffer);
+				}
+			} while (dwSize > 0);
+		}
+		if (!bResults && !silent)	// Report any errors.
+			showError(NULL,ERR_NOCONNECTION, WARN, "www.opencindex.com");
+
+		// Close any open handles.
+		if (hRequest)
+			WinHttpCloseHandle(hRequest);
+		if (hConnect)
+			WinHttpCloseHandle(hConnect);
+		if (hSession)
+			WinHttpCloseHandle(hSession);
+		reg_setkeyvalue(K_GENERAL, MESSAGECHECK, REG_BINARY, &now, sizeof(now));	// save
+	}
+	return (bResults);
+}
+/****************************************************************/
+static BOOL parseJson(char * string, DWORD size)
 
 // https://github.com/udp/json-parser
 
-/****************************************************************/
-BOOL http_connect(BOOL silent)		// checks data on indexres.com
-
 {
-	BOOL result = FALSE;
-#if TOPREC == RECLIMIT && !READER
-	DWORD dwSize = 0;
-	DWORD dwDownloaded = 0;
-	LPSTR pszOutBuffer;
-	BOOL  bResults = FALSE;
-	HINTERNET  hSession = NULL, hConnect = NULL, hRequest = NULL;
+	BOOL result = NO;	// no update available
 
-	// Use WinHttpOpen to obtain a session handle.
-	hSession = WinHttpOpen(L"Cindex/4.0",  
-		WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,WINHTTP_NO_PROXY_NAME,WINHTTP_NO_PROXY_BYPASS, 0);
+	json_value* value = json_parse((json_char*)string, size);
+	if (value) {	// if full version info
+		char* title = NULL, * message = NULL, * detail = NULL, * url = NULL, * version = NULL;
+		char mBuffer[2048];
 
-	// Specify an HTTP server.
-	if ( hSession )
-		hConnect = WinHttpConnect(hSession, L"storage.googleapis.com", INTERNET_DEFAULT_HTTPS_PORT, 0);
-
-	// Create an HTTP request handle.
-	if (hConnect)
-		hRequest = WinHttpOpenRequest(hConnect, L"GET", L"/indexres-d3231811-9b04-47b0-8756-5da84afef700/downloads/versionupdate.json",
-			NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
-
-	// Send a request.
-	if (hRequest)
-		bResults = WinHttpSendRequest(hRequest,WINHTTP_NO_ADDITIONAL_HEADERS, 0,WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
-
-	// End the request.
-	if (bResults)
-		bResults = WinHttpReceiveResponse(hRequest, NULL);
-
-	if (bResults){
-		do {		// until data done
-			dwSize = 0;
-			if (WinHttpQueryDataAvailable(hRequest, &dwSize)) {	// Check for available data.
-				pszOutBuffer = (LPSTR)calloc(dwSize+1,1);
-				if (WinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwDownloaded))	{
-					json_value * value = json_parse((json_char *)pszOutBuffer, dwSize);
-					if (value)	{	// if full version info
-						char * startDate, *endDate, *message, *messageTitle, *url;
-						int minVersion, maxVersion, messageType, versionType;
-						time_t start, end, now = time(NULL);
-						int x;
-						for (x = 0; x < value->u.object.length; x++) {
-							char * name = value->u.object.values[x].name;
-							json_value * vv = value->u.object.values[x].value;
-							if (!strcmp(name, "startDate")) {
-								startDate = vv->u.string.ptr;
-								start = get_time(startDate);
-							}
-							else if (!strcmp(name, "endDate")) {
-								endDate = vv->u.string.ptr;
-								end = get_time(endDate);
-							}
-							else if (!strcmp(name, "message"))
-								message = vv->u.string.ptr;
-							else if (!strcmp(name, "messageTitle"))
-								messageTitle = vv->u.string.ptr;
-							else if (!strcmp(name, "url"))
-								url = vv->u.string.ptr;
-							else if (!strcmp(name, "minVersion"))
-								minVersion = vv->u.integer;
-							else if (!strcmp(name, "maxVersion"))
-								maxVersion = vv->u.integer;
-							else if (!strcmp(name, "messageType"))
-								messageType = vv->u.integer;
-							else if (!strcmp(name, "versionType"))
-								versionType = vv->u.integer;
-						}
-#ifdef PUBLISH
-						if (CINVERSION >= minVersion && CINVERSION <= maxVersion && versionType&U_WIN_PUB) {	// if potentially eligible for message
-#else
-						if (CINVERSION >= minVersion && CINVERSION <= maxVersion && versionType&U_WIN) {	// if potentially eligible for message
-#endif
-						if (start <= now && end >= now) {	// if within date range
-								time_t lastcheck = 0;
-								DWORD size = sizeof(time_t);
-								reg_getkeyvalue(K_GENERAL, MESSAGECHECK, &lastcheck, &size);		// setup if prior save
-								if (!lastcheck || now > lastcheck + 86400 * 14) {	// show message every 14 days
-									if (sendinfooption(toNative(messageTitle), INFO_UPDATEAVAILABLE, message))
-										result = http_runupdate(toNative(url));
-									reg_setkeyvalue(K_GENERAL, MESSAGECHECK, REG_BINARY, &now, sizeof(now));	// save
-								}
-							}
-						}
-						json_value_free(value);
-					}
-				}
-				free(pszOutBuffer);
-			}
-		} while(dwSize > 0);
+		for (int x = 0; x < value->u.object.length; x++) {
+			char* name = value->u.object.values[x].name;
+			json_value* vv = value->u.object.values[x].value;
+			if (!strcmp(name, "title"))
+				title = vv->u.string.ptr;
+			else if (!strcmp(name, "message"))
+				message = vv->u.string.ptr;
+			else if (!strcmp(name, "detail"))
+				detail = vv->u.string.ptr;
+			else if (!strcmp(name, "url"))
+				url = vv->u.string.ptr;
+			else if (!strcmp(name, "version"))
+				version = vv->u.string.ptr;
+		}
+		if (version && strcmp(version, fileVersion()) > 0) {	// if versions differ
+			if (detail != NULL)
+				sprintf(mBuffer,"%s\n\n%s",message,detail);
+			else
+				sprintf(mBuffer, "%s", message);
+			if (showInfoOption(g_hwframe,toNative(title), INFO_UPDATEAVAILABLE, mBuffer))
+				runupdate(toNative(url),NO);
+			result = YES;
+		}
+		json_value_free(value);
 	}
-	if (!bResults && !silent)	// Report any errors.
-		senderr(ERR_NOCONNECTION,WARN,"www.example.com");
-
-	// Close any open handles.
-	if (hRequest )
-		WinHttpCloseHandle(hRequest);
-	if (hConnect )
-		WinHttpCloseHandle(hConnect);
-	if (hSession )
-		WinHttpCloseHandle(hSession);
-#endif
-	return(result);
+	return result;
 }
 /****************************************************************/
-BOOL http_runupdate(TCHAR * URL)	// opens browser to load and run update
+static BOOL runupdate(TCHAR * URL, BOOL close)	// opens browser to load, then optionally close Cindex
 
 {
 	HINSTANCE result;
 
 	result = ShellExecute(NULL, TEXT("open"), URL, NULL, NULL, SW_SHOWNORMAL);
-	if ((int)result > 32)	{
+	if ((int)result > 32 && close)	{
 		SendMessage(g_hwframe,WM_CLOSE,0,0);
 		return TRUE;
 	}
 	return FALSE;
 }
 /****************************************************************/
-static time_t get_time(char * tstring)
+static char * fileVersion()
 
 {
-	struct tm rt;
-	memset(&rt,0,sizeof(rt));
-	int scount = sscanf(tstring, "%d-%d-%d", &rt.tm_year, &rt.tm_mon, &rt.tm_mday);
-	if (scount == 3) {
-		rt.tm_year -= 1900;
-		rt.tm_mon -= 1;
-		return timegm(&rt);
+	char* version = NULL;
+	TCHAR path[MAX_PATH];
+	DWORD vsize;
+	void* vdata;
+	LPVOID  valptr;
+	UINT vlen;
+
+	GetModuleFileName(NULL, path, MAX_PATH);
+	if (vsize = GetFileVersionInfoSize(path, NULL)) {
+		if (vdata = getmem(vsize)) {
+			if (GetFileVersionInfo(path, 0, vsize, vdata)) {
+				VerQueryValue(vdata, TEXT("\\StringFileInfo\\040904E4\\FileVersion"), &valptr, &vlen);
+				version = fromNative(valptr);
+			}
+			freemem(vdata);
+		}
 	}
-	return 0;
+	return version;
 }

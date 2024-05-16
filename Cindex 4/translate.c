@@ -92,7 +92,7 @@ BOOL tr_DOStoV2(MFILE * mf)     /* converts DOS v6 index to v2 format */
 	if (ohp.version < 600)	{
 		int major = ohp.version/100;
 		int minor = ohp.version%100;
-		senderr(ERR_FILEVERSERR, WARN, major,minor,major,minor);	/* early version */
+		showError(NULL,ERR_FILEVERSERR, WARN, major,minor,major,minor);	/* early version */
 	}
 	else if (scanrecords(&ohp,mf->base+V61_HEADSIZE,&gh,&maxlen,&maxfields))	{	/* if scan is ok */
 		int index;
@@ -132,14 +132,14 @@ BOOL tr_DOStoV2(MFILE * mf)     /* converts DOS v6 index to v2 format */
 		}
 	}
 	if (markcount)		/* if have marked any records */
-		sendinfo(INFO_IMPORTMARKED,markcount);
+		showInfo(NULL,INFO_IMPORTMARKED,markcount);
 	return ok;
 }
 /*******************************************************************************/
 BOOL tr_ghok(struct ghstruct * ghp)	/* gets DOS font translation specs */
 
 {
-	if (sendwarning(WARN_CODETRANSLATION))
+	if (showWarning(NULL,WARN_CODETRANSLATION))
 		return (DialogBoxParam(g_hinst,MAKEINTRESOURCE(IDD_CODETRANS),g_hwframe,transproc,(LPARAM)ghp) > 0);
 	return (FALSE);
 }

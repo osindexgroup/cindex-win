@@ -355,11 +355,11 @@ int recole_paste(HWND hwnd, IDataObject * dp)	/* pastes records */
 		freespace = file_diskspace(FF->pfspec);		/* free space on disk */
 		minsize = FF->head.indexpars.recsize > rc->cs.longest ? FF->head.indexpars.recsize : rc->cs.longest;
 		if (freespace < minsize*rc->rtot)	{	/* if no room on disk */
-			senderr(ERR_DISKFULLERR,WARN);
+			showError(NULL,ERR_DISKFULLERR,WARN);
 			goto abort;
 		}
 		if (rc->cs.deepest > FF->head.indexpars.maxfields)	{	/* if need to increase field limit */
-			if (sendwarning(WARN_RECFIELDNUMWARN, rc->cs.deepest))	{
+			if (showWarning(NULL,WARN_RECFIELDNUMWARN, rc->cs.deepest))	{
 				short oldmaxfieldcount;
 				oldmaxfieldcount = FF->head.indexpars.maxfields;
 				FF->head.indexpars.maxfields = rc->cs.deepest;
@@ -369,7 +369,7 @@ int recole_paste(HWND hwnd, IDataObject * dp)	/* pastes records */
 				goto abort;
 		}
 		if (rc->cs.longest > FF->head.indexpars.recsize)	{	/* if need record enlargement */
-			if (!sendwarning(WARN_RECENLARGESIZE,rc->cs.longest-FF->head.indexpars.recsize) ||	/* if don't want resize */
+			if (!showWarning(NULL,WARN_RECENLARGESIZE,rc->cs.longest-FF->head.indexpars.recsize) ||	/* if don't want resize */
 			   !file_resizeindex(FF, rc->cs.longest))		/* or errors resizing */ 
 				goto abort;		/* can't do it */
 		}

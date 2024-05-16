@@ -113,7 +113,7 @@ BOOL formexport_write(INDEX * FF, struct expfile * ef,FCONTROLX * xptr)	/* opens
 		ok = mfile_resize(&mf,xptr->esptr-(char *)mf.base) && mfile_close(&mf);
 		FF->typesetter = NULL;
 		if (ok)		/* if no errors */
-			sendinfo(INFO_FILESTATS,file_getname(ef->ofn.lpstrFile),FF->pf.entries, FF->pf.uniquemain,FF->pf.prefs,FF->pf.crefs,FF->pf.lines);
+			showInfo(NULL,INFO_FILESTATS,file_getname(ef->ofn.lpstrFile),FF->pf.entries, FF->pf.uniquemain,FF->pf.prefs,FF->pf.crefs,FF->pf.lines);
 		else
 			remove(fromNative(ef->ofn.lpstrFile));	/* delete the file */
 	}

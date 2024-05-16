@@ -102,11 +102,10 @@ void ss_sortindex(HWND hwnd)	/* re-sorts index */
 	if (getsortpars(ig,sg, hwnd) && hwnd)	{	/* if not cancelled  & for index */
 		col_init(sg,FF);	// rebuild tables
 		if (FF->curfile)
-			sort_sortgroup(FF);
+			sort_sortgroup(FF,YES);
 		else
 			sort_resort(FF);
 		view_redisplay(FF,0,VD_TOP|VD_RESET);
-		view_setstatus(hwnd);
 	}
 }
 /**********************************************************************************/	
@@ -818,7 +817,7 @@ void ss_compress(HWND hwnd)	/* compresses index */
 		flags |= SQPAGESORTFLAG;
 	if (DialogBoxParam(g_hinst,MAKEINTRESOURCE(IDD_COMPRESS),g_hwframe,compproc,(LPARAM)&flags))	{
 //		reg_setkeyvalue(K_GENERAL, COMPRESSSETTINGS, REG_BINARY, &flags, sizeof(flags));	// save
-		if (sendwarning(WARN_SQUEEZE))	{
+		if (showWarning(NULL,WARN_SQUEEZE))	{
 			tsort = FF->head.sortpars.ison;	/* get sort state */
 			if (flags&(SQDELDUP|SQCOMBINE))
 				FF->head.sortpars.ison = TRUE;	/* make sure its on if removing dup or consolidating */
@@ -893,7 +892,7 @@ void ss_expand(HWND hwnd)	/* expands records for 1 ref in each */
 {
 	INDEX * FF;
 	
-	if (sendwarning(WARN_EXPAND))	{
+	if (showWarning(NULL,WARN_EXPAND))	{
 		FF = WX(hwnd,owner);
 		sort_squeeze(FF, SQSINGLE);
 		view_allrecords(FF->vwind);

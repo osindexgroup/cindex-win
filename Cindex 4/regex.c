@@ -1,5 +1,16 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "regex.h"
+
+//	static char * re_sf = "((?:[:l:]+[’' ])?[:l:][:l:]+(?:[- ][:lu:][:l:]*)?), ((?:[:lu:][:l:]+|[:lu:]\\.?)(?:[- ](?:[:lu:][:l:]+|[:lu:]\\.?))*)";
+//	static char * re_fs = "((?:[:lu:][:l:]+|[:lu:]\\.?)(?:[- ](?:[:lu:][:l:]+|[:lu:]\\.?))*) ((?:[:l:]+[’' ])?[:l:][:l:]+(?:[- ][:lu:][:l:]*)?)";
+
+// this version handles cases like John F "Jack" Kennedy|John F (Jack) Kennedy|John F “Jack” Kennedy
+//char* re_sf = "((?:[:l:]+[’' ])?[:l:][:l:]+(?:[- ][:lu:][:l:]*)?), ((?:[:lu:][:l:]+|[:lu:]\\.?)(?:[- ](?:[:lu:][:l:]+|[:lu:]\\.?))*(?: (?:\"[:lu:][:l:]+\"|\\([:lu:][:l:]+\\)|“[:lu:][:l:]+”))?)";
+//char* re_fs = "((?:[:lu:][:l:]+|[:lu:]\\.?)(?:[- ](?:[:lu:][:l:]+|[:lu:]\\.?))*(?: (?:\"[:lu:][:l:]+\"|\\([:lu:][:l:]+\\)|“[:lu:][:l:]+”))?) ((?:[:l:]+[’' ])?[:l:][:l:]+(?:[- ][:lu:][:l:]*)?)";
+
+// why is this utf-8 string displayed this way when file is supposed to be utf-8 encoded?
+char* re_sf = "((?:[:l:]+[â€™' ])?[:l:][:l:]+(?:[- ][:lu:][:l:]*)?), ((?:[:lu:][:l:]+|[:lu:]\\.?)(?:[- ](?:[:lu:][:l:]+|[:lu:]\\.?))*(?: (?:\"[:lu:][:l:]+\"|\\([:lu:][:l:]+\\)|â€œ[:lu:][:l:]+â€))?)";
+char* re_fs = "((?:[:lu:][:l:]+|[:lu:]\\.?)(?:[- ](?:[:lu:][:l:]+|[:lu:]\\.?))*(?: (?:\"[:lu:][:l:]+\"|\\([:lu:][:l:]+\\)|â€œ[:lu:][:l:]+â€))?) ((?:[:l:]+[â€™' ])?[:l:][:l:]+(?:[- ][:lu:][:l:]*)?)";
 
 /***************************************************************************************/
 BOOL regex_validexpression(char * string, int flags)		// validates pattern

@@ -190,7 +190,7 @@ static INT_PTR CALLBACK setstructproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				case IDOK:
 					getshort(hwnd,IDC_RECORDSTRUCT_MAX,&chosenlength);
 					if (chosenlength < wp->minlength)	{
-						if (sendwarning(WARN_SHORTRECORD,wp->minlength))
+						if (showWarning(hwnd,WARN_SHORTRECORD,wp->minlength))
 							chosenlength = wp->minlength;
 						else
 							return TRUE;
